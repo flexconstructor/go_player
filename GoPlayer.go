@@ -20,11 +20,11 @@ func NewGoPlayer() *GoPlayer{
 
 	if player_instance==nil{
 		player_instance=&GoPlayer{
-			rtmp_url: "rtmp://"+rtmp_host+":"+rtmp_port+"/"+app_name,
+			rtmp_url: "rtmp://"+GoPlayer_rtmp_host+":"+GoPlayer_rtmp_port+"/"+GoPlayer_app_name,
 			streams_map: make(map[string]*hub),
 			route: mux.NewRouter(),
 		}
-		http.Handle("/"+app_name+"/",player_instance.route);
+		http.Handle("/"+GoPlayer_app_name+"/",player_instance.route);
 	}
 	return player_instance
 }
@@ -32,7 +32,7 @@ func NewGoPlayer() *GoPlayer{
 func(p *GoPlayer) Run(stream_name string) bool{
 	if(p.streams_map[stream_name] == nil) {
 		newhub:= NewHub(p.rtmp_url, stream_name)
-		p.route.HandleFunc("/"+app_name+"/"+stream_name, serveWs)
+		p.route.HandleFunc("/"+GoPlayer_app_name+"/"+stream_name, serveWs)
 		p.streams_map[stream_name]=newhub
 		go  newhub.run()
 	}
