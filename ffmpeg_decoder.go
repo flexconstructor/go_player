@@ -1,7 +1,7 @@
 package GoPlayer
 
 import(
-	"log"
+
 	"runtime"
 	. "github.com/3d0c/gmf"
 	"runtime/debug"
@@ -12,7 +12,7 @@ var broadcast chan []byte
 
 func fatal(err error) {
 	debug.PrintStack()
-	log.Fatal(err)
+
 
 }
 

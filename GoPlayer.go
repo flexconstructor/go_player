@@ -2,14 +2,25 @@ package GoPlayer
 import(
 	"net/http"
 	"github.com/gorilla/mux"
-	"media-api/log"
+
 
 )
 
 var (
 player_instance *GoPlayer=nil
-
+log Logger
 )
+
+// Represents logger with different levels of logs.
+type Logger interface {
+	Debug(interface{}, ...interface{})
+	Trace(interface{}, ...interface{})
+	Info(interface{}, ...interface{})
+	Warn(interface{}, ...interface{}) error
+	Error(interface{}, ...interface{}) error
+	Critical(interface{}, ...interface{}) error
+	Close()
+}
 
 type GoPlayer struct  {
 	rtmp_url string
@@ -30,11 +41,13 @@ func NewGoPlayer() *GoPlayer{
 	return player_instance
 }
 
-func(p *GoPlayer) Run(stream_name string) bool{
+func(p *GoPlayer) Run(stream_name string,logger Logger) bool{
+	log=logger
+	log.Debug("Hello GOPlayer Logger")
 	if(p.streams_map[stream_name] == nil) {
 		newhub:= NewHub(p.rtmp_url, stream_name)
 		//p.route.HandleFunc("/"+GoPlayer_app_name+"/"+stream_name, serveWs)
-		log.Debug("Run Go player: ",stream_name)
+
 		p.streams_map[stream_name]=newhub
 	//	go  newhub.run()
 	}
@@ -42,6 +55,7 @@ func(p *GoPlayer) Run(stream_name string) bool{
 }
 
 func (p *GoPlayer) Close(stream_name string)bool{
+
 	h := p.streams_map[stream_name]
 	if(h != nil){
 		h.rtmp_status <-0

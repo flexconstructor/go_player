@@ -4,6 +4,7 @@ import(
 	"github.com/flexconstructor/GoPlayer"
 	"text/template"
 	"net/http"
+
 )
 
 var homeTempl = template.Must(template.ParseFiles("./src/github.com/flexconstructor/GoPlayer/examples/index.html"))
@@ -38,7 +39,7 @@ func getStreamHandler(w http.ResponseWriter, r *http.Request){
 	}
 	streamname:=r.FormValue("streamname");
 	if(streamname != "") {
-		go GoPlayer.NewGoPlayer().Run(streamname)
+		go GoPlayer.NewGoPlayer().Run(streamname,NewGPLogger())
 	}else{
 		http.Error(w, "Stream Not found", 404)
 	}
