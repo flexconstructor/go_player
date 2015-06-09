@@ -32,7 +32,7 @@ func NewGoPlayer() *GoPlayer{
 func(p *GoPlayer) Run(stream_name string) bool{
 	if(p.streams_map[stream_name] == nil) {
 		newhub:= NewHub(p.rtmp_url, stream_name)
-		p.route.HandleFunc("/"+GoPlayer_app_name+"/"+stream_name, serveWs)
+		//p.route.HandleFunc("/"+GoPlayer_app_name+"/"+stream_name, serveWs)
 		p.streams_map[stream_name]=newhub
 		go  newhub.run()
 	}
