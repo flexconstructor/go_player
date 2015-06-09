@@ -36,6 +36,15 @@ func(p *GoPlayer) Run(stream_name string) bool{
 		p.streams_map[stream_name]=newhub
 		go  newhub.run()
 	}
-
 	return true;
 }
+
+func (p *GoPlayer) Close(stream_name string)bool{
+	h := p.streams_map[stream_name]
+	if(h != nil){
+		h.rtmp_status <-0
+		return true
+	}
+return false
+}
+
