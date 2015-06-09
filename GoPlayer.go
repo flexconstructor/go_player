@@ -2,6 +2,7 @@ package GoPlayer
 import(
 	"net/http"
 	"github.com/gorilla/mux"
+	"media-api/log"
 
 )
 
@@ -33,8 +34,9 @@ func(p *GoPlayer) Run(stream_name string) bool{
 	if(p.streams_map[stream_name] == nil) {
 		newhub:= NewHub(p.rtmp_url, stream_name)
 		//p.route.HandleFunc("/"+GoPlayer_app_name+"/"+stream_name, serveWs)
+		log.Debug("Run Go player: ",stream_name)
 		p.streams_map[stream_name]=newhub
-		go  newhub.run()
+	//	go  newhub.run()
 	}
 	return true;
 }
