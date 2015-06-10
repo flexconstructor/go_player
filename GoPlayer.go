@@ -4,6 +4,7 @@ import(
 	"github.com/gorilla/mux"
 
 
+	"strconv"
 )
 
 var (
@@ -38,7 +39,7 @@ func NewGoPlayer() *GoPlayer{
 		}
 
 		http.Handle("/"+GoPlayer_app_name+"/",player_instance.route);
-		http.ListenAndServe(":"+GoPlayer_ws_port,nil)
+		http.ListenAndServe(":"+strconv.Itoa(GoPlayer_ws_port),nil)
 	}
 	return player_instance
 }
