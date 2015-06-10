@@ -23,6 +23,7 @@ type FFmpegDecoder  struct{
 	rtmp_status chan int
 	metadata chan *MetaData
 	error chan *Error
+	log Logger
 }
 
 
@@ -115,6 +116,7 @@ func writeToBroadcast(b []byte){
 
 
 func (f *FFmpegDecoder)Run(){
+	f.log.Info("RUN DECODER")
 	broadcast=f.broadcast
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	inputCtx := assert(NewInputCtx(f.stream_url)).(*FmtCtx)
@@ -169,5 +171,5 @@ func (f *FFmpegDecoder)Run(){
 }
 
 func (d *FFmpegDecoder)Close(){
-
+d.log.Info("Close decoder")
 }

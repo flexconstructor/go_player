@@ -32,6 +32,7 @@ type hub struct {
 
 	metadata chan *MetaData
 	error chan *Error
+	log Logger
 }
 
 var decoder *FFmpegDecoder
@@ -39,7 +40,7 @@ var conn *RtmpConnector
 var meta *MetaData
 
 
-func NewHub(stream_url string,stream_name string) *hub{
+func NewHub(stream_url string,stream_name string, logger Logger) *hub{
 	return &hub{
 		stream_url: stream_url,
 		stream_id: stream_name,
@@ -50,32 +51,36 @@ func NewHub(stream_url string,stream_name string) *hub{
 		rtmp_status: make(chan int, 0),
 		metadata:  make(chan *MetaData),
 		error: make(chan *Error),
+		log: logger,
 	}
 }
 
 func (h *hub) run() {
-
+	h.log.Info("Hub run: ",h.stream_url,"id: ",h.stream_id)
 	decoder=&FFmpegDecoder{
 		stream_url: h.stream_url+"/"+h.stream_id,
 		broadcast:h.broadcast,
 		rtmp_status: h.rtmp_status,
 		metadata: h.metadata,
 		error: h.error,
+		log: h.log,
 	}
-
+	h.log.Debug("decoder created")
 
 	conn = &RtmpConnector{
  		rtmp_url:	h.stream_url,
  		stream_id: h.stream_id,
 		error_cannel: h.error,
+		log: h.log,
  		 handler: &RtmpHandler{
  			 stream_status: h.rtmp_status,
 			  error_channel: h.error,
+			 log: h.log,
  		 },
 	}
-
+	h.log.Debug("connection created")
 	go conn.Run()
-
+	h.log.Debug("connection runing")
 	//go decoder.Run()
 
 	defer h.CloseHub(decoder)
@@ -84,17 +89,19 @@ func (h *hub) run() {
 		select {
 		case c := <-h.register:
 			h.connections[c] = true
-
+		log.Debug("Register connection")
 		if(meta != nil){
 			b, err:=meta.JSON()
 			if(err==nil) {
 				c.metadata <- b
+				log.Debug("send metadata")
 			}
 		}
 
 
 		case c := <-h.unregister:
 			if _, ok := h.connections[c]; ok {
+				log.Debug("close connection")
 				c.Close()
 				delete(h.connections, c)
 				if(len(h.connections)==0){
@@ -119,12 +126,14 @@ func (h *hub) run() {
 				return
 			}else{
 				go decoder.Run()
+				log.Debug("run decoder")
 			}
 		case meta= <- h.metadata:
 		b, err:=meta.JSON()
 		if(err != nil){
 			continue
 		}
+		log.Debug("new metadata")
 			for c := range h.connections {
 				select {
 				case c.metadata <- b:
@@ -137,6 +146,7 @@ func (h *hub) run() {
 				}
 			}
 		case e:= <-h.error:
+		log.Error("player error",e)
 			for c := range h.connections {
 				select {
 				case c.error_channel <- e:
@@ -160,7 +170,7 @@ func (h *hub) run() {
 
 
 func (h *hub)CloseHub(decoder *FFmpegDecoder){
-
+	log.Debug("close hub")
 	if(h.register != nil){
 		close(h.register)
 		h.register=nil

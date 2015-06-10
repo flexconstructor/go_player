@@ -43,24 +43,26 @@ func NewGoPlayer() *GoPlayer{
 
 func(p *GoPlayer) Run(stream_name string,logger Logger) bool{
 	log=logger
-	log.Debug("Hello GOPlayer Logger")
+	log.Info("Run player with stream: ",stream_name)
 	if(p.streams_map[stream_name] == nil) {
-		newhub:= NewHub(p.rtmp_url, stream_name)
+		newhub:= NewHub(p.rtmp_url, stream_name,log)
 		//p.route.HandleFunc("/"+GoPlayer_app_name+"/"+stream_name, serveWs)
 
 		p.streams_map[stream_name]=newhub
-	//	go  newhub.run()
+		go  newhub.run()
 	}
 	return true;
 }
 
 func (p *GoPlayer) Close(stream_name string)bool{
-
+	log.Info("CLOSE STREAM: ",stream_name)
+	defer log.Close()
 	h := p.streams_map[stream_name]
 	if(h != nil){
 		h.rtmp_status <-0
 		return true
 	}
+
 return false
 }
 
