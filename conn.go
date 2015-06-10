@@ -93,6 +93,9 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", 405)
 		return
 	}
+	w.Header().Set("Access-Control-Allow-Origin","*")
+	w.Header().Set("Access-Control-Allow-Methods","GET")
+	w.Header().Set("Access-Control-Allow-Headers","Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	arr :=strings.Split(r.URL.String(),"/");
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
