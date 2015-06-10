@@ -37,6 +37,7 @@ func NewGoPlayer() *GoPlayer{
 			streams_map: make(map[string]*hub),
 			route: mux.NewRouter(),
 		}
+		player_instance.route.Headers("Access-Control-Allow-Origin,*")
 		http.Handle("/"+GoPlayer_app_name+"/",player_instance.route);
 		http.ListenAndServe(":"+strconv.Itoa(GoPlayer_ws_port),nil)
 	}
