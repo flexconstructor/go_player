@@ -46,8 +46,7 @@ func(p *GoPlayer) Run(stream_name string,logger Logger) bool{
 	log.Info("Run player with stream: ",stream_name)
 	if(p.streams_map[stream_name] == nil) {
 		newhub:= NewHub(p.rtmp_url, stream_name,log)
-		//p.route.HandleFunc("/"+GoPlayer_app_name+"/"+stream_name, serveWs)
-
+		p.route.HandleFunc("/"+GoPlayer_app_name+"/"+stream_name, serveWs)
 		p.streams_map[stream_name]=newhub
 		go  newhub.run()
 	}
