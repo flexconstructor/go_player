@@ -36,7 +36,9 @@ func NewGoPlayer() *GoPlayer{
 			streams_map: make(map[string]*hub),
 			route: mux.NewRouter(),
 		}
+
 		http.Handle("/"+GoPlayer_app_name+"/",player_instance.route);
+		http.ListenAndServe(":"+GoPlayer_ws_port,nil)
 	}
 	return player_instance
 }
