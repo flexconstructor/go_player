@@ -81,6 +81,7 @@ func CloseGoPlayer()(error, bool){
 			if(h != nil){
 				h.rtmp_status <-0;
 				delete(player.streams_map,stream_name)
+				h=nil
 		}
 	}
 	player_instance=nil
