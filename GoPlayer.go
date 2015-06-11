@@ -104,12 +104,12 @@ func CloseGoPlayer()(error, bool){
 	return player_instance
 }*/
 
-/*func(p *GoPlayer) Run(stream_name string,logger Logger) bool{
-	log=logger
-	log.Info("Run player with stream: ",stream_name)
+func(p *GoPlayer) Run(stream_name string) bool{
+
+	p.log.Info("Run player with stream: ",stream_name)
 	if(p.streams_map[stream_name] == nil) {
-		newhub:= NewHub(p.rtmp_url, stream_name,log)
-		p.route.HandleFunc("/"+GoPlayer_app_name+"/"+stream_name, serveWs)
+		newhub:= NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name, stream_name,p.log)
+		p.route.HandleFunc("/"+p.app_name+"/"+stream_name, serveWs)
 		p.streams_map[stream_name]=newhub
 		go  newhub.run()
 	}
@@ -127,4 +127,4 @@ func (p *GoPlayer) Close(stream_name string)bool{
 
 return false
 }
-*/
+
