@@ -95,6 +95,12 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	player, err:= GetPlayerInstance();
+	if(err != nil){
+
+		return
+	}
+	player.log.Debug("serveWs")
 	arr :=strings.Split(r.URL.String(),"/");
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -107,10 +113,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		error_channel: make(chan *Error),
 	}
 
-	player, err:= GetPlayerInstance();
-	if(err != nil){
-		return
-	}
+
 
 	if(player.streams_map[arr[len(arr)-1]] != nil) {
 		player.streams_map[arr[len(arr)-1]].register <- c
