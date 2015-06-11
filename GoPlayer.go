@@ -83,6 +83,7 @@ func CloseGoPlayer()(error, bool){
 				delete(player.streams_map,stream_name)
 		}
 	}
+	player_instance=nil
 	player.log.Close()
 	return nil, true
 }
