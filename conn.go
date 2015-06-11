@@ -94,10 +94,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", 405)
 		return
 	}
-	/*w.Header().Set("Access-Control-Allow-Origin","*")
-	w.Header().Set("Access-Control-Allow-Methods","GET")
-	w.Header().Set("Access-Control-Allow-Headers","Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	*/
+
 	arr :=strings.Split(r.URL.String(),"/");
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -110,10 +107,14 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		error_channel: make(chan *Error),
 	}
 
-	if(NewGoPlayer().streams_map[arr[len(arr)-1]] != nil) {
-		NewGoPlayer().streams_map[arr[len(arr)-1]].register <- c
+	player, err:= GetPlayerInstance();
+	if(err != nil){
+		return
+	}
+
+	if(player.streams_map[arr[len(arr)-1]] != nil) {
+		player.streams_map[arr[len(arr)-1]].register <- c
 	}else{
-		c.Close()
 		return
 	}
 

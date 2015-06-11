@@ -191,6 +191,10 @@ func (h *hub)CloseHub(decoder *FFmpegDecoder){
 	meta=nil
 	decoder.Close()
 	conn.Close()
-	delete(NewGoPlayer().streams_map,h.stream_id)
+	player, err:= GetPlayerInstance();
+	if(err!=nil){
+		return
+	}
+	delete(player.streams_map,h.stream_id)
 
 }
