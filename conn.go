@@ -109,13 +109,13 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		player.log.Error("ws upgrate error: ",err)
 		return
 	}
-	player.log("ws upgrated")
+	player.log.Debug("ws upgrated")
 	c := &connection{
 		send: make(chan []byte, 256),
 		ws: ws,metadata:make(chan []byte),
 		error_channel: make(chan *Error),
 	}
-	player.log("connection created")
+	player.log.Debug("connection created")
 
 
 	if(player.streams_map[arr[len(arr)-1]] != nil) {
@@ -124,7 +124,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		player.log.Error("no hub found!!!")
 		return
 	}
-	player.log("connection complete")
+	player.log.Debug("connection complete")
 	go c.writePump()
 }
 
