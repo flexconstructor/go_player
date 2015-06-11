@@ -107,6 +107,7 @@ func CloseGoPlayer()(error, bool){
 func(p *GoPlayer) Run(stream_name string) bool{
 
 	p.log.Info("Run player with stream: ",stream_name)
+	p.log.Info("APPName: ",p.app_name)
 	if(p.streams_map[stream_name] == nil) {
 		//newhub:= NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name, stream_name,p.log)
 		p.route.HandleFunc("/"+p.app_name+"/"+stream_name, serveWs)
