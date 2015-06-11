@@ -95,13 +95,13 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	player, err:= GetPlayerInstance();
+	player, err:=GetPlayerInstance();
 	if(err != nil){
-
+		log.Error("No player found")
 		return
 	}
 	player.log.Debug("serveWs")
-	arr :=strings.Split(r.URL.String(),"/");
+	arr :=strings.Split(r.URL.String(),"/")
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
