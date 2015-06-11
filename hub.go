@@ -89,19 +89,19 @@ func (h *hub) run() {
 		select {
 		case c := <-h.register:
 			h.connections[c] = true
-		log.Debug("Register connection")
+		h.log.Debug("Register connection")
 		if(meta != nil){
 			b, err:=meta.JSON()
 			if(err==nil) {
 				c.metadata <- b
-				log.Debug("send metadata")
+				h.log.Debug("send metadata")
 			}
 		}
 
 
 		case c := <-h.unregister:
 			if _, ok := h.connections[c]; ok {
-				log.Debug("close connection")
+				h.log.Debug("close connection")
 				c.Close()
 				delete(h.connections, c)
 				if(len(h.connections)==0){
@@ -126,14 +126,14 @@ func (h *hub) run() {
 				return
 			}else{
 				go decoder.Run()
-				log.Debug("run decoder")
+				h.log.Debug("run decoder")
 			}
 		case meta= <- h.metadata:
 		b, err:=meta.JSON()
 		if(err != nil){
 			continue
 		}
-		log.Debug("new metadata")
+		h.log.Debug("new metadata")
 			for c := range h.connections {
 				select {
 				case c.metadata <- b:
@@ -146,7 +146,7 @@ func (h *hub) run() {
 				}
 			}
 		case e:= <-h.error:
-		log.Error("player error",e)
+		h.log.Error("player error",e)
 			for c := range h.connections {
 				select {
 				case c.error_channel <- e:
@@ -170,7 +170,7 @@ func (h *hub) run() {
 
 
 func (h *hub)CloseHub(decoder *FFmpegDecoder){
-	log.Debug("close hub")
+	h.log.Debug("close hub")
 	if(h.register != nil){
 		close(h.register)
 		h.register=nil
