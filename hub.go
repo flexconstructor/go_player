@@ -88,12 +88,13 @@ func (h *hub) run() {
 	for {
 		select {
 		case c := <-h.register:
+			if(len(h.connections)==0){
+				h.log.Debug("Run rtmp connection!!!!")
+				go conn.Run()
+			}
 			h.connections[c] = true
 		h.log.Debug("Register connection")
-		if(len(h.connections)>0 && h.rtmp_status==0){
-			h.log.Debug("Run rtmp connection!!!!")
-			go conn.Run()
-		}
+
 		if(meta != nil){
 			b, err:=meta.JSON()
 			if(err==nil) {
