@@ -100,7 +100,13 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		log.Error("No player found")
 		return
 	}
+	client_id:=r.FormValue("client_id");
+	access_token:=r.FormValue("access_token")
+	model_id:=r.FormValue("model_id")
 	player.log.Debug("serveWs")
+	player.log.Debug("client_id: ",client_id)
+	player.log.Debug("access_token: ",access_token)
+	player.log.Debug("model_id: ",model_id)
 	arr :=strings.Split(r.URL.String(),"/")
 	player.log.Info("arr: ",arr)
 	ws, err := upgrader.Upgrade(w, r, nil)
