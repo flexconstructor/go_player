@@ -32,10 +32,11 @@ type GoPlayer struct  {
 	streams_map map[string]*hub
 	route *mux.Router
 	log Logger
+	service_token string
 }
 
 
-func InitGoPlayer(rtmp_host string, rtmp_port int, app_name string, http_port int, log Logger)*GoPlayer{
+func InitGoPlayer(rtmp_host string, rtmp_port int, app_name string, http_port int, log Logger, service_token string)*GoPlayer{
 
 if(player_instance != nil){
 	return player_instance
@@ -48,6 +49,7 @@ if(player_instance != nil){
 		streams_map: make(map[string]*hub),
 		route: mux.NewRouter(),
 		log: log,
+		service_token: service_token,
 	}
 	player_instance.route.Headers("Access-Control-Allow-Origin","*")
 	http.Handle("/"+player_instance.app_name+"/",player_instance.route);
@@ -111,7 +113,7 @@ func(p *GoPlayer) Run(stream_name string) bool{
 	p.log.Info("Run player with stream: ",stream_name)
 	p.log.Info("APPName: ",p.app_name)
 	if(p.streams_map[stream_name] == nil) {
-		newhub:= NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name, stream_name,p.log)
+		newhub:= NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name, stream_name,p.log,p.service_token)
 		p.route.HandleFunc("/"+p.app_name+"/"+stream_name, serveWs)
 		p.streams_map[stream_name]=newhub
 		go  newhub.run()

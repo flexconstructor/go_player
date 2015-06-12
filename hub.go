@@ -33,6 +33,7 @@ type hub struct {
 	metadata chan *MetaData
 	error chan *Error
 	log Logger
+	service_token string
 }
 
 var decoder *FFmpegDecoder
@@ -40,7 +41,7 @@ var conn *RtmpConnector
 var meta *MetaData
 
 
-func NewHub(stream_url string,stream_name string, logger Logger) *hub{
+func NewHub(stream_url string,stream_name string, logger Logger, service_token string) *hub{
 	return &hub{
 		stream_url: stream_url,
 		stream_id: stream_name,
@@ -52,13 +53,14 @@ func NewHub(stream_url string,stream_name string, logger Logger) *hub{
 		metadata:  make(chan *MetaData),
 		error: make(chan *Error),
 		log: logger,
+		service_token: service_token,
 	}
 }
 
 func (h *hub) run() {
 	h.log.Info("Hub run: ",h.stream_url,"id: ",h.stream_id)
 	decoder=&FFmpegDecoder{
-		stream_url: h.stream_url+"/"+h.stream_id+"?model_id="+h.stream_id,
+		stream_url: h.stream_url+"/"+h.stream_id+"?model_id="+h.stream_id+"&access_token="+h.service_token,
 		broadcast:h.broadcast,
 		rtmp_status: h.rtmp_status,
 		metadata: h.metadata,
@@ -69,7 +71,7 @@ func (h *hub) run() {
 
 	conn = &RtmpConnector{
  		rtmp_url:	h.stream_url,
- 		stream_id: h.stream_id+"?model_id="+h.stream_id,
+ 		stream_id: h.stream_id+"?model_id="+h.stream_id+"&access_token="+h.service_token,
 		error_cannel: h.error,
 		log: h.log,
  		 handler: &RtmpHandler{
