@@ -111,6 +111,7 @@ func (h *hub) run() {
 				h.log.Debug("close connection")
 				c.Close()
 				delete(h.connections, c)
+				c=nil
 				if(len(h.connections)==0){
 					return
 				}
@@ -122,6 +123,7 @@ func (h *hub) run() {
 				default:
 					c.Close()
 					delete(h.connections, c)
+					c=nil
 					if(len(h.connections)==0){
 						return
 					}
@@ -147,6 +149,7 @@ func (h *hub) run() {
 				default:
 					c.Close()
 					delete(h.connections, c)
+					c=nil
 					if(len(h.connections)==0){
 						return
 					}
@@ -160,6 +163,7 @@ func (h *hub) run() {
 				default:
 					c.Close()
 					delete(h.connections, c)
+				    c=nil
 					if(len(h.connections)==0){
 						return
 					}
