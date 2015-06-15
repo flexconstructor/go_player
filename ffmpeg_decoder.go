@@ -129,14 +129,14 @@ func (f *FFmpegDecoder)Run(){
 		return
 	}
 	f.log.Info("Open stream")
-	if(f.metadata != nil && f.rtmp_status != nil){
+	/*if(f.metadata != nil && f.rtmp_status != nil){
 		f.metadata <- &MetaData{
 			Message: "metadata",
 			Width: srcVideoStream.CodecCtx().Width(),
 			Height: srcVideoStream.CodecCtx().Height(),
 		}
 		f.log.Info("write metadata")
-	}
+	}*/
 
 	wg := new(sync.WaitGroup)
 
