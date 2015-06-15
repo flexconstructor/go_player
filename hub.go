@@ -142,8 +142,8 @@ func (h *hub) run() {
 			if(s==0) {
 				return
 			}else{
-				go decoder.Run()
-				h.log.Debug("run decoder")
+				//go decoder.Run()
+				//h.log.Debug("run decoder")
 			}
 		case meta= <- h.metadata:
 		b, err:=meta.JSON()
