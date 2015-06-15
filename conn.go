@@ -40,6 +40,9 @@ type connection struct {
 	send chan []byte
 	metadata chan []byte
 	error_channel chan *Error
+	access_token string
+	model_id string
+	client_id string
 }
 
 
@@ -100,13 +103,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		log.Error("No player found")
 		return
 	}
-	client_id:=r.FormValue("client_id");
-	access_token:=r.FormValue("access_token")
-	model_id:=r.FormValue("model_id")
 	player.log.Debug("serveWs")
-	player.log.Debug("client_id: ",client_id)
-	player.log.Debug("access_token: ",access_token)
-	player.log.Debug("model_id: ",model_id)
 	arr :=strings.Split(r.URL.String(),"/")
 	player.log.Info("arr: ",arr)
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -120,10 +117,14 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		send: make(chan []byte, 256),
 		ws: ws,metadata:make(chan []byte),
 		error_channel: make(chan *Error),
+		access_token: r.FormValue("access_token"),
+		client_id: r.FormValue("client_id"),
+		model_id: r.FormValue("model_id"),
 	}
 	player.log.Debug("connection created")
 
-
+	str_name:=player.streams_map[arr[len(arr)-1]]
+	player.log.Debug("stream name: ",str_name)
 	if(player.streams_map[arr[len(arr)-1]] != nil) {
 		player.streams_map[arr[len(arr)-1]].register <- c
 	}else{
@@ -132,6 +133,19 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	}
 	player.log.Debug("connection complete")
 	go c.writePump()
+}
+
+
+func (c *connection)AccessToken()(string){
+	return c.access_token
+}
+
+func (c *connection)ModelID()(string){
+	return c.model_id
+}
+
+func (c *connection)ClientID()(string){
+	return c.client_id
 }
 
 func (c *connection)Close(){
@@ -150,4 +164,5 @@ func (c *connection)Close(){
 		close(c.error_channel)
 		c.error_channel=nil
 	}
+
 }

@@ -34,6 +34,7 @@ type hub struct {
 	error chan *Error
 	log Logger
 	service_token string
+	connection_handler IConnectionHandler
 }
 
 var decoder *FFmpegDecoder
@@ -41,7 +42,11 @@ var conn *RtmpConnector
 var meta *MetaData
 
 
-func NewHub(stream_url string,stream_name string, logger Logger, service_token string) *hub{
+func NewHub(stream_url string,
+stream_name string,
+logger Logger,
+service_token string,
+connection_handler IConnectionHandler) *hub{
 	return &hub{
 		stream_url: stream_url,
 		stream_id: stream_name,
@@ -54,6 +59,8 @@ func NewHub(stream_url string,stream_name string, logger Logger, service_token s
 		error: make(chan *Error),
 		log: logger,
 		service_token: service_token,
+		connection_handler: connection_handler,
+
 	}
 }
 
@@ -95,6 +102,7 @@ func (h *hub) run() {
 				go conn.Run()
 			}
 			h.connections[c] = true
+			h.registerConnection(c)
 		h.log.Debug("Register connection")
 
 		if(meta != nil){
@@ -176,6 +184,24 @@ func (h *hub) run() {
 		}
 	}
 
+
+}
+
+func (h *hub)registerConnection(conn *connection){
+h.log.Debug("REGISTER CONNECTION")
+h.log.Debug("client_id: ",conn.client_id)
+	h.log.Debug("access_token: ",conn.access_token)
+	h.log.Debug("model_id: ",conn.model_id)
+	h.connection_handler.OnConnect(IConnection(conn))
+}
+
+
+func (h *hub)closeConnection(conn *connection){
+	h.log.Debug("CLOSE CONNECTION")
+	h.log.Debug("client_id: ",conn.client_id)
+	h.log.Debug("access_token: ",conn.access_token)
+	h.log.Debug("model_id: ",conn.model_id)
+	h.connection_handler.OnDisconnect(IConnection(conn))
 
 }
 

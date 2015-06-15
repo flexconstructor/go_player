@@ -24,6 +24,12 @@ type Logger interface {
 	Close()
 }
 
+type IConnectionHandler interface {
+	OnConnect(conn IConnection)
+	OnUpdate(conn IConnection)
+	OnDisconnect(conn IConnection)
+}
+
 type GoPlayer struct  {
 	rtmp_host string
 	app_name string
@@ -33,10 +39,25 @@ type GoPlayer struct  {
 	route *mux.Router
 	log Logger
 	service_token string
+	handler IConnectionHandler
+}
+
+type IConnection interface {
+	AccessToken() string
+	ClientID() string
+	ModelID() string
+	Close()
 }
 
 
-func InitGoPlayer(rtmp_host string, rtmp_port int, app_name string, http_port int, log Logger, service_token string)*GoPlayer{
+func InitGoPlayer(
+rtmp_host string,
+rtmp_port int,
+app_name string,
+http_port int,
+log Logger,
+service_token string,
+connectionHandler IConnectionHandler)*GoPlayer{
 
 if(player_instance != nil){
 	return player_instance
@@ -50,6 +71,7 @@ if(player_instance != nil){
 		route: mux.NewRouter(),
 		log: log,
 		service_token: service_token,
+		handler: connectionHandler,
 	}
 	player_instance.route.Headers("Access-Control-Allow-Origin","*")
 	http.Handle("/"+player_instance.app_name+"/",player_instance.route);
@@ -92,28 +114,12 @@ func CloseGoPlayer()(error, bool){
 }
 
 
-
-/*func NewGoPlayer() *GoPlayer{
-
-	if player_instance==nil{
-		player_instance=&GoPlayer{
-			rtmp_url: "rtmp://"+GoPlayer_rtmp_host+":"+GoPlayer_rtmp_port+"/"+GoPlayer_app_name,
-			streams_map: make(map[string]*hub),
-			route: mux.NewRouter(),
-		}
-		player_instance.route.Headers("Access-Control-Allow-Origin","*")
-		http.Handle("/"+GoPlayer_app_name+"/",player_instance.route);
-		http.ListenAndServe(":"+strconv.Itoa(GoPlayer_ws_port),nil)
-	}
-	return player_instance
-}*/
-
 func(p *GoPlayer) Run(stream_name string) bool{
 
 	p.log.Info("Run player with stream: ",stream_name)
 	p.log.Info("APPName: ",p.app_name)
 	if(p.streams_map[stream_name] == nil) {
-		newhub:= NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name, stream_name,p.log,p.service_token)
+		newhub:= NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name, stream_name,p.log,p.service_token,p.handler)
 		p.route.HandleFunc("/"+p.app_name+"/"+stream_name, serveWs)
 		p.streams_map[stream_name]=newhub
 		go  newhub.run()
