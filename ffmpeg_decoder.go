@@ -38,7 +38,6 @@ func assert(i interface{}, err error) interface{} {
 }
 
 func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error chan *Error) {
-
 	defer wg.Done()
 	codec, err := FindEncoder("mjpeg")
 	if err != nil && error != nil{
@@ -120,14 +119,16 @@ func (f *FFmpegDecoder)Run(){
 	broadcast=f.broadcast
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	inputCtx := assert(NewInputCtx(f.stream_url)).(*FmtCtx)
-
+	f.log.Info("open input codec: ",f.stream_url)
 	defer inputCtx.CloseInputAndRelease()
 
 	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
 	if err != nil && f.error != nil{
 		f.error <- NewError(1,1)
+		log.Error("stream not opend ")
 		return
 	}
+	f.log.Info("Open stream")
 	if(f.metadata != nil){
 		f.metadata <- &MetaData{
 			Message: "metadata",
@@ -139,7 +140,7 @@ func (f *FFmpegDecoder)Run(){
 	wg := new(sync.WaitGroup)
 
 	dataChan := make(chan *Frame)
-
+	log.Info("run decoding")
 	for i := 0; i < 280; i++ {
 		wg.Add(i)
 		go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error)
