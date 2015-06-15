@@ -194,6 +194,7 @@ h.log.Debug("client_id: ",conn.client_id)
 	h.log.Debug("model_id: ",conn.model_id)
 	err:=h.connection_handler.OnConnect(IConnection(conn))
 	if(err!= nil){
+		h.log.Error("callback error on connect: ",err)
 		conn.error_channel<- err
 	}
 }
@@ -206,6 +207,7 @@ func (h *hub)closeConnection(conn *connection){
 	h.log.Debug("model_id: ",conn.model_id)
 	err:= h.connection_handler.OnDisconnect(IConnection(conn))
 	if(err != nil){
+		h.log.Error("callback error on disconnect: ",err)
 		conn.error_channel <- err
 	}
 
