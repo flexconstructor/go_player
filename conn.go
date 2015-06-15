@@ -112,6 +112,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		player.log.Error("ws upgrate error: ",err)
 		return
 	}
+	stream_name:= r.FormValue("model_id")
 	player.log.Debug("ws upgrated")
 	c := &connection{
 		send: make(chan []byte, 256),
@@ -119,14 +120,13 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		error_channel: make(chan *Error),
 		access_token: r.FormValue("access_token"),
 		client_id: r.FormValue("client_id"),
-		model_id: r.FormValue("model_id"),
+		model_id: stream_name,
 	}
 	player.log.Debug("connection created")
 
-	str_name:=player.streams_map[arr[len(arr)-1]]
-	player.log.Debug("stream name: ",str_name)
-	if(player.streams_map[arr[len(arr)-1]] != nil) {
-		player.streams_map[arr[len(arr)-1]].register <- c
+
+	if(player.streams_map[stream_name] != nil) {
+		player.streams_map[stream_name].register <- c
 	}else{
 		player.log.Error("no hub found!!!")
 		return
@@ -164,5 +164,5 @@ func (c *connection)Close(){
 		close(c.error_channel)
 		c.error_channel=nil
 	}
-
+	c=nil
 }
