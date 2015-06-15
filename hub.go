@@ -192,7 +192,10 @@ h.log.Debug("REGISTER CONNECTION")
 h.log.Debug("client_id: ",conn.client_id)
 	h.log.Debug("access_token: ",conn.access_token)
 	h.log.Debug("model_id: ",conn.model_id)
-	h.connection_handler.OnConnect(IConnection(conn))
+	err:=h.connection_handler.OnConnect(IConnection(conn))
+	if(err!= nil){
+		conn.error_channel<- err
+	}
 }
 
 
@@ -201,7 +204,10 @@ func (h *hub)closeConnection(conn *connection){
 	h.log.Debug("client_id: ",conn.client_id)
 	h.log.Debug("access_token: ",conn.access_token)
 	h.log.Debug("model_id: ",conn.model_id)
-	h.connection_handler.OnDisconnect(IConnection(conn))
+	err:= h.connection_handler.OnDisconnect(IConnection(conn))
+	if(err != nil){
+		conn.error_channel <- err
+	}
 
 }
 

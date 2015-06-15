@@ -25,9 +25,9 @@ type Logger interface {
 }
 
 type IConnectionHandler interface {
-	OnConnect(conn IConnection)
-	OnUpdate(conn IConnection)
-	OnDisconnect(conn IConnection)
+	OnConnect(conn IConnection)(*Error)
+	OnUpdate(conn IConnection)(*Error)
+	OnDisconnect(conn IConnection)(*Error)
 }
 
 type GoPlayer struct  {
