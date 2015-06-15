@@ -88,7 +88,7 @@ func (h *hub) run() {
  		 },
 	}
 	h.log.Debug("connection created")
-	//go conn.Run()
+	go conn.Run()
 	//h.log.Debug("connection runing")
 	//go decoder.Run()
 
@@ -98,8 +98,8 @@ func (h *hub) run() {
 		select {
 		case c := <-h.register:
 			if(len(h.connections)==0){
-				h.log.Debug("Run rtmp connection!!!!")
-				go conn.Run()
+				//h.log.Debug("Run rtmp connection!!!!")
+				//go conn.Run()
 			}
 			h.connections[c] = true
 			h.registerConnection(c)
@@ -142,7 +142,7 @@ func (h *hub) run() {
 			if(s==0) {
 				return
 			}else{
-				//go decoder.Run()
+				go decoder.Run()
 				h.log.Debug("run decoder")
 			}
 		case meta= <- h.metadata:
