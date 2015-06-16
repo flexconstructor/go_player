@@ -9,8 +9,6 @@ import (
 	"net/http"
 	"time"
 	"strings"
-
-	"github.com/flexconstructor/GoPlayer"
 )
 
 const (
