@@ -78,7 +78,8 @@ func (h *hub) run() {
 
 	conn = &RtmpConnector{
  		rtmp_url:	h.stream_url,
- 		stream_id: h.stream_id+"?model_id="+h.stream_id+"&access_token="+h.service_token,
+ 		//stream_id: h.stream_id+"?model_id="+h.stream_id+"&access_token="+h.service_token,
+		stream_id: h.stream_id,
 		error_cannel: h.error,
 		log: h.log,
  		 handler: &RtmpHandler{
