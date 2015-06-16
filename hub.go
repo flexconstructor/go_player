@@ -67,7 +67,7 @@ connection_handler IConnectionHandler) *hub{
 func (h *hub) run() {
 	h.log.Info("Hub run: ",h.stream_url,"id: ",h.stream_id)
 	decoder=&FFmpegDecoder{
-		stream_url: h.stream_url+"/"+h.stream_id+"?model_id="+h.stream_id+"&access_token="+h.service_token,
+		stream_url: h.stream_url+"/"+h.stream_id,
 		broadcast:h.broadcast,
 		rtmp_status: h.rtmp_status,
 		metadata: h.metadata,
@@ -78,7 +78,7 @@ func (h *hub) run() {
 
 	conn = &RtmpConnector{
  		rtmp_url:	h.stream_url,
- 		stream_id: h.stream_id+"?model_id="+h.stream_id+"&access_token="+h.service_token,
+ 		stream_id: h.stream_id,
 		error_cannel: h.error,
 		log: h.log,
  		 handler: &RtmpHandler{

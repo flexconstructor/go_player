@@ -127,11 +127,11 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	if(player.streams_map[stream_name] != nil) {
 		player.streams_map[stream_name].register <- c
 	}else{
-		player, err:=GetPlayerInstance()
+		/*player, err:=GetPlayerInstance()
 		if(err ==nil){
 			go player.Run(stream_name)
 
-		}
+		}*/
 		return
 	}
 	player.log.Debug("connection complete")

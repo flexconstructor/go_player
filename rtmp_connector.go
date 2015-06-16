@@ -44,6 +44,7 @@ func (c *RtmpConnector)Run() {
 			c.log.Info("Play stream: ",c.stream_id)
 			err = stream.Play(c.stream_id, nil, nil, nil)
 			if err != nil && c.error_cannel != nil{
+				c.log.Error("Can not play this stream")
 				c.error_cannel <- NewError(7,1)
 				return
 			}
