@@ -130,7 +130,9 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		player, err:=GetPlayerInstance()
 		if(err ==nil){
 			go player.Run(stream_name)
+
 		}
+		return
 	}
 	player.log.Debug("connection complete")
 	go c.writePump()
