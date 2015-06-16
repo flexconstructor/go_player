@@ -41,7 +41,7 @@ func (c *RtmpConnector)Run() {
 		select {
 		case stream := <-createStreamChan:
 		// Play
-			c.log.Info("Play stream")
+			c.log.Info("Play stream: ",c.stream_id)
 			err = stream.Play(c.stream_id, nil, nil, nil)
 			if err != nil && c.error_cannel != nil{
 				c.error_cannel <- NewError(7,1)
