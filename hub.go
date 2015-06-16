@@ -90,7 +90,7 @@ func (h *hub) run() {
 	h.log.Debug("connection created")
 	//go conn.Run()
 	//h.log.Debug("connection runing")
-	go decoder.Run()
+	//go decoder.Run()
 
 	defer h.CloseHub(decoder)
 
