@@ -192,11 +192,11 @@ h.log.Debug("REGISTER CONNECTION")
 h.log.Debug("client_id: ",conn.client_id)
 	h.log.Debug("access_token: ",conn.access_token)
 	h.log.Debug("model_id: ",conn.model_id)
-	err:=h.connection_handler.OnConnect(IConnection(conn))
+	/*err:=h.connection_handler.OnConnect(IConnection(conn))
 	if(err!= nil){
 		h.log.Error("callback error on connect: ",err)
 		conn.error_channel<- err
-	}
+	}*/
 }
 
 
