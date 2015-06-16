@@ -33,7 +33,7 @@ func (handler *RtmpHandler) OnStatus(conn rtmp.OutboundConn) {
 func (handler *RtmpHandler) OnClosed(conn rtmp.Conn) {
 	handler.log.Info("stream closed")
 	if(handler.error_channel != nil){
-		//handler.error_channel <- NewError(10,1)
+		handler.error_channel <- NewError(10,1)
 	}
 
 }
