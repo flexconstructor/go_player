@@ -121,7 +121,7 @@ func(p *GoPlayer) Run(stream_name string) bool{
 	if(p.streams_map[stream_name] == nil) {
 		p.log.Debug("create new hub")
 		newhub:= NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name, stream_name,p.log,p.service_token,p.handler)
-		p.route.HandleFunc("/"+p.app_name+"/"+stream_name, serveWs)
+		p.route.HandleFunc("/"+p.app_name+"/"+stream_name, serveWebSocket)
 		p.streams_map[stream_name]=newhub
 		go  newhub.run()
 	}
@@ -141,3 +141,7 @@ func (p *GoPlayer) Close(stream_name string)bool{
 return false
 }
 
+func serveWebSocket(w http.ResponseWriter, r *http.Request){
+	log.Debug("SERVE WEB SOCKET")
+
+}
