@@ -143,5 +143,7 @@ return false
 
 func (p *GoPlayer)serveWebSocket(w http.ResponseWriter, r *http.Request){
 	p.log.Debug("SERVE WEB SOCKET")
+	http.Error(w, "Method not allowed", 405)
+	return
 
 }
