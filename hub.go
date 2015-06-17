@@ -99,7 +99,8 @@ func (h *hub) run() {
 		case c := <-h.register:
 			if(len(h.connections)==0){
 				h.log.Debug("Run rtmp connection!!!!")
-				go conn.Run()
+				//go conn.Run()
+				go decoder.Run()
 			}
 			h.connections[c] = true
 			h.registerConnection(c)
@@ -140,8 +141,8 @@ func (h *hub) run() {
 
 		case s := <- h.rtmp_status:
 			if(s==0) {
-			h.log.Debug("Reconnect!")
-			return 
+			h.log.Debug("Close rtmp")
+			return
 			}else{
 				//go decoder.Run()
 				//h.log.Debug("run decoder")
