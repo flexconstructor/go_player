@@ -129,9 +129,9 @@ func(p *GoPlayer) Run(stream_name string) bool{
 }
 
 func (p *GoPlayer) Close(stream_name string)bool{
-	log.Info("CLOSE STREAM: ",stream_name)
+	p.log.Info("CLOSE STREAM: ",stream_name)
 	//p.route.HandleFunc("/"+p.app_name+"/"+stream_name, nil)
-	defer log.Close()
+	//defer log.Close()
 	h := p.streams_map[stream_name]
 	if(h != nil){
 		h.rtmp_status <-0
