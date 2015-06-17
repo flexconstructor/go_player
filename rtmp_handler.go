@@ -59,7 +59,7 @@ func (handler *RtmpHandler) OnReceivedRtmpCommand(conn rtmp.Conn, command *rtmp.
 
 func (handler *RtmpHandler) OnStreamCreated(conn rtmp.OutboundConn, stream rtmp.OutboundStream) {
 	createStreamChan <- stream
-	handler.log.Info("STREAM CREATED")
+	handler.log.Info("On stream created: ",handler.stream_status)
 	if(handler.stream_status != nil){
 		handler.stream_status <- 1
 	}
