@@ -119,9 +119,10 @@ func(p *GoPlayer) Run(stream_name string) bool{
 	p.log.Info("Run player with stream: ",stream_name)
 	p.log.Info("APPName: ",p.app_name)
 	if(p.streams_map[stream_name] == nil) {
-		p.log.Debug("create new hub")
+		p.log.Debug("handle ws function: "+"/"+p.app_name+"/"+stream_name)
 		//newhub:= NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name, stream_name,p.log,p.service_token,p.handler)
-		p.route.HandleFunc("/"+p.app_name+"/"+stream_name, p.serveWebSocket)
+		p.route.HandleFunc("/"+stream_name, p.serveWebSocket)
+		p.log.Debug("-----")
 	//	p.streams_map[stream_name]=newhub
 		//go  newhub.run()
 	}
@@ -129,7 +130,7 @@ func(p *GoPlayer) Run(stream_name string) bool{
 }
 
 func (p *GoPlayer) Close(stream_name string)bool{
-	p.log.Info("CLOSE STREAM: ",stream_name)
+	p.log.Debug("CLOSE STREAM: ",stream_name)
 	p.route.HandleFunc("/"+p.app_name+"/"+stream_name, nil)
 	h := p.streams_map[stream_name]
 	if(h != nil){
@@ -142,7 +143,7 @@ return false
 
 func (p *GoPlayer)serveWebSocket(w http.ResponseWriter, r *http.Request){
 	p.log.Debug("SERVE WEB SOCKET")
-	http.Error(w, "Method not allowed", 405)
+	http.Error(w, "Stream not created", 404)
 	return
 
 }
