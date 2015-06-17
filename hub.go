@@ -120,9 +120,9 @@ func (h *hub) run() {
 				c.Close()
 				delete(h.connections, c)
 				c=nil
-				if(len(h.connections)==0){
+				/*if(len(h.connections)==0){
 					return
-				}
+				}*/
 			}
 		case m := <-h.broadcast:
 			for c := range h.connections {
