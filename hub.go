@@ -141,7 +141,7 @@ func (h *hub) run() {
 		case s := <- h.rtmp_status:
 			if(s==0) {
 			h.log.Debug("Reconnect!")
-				go conn.Run()
+			return 
 			}else{
 				//go decoder.Run()
 				//h.log.Debug("run decoder")
