@@ -104,6 +104,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	stream_name:= r.FormValue("model_id")
+	player.log.Debug("connect to stream: #%s",stream_name)
 	if(player.streams_map[stream_name]==nil){
 		http.Error(w, "stream not found", 404)
 		return
