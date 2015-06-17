@@ -100,8 +100,15 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	player, err:=GetPlayerInstance();
 	if(err != nil){
 		log.Error("No player found")
+		http.Error(w, "Pseudo streaming not suported", 405)
 		return
 	}
+	stream_name:= r.FormValue("model_id")
+	if(player.streams_map[stream_name]==nil){
+		http.Error(w, "stream not found", 404)
+		return
+	}
+
 	player.log.Debug("serveWs")
 	arr :=strings.Split(r.URL.String(),"/")
 	player.log.Info("arr: ",arr)
@@ -111,7 +118,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		player.log.Error("ws upgrate error: ",err)
 		return
 	}
-	stream_name:= r.FormValue("model_id")
+
 	player.log.Debug("ws upgrated")
 	c := &connection{
 		send: make(chan []byte, 256),
@@ -122,14 +129,8 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		model_id: stream_name,
 	}
 	player.log.Debug("connection created")
+	player.streams_map[stream_name].register <- c
 
-
-	if(player.streams_map[stream_name] != nil) {
-		player.streams_map[stream_name].register <- c
-	}else{
-
-		return
-	}
 	player.log.Debug("connection complete")
 	go c.writePump()
 }
