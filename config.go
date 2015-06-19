@@ -1,4 +1,4 @@
-package GoPlayer
+package go_player
 
 var(
 	GoPlayer_rtmp_host="localhost"

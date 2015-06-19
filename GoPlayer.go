@@ -1,4 +1,4 @@
-package GoPlayer
+package go_player
 import(
 	"net/http"
 	"github.com/gorilla/mux"
@@ -86,7 +86,7 @@ if(player_instance != nil){
 
 func GetPlayerInstance()( *GoPlayer,error){
 	if(player_instance==nil){
-		return nil,errors.New("GoPlayer not initialized!")
+		return nil,errors.New("goplayer not initialized!")
 	}
 	return player_instance, nil
 }
@@ -122,6 +122,7 @@ func(p *GoPlayer) Run(stream_name string) bool{
 		p.log.Debug("handle ws function: "+"/"+p.app_name+"/"+stream_name)
 		//newhub:= NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name, stream_name,p.log,p.service_token,p.handler)
 		p.route.HandleFunc("/"+stream_name, p.serveWebSocket)
+		//p.route.NewRoute().HandlerFunc("/"+stream_name, p.serveWebSocket)
 		p.log.Debug("-----")
 	//	p.streams_map[stream_name]=newhub
 		//go  newhub.run()

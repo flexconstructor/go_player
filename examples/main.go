@@ -1,16 +1,16 @@
 package main
 import(
 	"log"
-	"github.com/flexconstructor/GoPlayer"
+	"github.com/flexconstructor/go_player"
 	"text/template"
 	"net/http"
 
 )
 
-var homeTempl = template.Must(template.ParseFiles("./src/github.com/flexconstructor/GoPlayer/examples/index.html"))
-var playerTemplate=template.Must(template.ParseFiles("./src/github.com/flexconstructor/GoPlayer/examples/player.html"))
-var jsTemplate=template.Must(template.ParseFiles("./src/github.com/flexconstructor/GoPlayer/examples/js/megapix-image.js"))
-var preloaderTemplate= template.Must(template.ParseFiles("./src/github.com/flexconstructor/GoPlayer/examples/js/heartcode-canvasloader-min.js"))
+var homeTempl = template.Must(template.ParseFiles("./src/github.com/flexconstructor/goplayer/examples/index.html"))
+var playerTemplate=template.Must(template.ParseFiles("./src/github.com/flexconstructor/goplayer/examples/player.html"))
+var jsTemplate=template.Must(template.ParseFiles("./src/github.com/flexconstructor/goplayer/examples/js/megapix-image.js"))
+var preloaderTemplate= template.Must(template.ParseFiles("./src/github.com/flexconstructor/goplayer/examples/js/heartcode-canvasloader-min.js"))
 var rtmp_url string="rtmp://localhost:1935/tv"
 
 
@@ -39,7 +39,6 @@ func getStreamHandler(w http.ResponseWriter, r *http.Request){
 	}
 	streamname:=r.FormValue("streamname");
 	if(streamname != "") {
-		go GoPlayer.NewGoPlayer().Run(streamname,NewGPLogger())
 	}else{
 		http.Error(w, "Stream Not found", 404)
 	}

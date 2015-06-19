@@ -1,4 +1,4 @@
-package GoPlayer
+package  go_player
 import(
 	rtmp "github.com/zhangpeihao/gortmp"
 	rtmp_log "github.com/zhangpeihao/log"

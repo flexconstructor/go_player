@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package GoPlayer
+package go_player
 
 import (
 	"github.com/gorilla/websocket"
 	"net/http"
 	"time"
-	"strings"
+	//"strings"
 )
 
 const (
@@ -91,7 +91,7 @@ func (c *connection) writePump() {
 }
 
 // serverWs handles websocket requests from the peer.
-func serveWs(w http.ResponseWriter, r *http.Request) {
+/*func serveWs(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", 405)
 		return
@@ -136,7 +136,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	go c.writePump()
 }
 
-
+*/
 func (c *connection)AccessToken()(string){
 	return c.access_token
 }

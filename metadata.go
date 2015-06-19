@@ -1,4 +1,4 @@
-package GoPlayer
+package  go_player
 import (
 	"encoding/json"
 
