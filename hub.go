@@ -6,6 +6,8 @@ package  go_player
 
 import(
 	"sync"
+	"github.com/flexconstructor/go_player/ws"
+	player_log "github.com/flexconstructor/go_player/log"
 )
 
 // hub maintains the set of active connections and broadcasts messages to the
@@ -17,24 +19,24 @@ type hub struct {
 	//stream name
 	stream_id string
 	// Registered connections.
-	connections map[*connection]bool
+	connections map[*ws.WSConnection]bool
 
 	// Inbound messages from the connections.
 	broadcast chan []byte
 
 	// Register requests from the connections.
-	register chan *connection
+	register chan *ws.WSConnection
 
 	// Unregister requests from connections.
-	unregister chan *connection
+	unregister chan *ws.WSConnection
 
 	rtmp_status chan int
 
 	metadata chan *MetaData
-	error chan *Error
-	log Logger
+	error chan *ws.WSError
+	log player_log.Logger
 	service_token string
-	connection_handler IConnectionHandler
+	//connection_handler IConnectionHandler
 }
 
 var decoder *FFmpegDecoder
@@ -42,28 +44,28 @@ var conn *RtmpConnector
 var meta *MetaData
 
 
-func NewHub(stream_url string,
+/*func NewHub(stream_url string,
 stream_name string,
-logger Logger,
+logger player_log.Logger,
 service_token string,
-connection_handler IConnectionHandler) *hub{
+//connection_handler IConnectionHandler) *hub{
 	return &hub{
 		stream_url: stream_url,
 		stream_id: stream_name,
 		broadcast:   make(chan []byte),
-		register:    make(chan *connection),
-		unregister:  make(chan *connection),
-		connections: make(map[*connection]bool),
+		register:    make(chan *ws.WSConnection),
+		unregister:  make(chan *ws.WSConnection),
+		connections: make(map[*ws.WSConnection]bool),
 		rtmp_status: make(chan int, 0),
 		metadata:  make(chan *MetaData),
-		error: make(chan *Error),
+		error: make(chan *ws.WSError),
 		log: logger,
 		service_token: service_token,
 		connection_handler: connection_handler,
 
 	}
 }
-
+*/
 func (h *hub) run() {
 	h.log.Info("Hub run: ",h.stream_url,"id: ",h.stream_id)
 	decoder=&FFmpegDecoder{
@@ -92,7 +94,7 @@ func (h *hub) run() {
 	//h.log.Debug("connection runing")
 	//go decoder.Run()
 
-	defer h.CloseHub(decoder)
+	//defer h.CloseHub(decoder)
 
 	for {
 		select {
@@ -103,15 +105,15 @@ func (h *hub) run() {
 
 			}
 			h.connections[c] = true
-			h.registerConnection(c)
+			//h.registerConnection(c)
 		h.log.Debug("Register connection")
 
 		if(meta != nil){
-			b, err:=meta.JSON()
-			if(err==nil) {
-				c.metadata <- b
+			//b, err:=meta.JSON()
+			/*if(err==nil) {
+				//c.metadata <- b
 				h.log.Debug("send metadata")
-			}
+			}*/
 		}
 
 
@@ -125,10 +127,10 @@ func (h *hub) run() {
 					return
 				}*/
 			}
-		case m := <-h.broadcast:
+		/*case m := <-h.broadcast:
 			for c := range h.connections {
 				select {
-				case c.send <- m:
+			//	case c.send <- m:
 				default:
 					c.Close()
 					delete(h.connections, c)
@@ -137,7 +139,7 @@ func (h *hub) run() {
 						return
 					}
 				}
-			}
+			}*/
 
 		case s := <- h.rtmp_status:
 			if(s==0) {
@@ -148,14 +150,14 @@ func (h *hub) run() {
 				//h.log.Debug("run decoder")
 			}
 		case meta= <- h.metadata:
-		b, err:=meta.JSON()
+		/*b, err:=meta.JSON()
 		if(err != nil){
 			continue
 		}
 		h.log.Debug("new metadata")
 			for c := range h.connections {
 				select {
-				case c.metadata <- b:
+				//case c.metadata <- b:
 				default:
 					c.Close()
 					delete(h.connections, c)
@@ -164,12 +166,12 @@ func (h *hub) run() {
 						return
 					}
 				}
-			}
+			}*/
 		case e:= <-h.error:
 		h.log.Error("player error",e)
 			for c := range h.connections {
 				select {
-				case c.error_channel <- e:
+				//case c.error_channel <- e:
 				default:
 					c.Close()
 					delete(h.connections, c)
@@ -179,9 +181,9 @@ func (h *hub) run() {
 					}
 				}
 			}
-				if(e.Level==1){
+				/*if(e.Level==1){
 					return
-				}
+				}*/
 
 		}
 	}
@@ -189,7 +191,7 @@ func (h *hub) run() {
 
 }
 
-func (h *hub)registerConnection(conn *connection){
+/*func (h *hub)registerConnection(conn *connection){
 h.log.Debug("REGISTER CONNECTION")
 h.log.Debug("client_id: ",conn.client_id)
 	h.log.Debug("access_token: ",conn.access_token)
@@ -199,10 +201,10 @@ h.log.Debug("client_id: ",conn.client_id)
 		h.log.Error("callback error on connect: ",err)
 		conn.error_channel<- err
 	}*/
-}
+//}
 
 
-func (h *hub)closeConnection(conn *connection){
+/*func (h *hub)closeConnection(conn *connection){
 	h.log.Debug("CLOSE CONNECTION")
 	h.log.Debug("client_id: ",conn.client_id)
 	h.log.Debug("access_token: ",conn.access_token)
@@ -245,3 +247,4 @@ func (h *hub)CloseHub(decoder *FFmpegDecoder){
 	delete(player.streams_map,h.stream_id)
 
 }
+*/

@@ -1,52 +1,35 @@
 package go_player
+
 import(
-	"net/http"
-	"github.com/gorilla/mux"
 
-
-	"strconv"
 	"errors"
+	"github.com/flexconstructor/go_player/ws"
+	player_log "github.com/flexconstructor/go_player/log"
+	handler "github.com/flexconstructor/go_player/handlers"
 )
 
 var (
 player_instance *GoPlayer=nil
-log Logger
+log player_log.Logger
 )
 
-// Represents logger with different levels of logs.
-type Logger interface {
-	Debug(interface{}, ...interface{})
-	Trace(interface{}, ...interface{})
-	Info(interface{}, ...interface{})
-	Warn(interface{}, ...interface{}) error
-	Error(interface{}, ...interface{}) error
-	Critical(interface{}, ...interface{}) error
-	Close()
-}
 
-type IConnectionHandler interface {
-	OnConnect(conn IConnection)(*Error)
-	OnUpdate(conn IConnection)(*Error)
-	OnDisconnect(conn IConnection)(*Error)
-}
+
 
 type GoPlayer struct  {
 	rtmp_host string
 	app_name string
 	rtmp_port int
 	http_port int
-	streams_map map[string]*hub
-	route *mux.Router
-	log Logger
+	streams_map map[uint64]*hub
+	streams chan *hub
+	connects chan *ws.WSConnection
+	updates chan  *ws.WSConnection
+	closes chan *ws.WSConnection
+	stops chan *GoPlayer
+	log player_log.Logger
 	service_token string
-	handler IConnectionHandler
-}
-
-type IConnection interface {
-	AccessToken() string
-	ClientID() string
-	ModelID() string
-	Close()
+	handler handler.IConnectionHandler
 }
 
 
@@ -55,9 +38,9 @@ rtmp_host string,
 rtmp_port int,
 app_name string,
 http_port int,
-log Logger,
+log player_log.Logger,
 service_token string,
-connectionHandler IConnectionHandler)*GoPlayer{
+connectionHandler handler.IConnectionHandler)*GoPlayer{
 
 if(player_instance != nil){
 	return player_instance
@@ -67,15 +50,17 @@ if(player_instance != nil){
 		rtmp_port: rtmp_port,
 		app_name:app_name,
 		http_port: http_port,
-		streams_map: make(map[string]*hub),
-		route: mux.NewRouter(),
 		log: log,
+		streams_map: make(map[uint64]*hub),
+		streams: make(chan *hub),
+		connects:make(chan *ws.WSConnection),
+		updates:make(chan *ws.WSConnection),
+		closes: make(chan *ws.WSConnection),
+		stops: make(chan *GoPlayer),
 		service_token: service_token,
 		handler: connectionHandler,
 	}
-	player_instance.route.Headers("Access-Control-Allow-Origin","*")
-	http.Handle("/"+player_instance.app_name+"/",player_instance.route);
-	http.ListenAndServe(":"+strconv.Itoa(player_instance.http_port),nil);
+
 	log.Debug("Init player instance rtmp hodt: ",player_instance.rtmp_host)
 	log.Debug("Init player instance rtmp port: ",player_instance.rtmp_port)
 	log.Debug("Init player instance rtmp app: ",player_instance.app_name)
@@ -92,7 +77,34 @@ func GetPlayerInstance()( *GoPlayer,error){
 }
 
 
-func CloseGoPlayer()(error, bool){
+func (p *GoPlayer)Run(){
+p.log.Info("Run GO PLAYER INSTANCE")
+defer p.stopInstance()
+	for {
+		select {
+		case <-p.stops:
+			return
+
+		}
+		}
+}
+
+func (p *GoPlayer)Stop(){
+p.log.Info("STOP GO PLAYER INSTANCE")
+	p.stops<-p
+
+
+}
+
+
+func (p*GoPlayer)stopInstance(){
+	p.log.Info("Player stopped")
+	player_instance=nil;
+
+}
+
+
+/*func CloseGoPlayer()(error, bool){
 
 	player, err:= GetPlayerInstance()
 	if(err != nil){
@@ -111,10 +123,10 @@ func CloseGoPlayer()(error, bool){
 	player_instance=nil
 	player.log.Close()
 	return nil, true
-}
+}*/
 
 
-func(p *GoPlayer) Run(stream_name string) bool{
+/*func(p *GoPlayer) Run(stream_name string) bool{
 
 	p.log.Info("Run player with stream: ",stream_name)
 	p.log.Info("APPName: ",p.app_name)
@@ -128,23 +140,22 @@ func(p *GoPlayer) Run(stream_name string) bool{
 		//go  newhub.run()
 	}
 	return true;
+}*/
+
+/*func (p *GoPlayer)GetStream(stream_id uint64)(*hub){
+
+return nil
 }
 
-func (p *GoPlayer) Close(stream_name string)bool{
-	p.log.Debug("CLOSE STREAM: ",stream_name)
+func (p *GoPlayer) Close(stream_id uint64)bool{
+	/*p.log.Debug("CLOSE STREAM: ",stream_name)
 	p.route.HandleFunc("/"+p.app_name+"/"+stream_name, nil)
 	h := p.streams_map[stream_name]
 	if(h != nil){
 		h.rtmp_status <-0
 		return true
 	}
+*/
+//return false
+//}
 
-return false
-}
-
-func (p *GoPlayer)serveWebSocket(w http.ResponseWriter, r *http.Request){
-	p.log.Debug("SERVE WEB SOCKET")
-	http.Error(w, "Stream not created", 404)
-	return
-
-}

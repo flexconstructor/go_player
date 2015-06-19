@@ -2,12 +2,14 @@ package go_player
 
 import(
 	rtmp "github.com/zhangpeihao/gortmp"
+	"github.com/flexconstructor/go_player/ws"
+	player_log "github.com/flexconstructor/go_player/log"
 )
 
 type RtmpHandler struct {
 	stream_status chan int
-	error_channel chan *Error
-	log Logger
+	error_channel chan *ws.WSError
+	log player_log.Logger
 }
 var status uint
 var obConn rtmp.OutboundConn
@@ -21,7 +23,7 @@ func (handler *RtmpHandler) OnStatus(conn rtmp.OutboundConn) {
 
 	status, err = obConn.Status()
 	if(err != nil && handler.error_channel != nil) {
-		handler.error_channel <- NewError(8, 2)
+		handler.error_channel <- ws.NewError(8, 2)
 		handler.log.Error("can not check status: ",err)
 	}else{
 		handler.log.Info("rtmp status: ",status)
@@ -33,7 +35,7 @@ func (handler *RtmpHandler) OnStatus(conn rtmp.OutboundConn) {
 func (handler *RtmpHandler) OnClosed(conn rtmp.Conn) {
 	handler.log.Info("stream closed")
 	if(handler.error_channel != nil){
-		handler.error_channel <- NewError(10,1)
+		handler.error_channel <- ws.NewError(10,1)
 	}
 	/*err:= obConn.Connect()
 	if(err != nil && handler.error_channel != nil){
@@ -50,7 +52,7 @@ func (handler *RtmpHandler) OnReceived(conn rtmp.Conn, message *rtmp.Message) {
 	case rtmp.AUDIO_TYPE:
 		audioDataSize += int64(message.Buf.Len())
 	}
-	log.Debug("on resived bytes: ",videoDataSize)
+	handler.log.Debug("on resived bytes: ",videoDataSize)
 }
 
 func (handler *RtmpHandler) OnReceivedRtmpCommand(conn rtmp.Conn, command *rtmp.Command) {

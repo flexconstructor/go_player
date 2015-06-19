@@ -1,9 +1,10 @@
 package ws
 import (
 	"github.com/gorilla/websocket"
-	"github.com/flexconstructor/go_player"
 	"net/http"
 	"time"
+	player_log "github.com/flexconstructor/go_player/log"
+
 )
 
 const (
@@ -30,12 +31,12 @@ ws *websocket.Conn
 send chan []byte
 metadata chan []byte
 error_channel chan *WSError
-lgr go_player.Logger
+lgr player_log.Logger
 
 }
 
 
-func NewWSConnection(w http.ResponseWriter, r *http.Request, l go_player.Logger)(*WSConnection,error){
+func NewWSConnection(w http.ResponseWriter, r *http.Request, l player_log.Logger)(*WSConnection,error){
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if(err != nil){
 		return nil,err

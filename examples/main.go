@@ -1,7 +1,7 @@
 package main
 import(
 	"log"
-	"github.com/flexconstructor/go_player"
+
 	"text/template"
 	"net/http"
 
