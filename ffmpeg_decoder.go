@@ -162,13 +162,13 @@ func (f *FFmpegDecoder)Run(){
 		Release(packet)
 	}
 
-	if(f.error != nil){
+	/*if(f.error != nil){
 		f.error <- NewError(6,1)
 	}
 	if(dataChan != nil){
 	close(dataChan)
 	dataChan=nil
-	}
+	}*/
 	wg.Wait()
 
 }
