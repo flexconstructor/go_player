@@ -6,7 +6,6 @@ import(
 	. "github.com/3d0c/gmf"
 	"runtime/debug"
 	"sync"
-	"github.com/flexconstructor/go_player/ws"
 	player_log "github.com/flexconstructor/go_player/log"
 )
 
@@ -24,7 +23,7 @@ type FFmpegDecoder  struct{
 	broadcast chan []byte
 	rtmp_status chan int
 	metadata chan *MetaData
-	error chan *ws.WSError
+	error chan *WSError
 	log player_log.Logger
 }
 
@@ -39,12 +38,12 @@ func assert(i interface{}, err error) interface{} {
 	return i
 }
 
-func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error chan *ws.WSError) {
+func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error chan *WSError) {
 	defer wg.Done()
 	codec, err := FindEncoder("mjpeg")
 	if err != nil && error != nil{
 		fatal(err)
-		error <- ws.NewError(2,1)
+		error <- NewError(2,1)
 		return
 	}
 
@@ -63,7 +62,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 
 	if err := cc.Open(nil); err != nil && error != nil{
 		fatal(err)
-		error <- ws.NewError(3,1)
+		error <- NewError(3,1)
 		return
 	}
 
@@ -79,7 +78,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 
 	if err := dstFrame.ImgAlloc(); err != nil && error != nil{
 		fatal(err)
-		error <- ws.NewError(4,2)
+		error <- NewError(4,2)
 		return
 	}
 
@@ -87,7 +86,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 		srcFrame, ok := <-data
 		if !ok {
 			if(error != nil){
-				error <- ws.NewError(5,2)
+				error <- NewError(5,2)
 			}
 			Release(srcFrame)
 			return
@@ -126,7 +125,7 @@ func (f *FFmpegDecoder)Run(){
 
 	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
 	if err != nil && f.error != nil{
-		f.error <- ws.NewError(1,1)
+		f.error <- NewError(1,1)
 		f.log.Error("stream not opend ")
 		return
 	}
@@ -164,7 +163,7 @@ func (f *FFmpegDecoder)Run(){
 	}
 
 	if(f.error != nil){
-		f.error <- ws.NewError(6,1)
+		f.error <- NewError(6,1)
 	}
 	if(dataChan != nil){
 	close(dataChan)

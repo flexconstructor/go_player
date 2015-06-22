@@ -3,7 +3,7 @@ import(
 	rtmp "github.com/zhangpeihao/gortmp"
 	rtmp_log "github.com/zhangpeihao/log"
 	player_log "github.com/flexconstructor/go_player/log"
-	"github.com/flexconstructor/go_player/ws"
+
 )
 
 
@@ -12,7 +12,7 @@ type RtmpConnector struct {
 	rtmp_url string
 	stream_id string
 	handler *RtmpHandler
-	error_cannel chan *ws.WSError
+	error_cannel chan *WSError
 	log player_log.Logger
 
 }
@@ -28,7 +28,7 @@ func (c *RtmpConnector)Run() {
 
 	if err != nil && c.error_cannel != nil{
 		c.log.Error("no stream error: ",err)
-		c.error_cannel <- ws.NewError(1,1)
+		c.error_cannel <- NewError(1,1)
 		return ;
 	}
 	defer obConn.Close()
@@ -36,7 +36,7 @@ func (c *RtmpConnector)Run() {
 	err = obConn.Connect()
 	if err != nil && c.error_cannel != nil{
 		c.log.Error("connection error: ",err)
-		c.error_cannel <- ws.NewError(1,1)
+		c.error_cannel <- NewError(1,1)
 		return
 	}
 	for {
@@ -47,7 +47,7 @@ func (c *RtmpConnector)Run() {
 			err = stream.Play(c.stream_id, nil, nil, nil)
 			if err != nil && c.error_cannel != nil{
 				c.log.Error("Can not play this stream")
-				c.error_cannel <- ws.NewError(7,1)
+				c.error_cannel <- NewError(7,1)
 				return
 			}
 		}

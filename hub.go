@@ -6,7 +6,6 @@ package  go_player
 
 import(
 	"sync"
-	"github.com/flexconstructor/go_player/ws"
 	player_log "github.com/flexconstructor/go_player/log"
 )
 
@@ -19,21 +18,21 @@ type hub struct {
 	//stream name
 	stream_id string
 	// Registered connections.
-	connections map[*ws.WSConnection]bool
+	connections map[*WSConnection]bool
 
 	// Inbound messages from the connections.
 	broadcast chan []byte
 
 	// Register requests from the connections.
-	register chan *ws.WSConnection
+	register chan *WSConnection
 
 	// Unregister requests from connections.
-	unregister chan *ws.WSConnection
+	unregister chan *WSConnection
 
 	rtmp_status chan int
 
 	metadata chan *MetaData
-	error chan *ws.WSError
+	error chan *WSError
 	log player_log.Logger
 	service_token string
 	//connection_handler IConnectionHandler
@@ -53,12 +52,12 @@ service_token string,
 		stream_url: stream_url,
 		stream_id: stream_name,
 		broadcast:   make(chan []byte),
-		register:    make(chan *ws.WSConnection),
-		unregister:  make(chan *ws.WSConnection),
-		connections: make(map[*ws.WSConnection]bool),
+		register:    make(chan *WSConnection),
+		unregister:  make(chan *WSConnection),
+		connections: make(map[*WSConnection]bool),
 		rtmp_status: make(chan int, 0),
 		metadata:  make(chan *MetaData),
-		error: make(chan *ws.WSError),
+		error: make(chan *WSError),
 		log: logger,
 		service_token: service_token,
 
@@ -120,7 +119,6 @@ func (h *hub) run() {
 		case c := <-h.unregister:
 			if _, ok := h.connections[c]; ok {
 				h.log.Debug("unregister connection")
-				c.Close()
 				delete(h.connections, c)
 				c=nil
 				/*if(len(h.connections)==0){

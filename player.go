@@ -3,9 +3,7 @@ package go_player
 import(
 
 	"errors"
-	"github.com/flexconstructor/go_player/ws"
 	player_log "github.com/flexconstructor/go_player/log"
-	handler "github.com/flexconstructor/go_player/handlers"
 	"strconv"
 )
 
@@ -24,13 +22,13 @@ type GoPlayer struct  {
 	http_port int
 	streams_map map[uint64]*hub
 	streams chan *hub
-	connects chan *ws.WSConnection
-	updates chan  *ws.WSConnection
-	closes chan *ws.WSConnection
+	connects chan *WSConnection
+	updates chan  *WSConnection
+	closes chan *WSConnection
 	stops chan *GoPlayer
 	log player_log.Logger
 	service_token string
-	handler handler.IConnectionHandler
+	handler IConnectionHandler
 }
 
 
@@ -41,7 +39,7 @@ app_name string,
 http_port int,
 log player_log.Logger,
 service_token string,
-connectionHandler handler.IConnectionHandler)*GoPlayer{
+connectionHandler IConnectionHandler)*GoPlayer{
 
 if(player_instance != nil){
 	return player_instance
@@ -54,9 +52,9 @@ if(player_instance != nil){
 		log: log,
 		streams_map: make(map[uint64]*hub),
 		streams: make(chan *hub),
-		connects:make(chan *ws.WSConnection),
-		updates:make(chan *ws.WSConnection),
-		closes: make(chan *ws.WSConnection),
+		connects:make(chan *WSConnection),
+		updates:make(chan *WSConnection),
+		closes: make(chan *WSConnection),
 		stops: make(chan *GoPlayer),
 		service_token: service_token,
 		handler: connectionHandler,
@@ -89,6 +87,10 @@ defer p.stopInstance()
 			if(ok){
 				p.initConnection(c)
 			}
+		case c,ok:= <- p.closes:
+		if(ok){
+			p.closeConnection(c)
+		}
 
 		}
 		}
@@ -108,15 +110,10 @@ func (p *GoPlayer)stopInstance(){
 
 }
 
-func (p *GoPlayer)RegisterConnection(conn *ws.WSConnection){
-	p.log.Debug("register connection: ")
-	p.connects <-conn
 
-}
-
-func (p *GoPlayer)initConnection(conn *ws.WSConnection){
+func (p *GoPlayer)initConnection(conn *WSConnection){
 	params:=conn.GetConnectionParameters()
-	p.log.Debug("init connection for with params: stream_id=  %g user_id= %g access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
+	p.log.Debug("init connection  with params: stream_id=  %g user_id= %g access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
 	if(!ok){
 		p.log.Debug("init hub")
@@ -131,6 +128,18 @@ func (p *GoPlayer)initConnection(conn *ws.WSConnection){
 	h.register<-conn
 	p.handler.OnConnect(conn)
 
+}
+
+func (p *GoPlayer)closeConnection(conn *WSConnection){
+	params:=conn.GetConnectionParameters()
+	p.log.Debug("Close connection with params: stream_id=  %g user_id= %g access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
+	h,ok:=p.streams_map[params.StreamID]
+	if(! ok){
+		p.log.Error("hub for stream %g not found!",params.StreamID)
+		return
+	}
+	h.unregister <- conn
+	p.handler.OnDisconnect(conn)
 }
 
 
