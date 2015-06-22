@@ -84,6 +84,10 @@ defer p.stopInstance()
 		select {
 		case <-p.stops:
 			return
+		case c,ok:=<- p.connects:
+			if(ok){
+				p.initConnection(c)
+			}
 
 		}
 		}
@@ -97,10 +101,20 @@ p.log.Info("STOP GO PLAYER INSTANCE")
 }
 
 
-func (p*GoPlayer)stopInstance(){
+func (p *GoPlayer)stopInstance(){
 	p.log.Info("Player stopped")
 	player_instance=nil;
 
+}
+
+func (p *GoPlayer)RegisterConnection(conn *ws.WSConnection){
+	p.log.Debug("register connection")
+	p.connects <-conn
+
+}
+
+func (p *GoPlayer)initConnection(conn *ws.WSConnection){
+	
 }
 
 

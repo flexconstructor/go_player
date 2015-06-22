@@ -47,7 +47,7 @@ func NewErrorWithDescription(code uint8, level uint8, description string)(*WSErr
 
 func (er *WSError)JSON()([]byte, error){
 	var m map[string]interface{}
-	if(er.code==0) {
+	if(er.level==0) {
 		m=map[string]interface{}{
 			"success":1,
 		}
