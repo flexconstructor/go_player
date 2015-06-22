@@ -55,7 +55,7 @@ service_token string,
 		register:    make(chan *WSConnection),
 		unregister:  make(chan *WSConnection),
 		connections: make(map[*WSConnection]bool),
-		rtmp_status: make(chan int, 0),
+		rtmp_status: make(chan int, 256),
 		metadata:  make(chan *MetaData),
 		error: make(chan *WSError),
 		log: logger,
@@ -109,11 +109,11 @@ func (h *hub) run() {
 		h.log.Debug("Register connection")
 
 		if(meta != nil){
-			//b, err:=meta.JSON()
-			/*if(err==nil) {
-				//c.metadata <- b
+			b, err:=meta.JSON()
+			if(err==nil) {
+				c.metadata <- b
 				h.log.Debug("send metadata")
-			}*/
+			}
 		}
 
 
@@ -126,10 +126,10 @@ func (h *hub) run() {
 					return
 				}*/
 			}
-		/*case m := <-h.broadcast:
+		case m := <-h.broadcast:
 			for c := range h.connections {
 				select {
-			//	case c.send <- m:
+				case c.send <- m:
 				default:
 					c.Close()
 					delete(h.connections, c)
@@ -138,26 +138,26 @@ func (h *hub) run() {
 						return
 					}
 				}
-			}*/
+			}
 
 		case s := <- h.rtmp_status:
 			if(s==0) {
 			//h.log.Debug("Close rtmp")
 			//return
 			}else{
-				//go decoder.Run()
-				//h.log.Debug("run decoder")
+				go decoder.Run()
+				h.log.Debug("run decoder")
 			}
 		h.log.Debug("RTMP STATUS: %g",s)
 		case meta= <- h.metadata:
-		/*b, err:=meta.JSON()
+		b, err:=meta.JSON()
 		if(err != nil){
 			continue
 		}
 		h.log.Debug("new metadata")
 			for c := range h.connections {
 				select {
-				//case c.metadata <- b:
+				case c.metadata <- b:
 				default:
 					c.Close()
 					delete(h.connections, c)
@@ -166,12 +166,12 @@ func (h *hub) run() {
 						return
 					}
 				}
-			}*/
+			}
 		case e:= <-h.error:
 		h.log.Error("player error",e)
 			for c := range h.connections {
 				select {
-				//case c.error_channel <- e:
+				case c.error_channel <- e:
 				default:
 					c.Close()
 					delete(h.connections, c)
