@@ -91,11 +91,6 @@ func (h *hub) run() {
 	}
 	h.log.Debug("connection created")
 
-	//h.log.Debug("connection runing")
-	//go decoder.Run()
-
-	//defer h.CloseHub(decoder)
-
 	for {
 		select {
 		case c := <-h.register:
@@ -122,9 +117,9 @@ func (h *hub) run() {
 				h.log.Debug("unregister connection")
 				delete(h.connections, c)
 				c=nil
-				/*if(len(h.connections)==0){
+				if(len(h.connections)==0){
 					return
-				}*/
+				}
 			}
 		case m := <-h.broadcast:
 			for c := range h.connections {
@@ -142,8 +137,8 @@ func (h *hub) run() {
 
 		case s := <- h.rtmp_status:
 			if(s==0) {
-			//h.log.Debug("Close rtmp")
-			//return
+			h.log.Debug("Close rtmp")
+			return
 			}else{
 				go decoder.Run()
 				h.log.Debug("run decoder")
@@ -181,9 +176,6 @@ func (h *hub) run() {
 					}
 				}
 			}
-				/*if(e.Level==1){
-					return
-				}*/
 
 		}
 	}
@@ -191,54 +183,6 @@ func (h *hub) run() {
 
 }
 
-
-/*func (h *hub)closeConnection(conn *connection){
-	h.log.Debug("CLOSE CONNECTION")
-	h.log.Debug("client_id: ",conn.client_id)
-	h.log.Debug("access_token: ",conn.access_token)
-	h.log.Debug("model_id: ",conn.model_id)
-	err:= h.connection_handler.OnDisconnect(IConnection(conn))
-	if(err != nil){
-		h.log.Error("callback error on disconnect: ",err)
-		conn.error_channel <- err
-	}
-
-}
-
-
-
-
-
-func (h *hub)CloseHub(decoder *FFmpegDecoder){
-	h.log.Debug("close hub")
-	if(h.register != nil){
-		close(h.register)
-		h.register=nil
-	}
-	if(h.rtmp_status != nil){
-		close(h.rtmp_status)
-		h.rtmp_status=nil
-	}
-	if(h.unregister != nil){
-		close(h.unregister)
-		h.unregister=nil
-	}
-
-	if(h.metadata != nil){
-		close(h.metadata)
-		h.metadata=nil
-	}
-	meta=nil
-	decoder.Close()
-	conn.Close()
-	player, err:= GetPlayerInstance();
-	if(err!=nil){
-		return
-	}
-	delete(player.streams_map,h.stream_id)
-
-}
-*/
 
 func (h *hub)Close(){
 	h.log.Debug("Close hub ",h.stream_id)
