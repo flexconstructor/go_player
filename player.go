@@ -122,6 +122,7 @@ func (p *GoPlayer)initConnection(conn *WSConnection){
 			p.log,
 			p.service_token,
 		)
+		p.streams_map[params.StreamID]=h
 		go h.run()
 	}
 	p.log.Debug("register connection in hub")
