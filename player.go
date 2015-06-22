@@ -116,8 +116,10 @@ func (p *GoPlayer)RegisterConnection(conn *ws.WSConnection){
 
 func (p *GoPlayer)initConnection(conn *ws.WSConnection){
 	params:=conn.GetConnectionParameters()
+	p.log.Debug("init connection for with params: stream_id=  %g user_id= %g access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
 	if(!ok){
+		p.log.Debug("init hub")
 		h=NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name,
 			strconv.FormatUint(params.StreamID,10),
 			p.log,
@@ -125,6 +127,7 @@ func (p *GoPlayer)initConnection(conn *ws.WSConnection){
 		)
 		go h.run()
 	}
+	p.log.Debug("register connection in hub")
 	h.register<-conn
 	p.handler.OnConnect(conn)
 

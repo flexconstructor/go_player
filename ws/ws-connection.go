@@ -110,8 +110,10 @@ func (c *WSConnection)WriteError(e *WSError)(*error){
 
 
 func (c *WSConnection)Close(){
+	c.lgr.Debug("connection closed for user: %u",c.GetConnectionParameters().ClientID)
 	c.write(websocket.CloseMessage, []byte{})
 	c.ws.Close()
+
 }
 
 func (c *WSConnection)GetConnectionParameters()(*ConnectionParams){

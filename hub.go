@@ -67,7 +67,7 @@ service_token string,
 }
 
 func (h *hub) run() {
-	h.log.Info("Hub run: ",h.stream_url,"id: ",h.stream_id)
+	h.log.Info("Hub run: url = %s id= %s",h.stream_url,h.stream_id)
 	decoder=&FFmpegDecoder{
 		stream_url: h.stream_url+"/"+h.stream_id,
 		broadcast:h.broadcast,
@@ -100,8 +100,8 @@ func (h *hub) run() {
 		select {
 		case c := <-h.register:
 			if(len(h.connections)==0){
-				h.log.Debug("Run rtmp connection!!!!")
-				go conn.Run()
+				h.log.Debug("first connection")
+				//go conn.Run()
 
 			}
 			h.connections[c] = true
@@ -119,7 +119,7 @@ func (h *hub) run() {
 
 		case c := <-h.unregister:
 			if _, ok := h.connections[c]; ok {
-				h.log.Debug("close connection")
+				h.log.Debug("unregister connection")
 				c.Close()
 				delete(h.connections, c)
 				c=nil
