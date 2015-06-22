@@ -141,6 +141,10 @@ func (p *GoPlayer)closeConnection(conn *WSConnection){
 	}
 	h.unregister <- conn
 	p.handler.OnDisconnect(conn)
+	if(len(h.connections)==0){
+		delete(p.streams_map, params.StreamID)
+		p.log.Debug("remove hub from map",params.StreamID)
+	}
 }
 
 

@@ -66,6 +66,7 @@ service_token string,
 }
 
 func (h *hub) run() {
+	defer h.Close()
 	h.log.Info("Hub run: url = %s id= %s",h.stream_url,h.stream_id)
 	decoder=&FFmpegDecoder{
 		stream_url: h.stream_url+"/"+h.stream_id,
@@ -100,11 +101,11 @@ func (h *hub) run() {
 		case c := <-h.register:
 			if(len(h.connections)==0){
 				h.log.Debug("first connection")
-				//go conn.Run()
+				go conn.Run()
 
 			}
 			h.connections[c] = true
-			//h.registerConnection(c)
+
 		h.log.Debug("Register connection")
 
 		if(meta != nil){
@@ -189,18 +190,6 @@ func (h *hub) run() {
 
 }
 
-/*func (h *hub)registerConnection(conn *connection){
-h.log.Debug("REGISTER CONNECTION")
-h.log.Debug("client_id: ",conn.client_id)
-	h.log.Debug("access_token: ",conn.access_token)
-	h.log.Debug("model_id: ",conn.model_id)
-	/*err:=h.connection_handler.OnConnect(IConnection(conn))
-	if(err!= nil){
-		h.log.Error("callback error on connect: ",err)
-		conn.error_channel<- err
-	}*/
-//}
-
 
 /*func (h *hub)closeConnection(conn *connection){
 	h.log.Debug("CLOSE CONNECTION")
@@ -214,6 +203,9 @@ h.log.Debug("client_id: ",conn.client_id)
 	}
 
 }
+
+
+
 
 
 func (h *hub)CloseHub(decoder *FFmpegDecoder){
@@ -246,3 +238,11 @@ func (h *hub)CloseHub(decoder *FFmpegDecoder){
 
 }
 */
+
+func (h *hub)Close(){
+	h.log.Debug("Close hub ",h.stream_id)
+	for c := range h.connections {
+		c.Close()
+	}
+
+}
