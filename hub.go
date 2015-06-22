@@ -142,12 +142,13 @@ func (h *hub) run() {
 
 		case s := <- h.rtmp_status:
 			if(s==0) {
-			h.log.Debug("Close rtmp")
-			return
+			//h.log.Debug("Close rtmp")
+			//return
 			}else{
 				//go decoder.Run()
 				//h.log.Debug("run decoder")
 			}
+		h.log.Debug("RTMP STATUS: %g",s)
 		case meta= <- h.metadata:
 		/*b, err:=meta.JSON()
 		if(err != nil){
