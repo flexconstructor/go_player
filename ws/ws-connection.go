@@ -26,17 +26,23 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
+type ConnectionParams struct {
+	StreamID uint64
+	ClientID uint64
+	AccessToken string
+}
+
 type WSConnection struct{
 ws *websocket.Conn
 send chan []byte
 metadata chan []byte
 error_channel chan *WSError
 lgr player_log.Logger
-
+params *ConnectionParams
 }
 
 
-func NewWSConnection(w http.ResponseWriter, r *http.Request, l player_log.Logger)(*WSConnection,error){
+func NewWSConnection(w http.ResponseWriter, r *http.Request, l player_log.Logger, params *ConnectionParams)(*WSConnection,error){
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if(err != nil){
 		return nil,err
@@ -47,6 +53,7 @@ func NewWSConnection(w http.ResponseWriter, r *http.Request, l player_log.Logger
 		error_channel: make(chan *WSError),
 		metadata:make(chan []byte),
 		lgr:l,
+		params:params,
 	}
 
 	return conn,nil
@@ -61,6 +68,7 @@ func (c *WSConnection) write(mt int, payload []byte) error {
 func (c *WSConnection)Run(){
 	ticker := time.NewTicker(pingPeriod)
 	defer c.Close()
+
 	for {
 		select {
 		case message, ok := <-c.send:
@@ -104,6 +112,8 @@ func (c *WSConnection)WriteError(e *WSError)(*error){
 func (c *WSConnection)Close(){
 	c.write(websocket.CloseMessage, []byte{})
 	c.ws.Close()
+}
 
-
+func (c *WSConnection)GetConnectionParameters()(*ConnectionParams){
+	return c.params
 }

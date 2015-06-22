@@ -44,11 +44,11 @@ var conn *RtmpConnector
 var meta *MetaData
 
 
-/*func NewHub(stream_url string,
+func NewHub(stream_url string,
 stream_name string,
 logger player_log.Logger,
 service_token string,
-//connection_handler IConnectionHandler) *hub{
+) *hub{
 	return &hub{
 		stream_url: stream_url,
 		stream_id: stream_name,
@@ -61,11 +61,11 @@ service_token string,
 		error: make(chan *ws.WSError),
 		log: logger,
 		service_token: service_token,
-		connection_handler: connection_handler,
+
 
 	}
 }
-*/
+
 func (h *hub) run() {
 	h.log.Info("Hub run: ",h.stream_url,"id: ",h.stream_id)
 	decoder=&FFmpegDecoder{

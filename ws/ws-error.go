@@ -18,6 +18,7 @@ var error_map = map[uint8]string {
 	8: "Can not check status of stream",
 	9: "Can not connect to remote stream",
 	10: "Connection closed from remote server",
+	11: "Streaming server not running",
 
 }
 

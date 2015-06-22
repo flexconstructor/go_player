@@ -6,6 +6,7 @@ import(
 	"github.com/flexconstructor/go_player/ws"
 	player_log "github.com/flexconstructor/go_player/log"
 	handler "github.com/flexconstructor/go_player/handlers"
+	"strconv"
 )
 
 var (
@@ -108,13 +109,25 @@ func (p *GoPlayer)stopInstance(){
 }
 
 func (p *GoPlayer)RegisterConnection(conn *ws.WSConnection){
-	p.log.Debug("register connection")
+	p.log.Debug("register connection: ")
 	p.connects <-conn
 
 }
 
 func (p *GoPlayer)initConnection(conn *ws.WSConnection){
-	
+	params:=conn.GetConnectionParameters()
+	h,ok:=p.streams_map[params.StreamID]
+	if(!ok){
+		h=NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name,
+			strconv.FormatUint(params.StreamID,10),
+			p.log,
+			p.service_token,
+		)
+		go h.run()
+	}
+	h.register<-conn
+	p.handler.OnConnect(conn)
+
 }
 
 
