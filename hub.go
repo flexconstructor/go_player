@@ -176,7 +176,7 @@ func (h *hub) run() {
 				}
 			}
 		case e:= <-h.error:
-		h.log.Error("player error",e)
+		h.log.Error("player error",e.description)
 			for c := range h.connections {
 				select {
 				case c.error_channel <- e:
