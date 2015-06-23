@@ -22,24 +22,26 @@ func (f *ffmpeg)run(){
 	f.log.Info("run ffmpeg for %s",f.stream_url)
 	defer f.close()
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	md:= make(chan *MetaData)
 	decoder:=&FFmpegDecoder{
 		f.stream_url,
 		f.broadcast,
 		f.rtmp_status,
-		f.metadata,
+		md,
 		f.error,
 		f.log,
 		f.close_chan,
 	}
 
-
+	go decoder.Run()
 
 	for{
 		select {
-		case m, ok:= <- f.metadata:
+		case m, ok:= <- md:
 		if(ok){
 			f.log.Info("ON METADATA w= %w h= %h",m.Width, m.Height )
 			f.runEncoder(m)
+			f.metadata <- m
 		}
 		case _, ok:= <- f.close_chan:
 		if(ok){
@@ -48,7 +50,7 @@ func (f *ffmpeg)run(){
 		}
 	}
 
-	go decoder.Run()
+
 
 }
 
