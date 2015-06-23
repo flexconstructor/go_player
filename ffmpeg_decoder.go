@@ -164,7 +164,8 @@ func (f *FFmpegDecoder)Run(){
 	}
 
 	if(f.error != nil){
-		f.error <- NewError(6,1)
+		f.log.Error("write error no stream")
+		//f.error <- NewError(6,1)
 	}
 
 	wg.Wait()
