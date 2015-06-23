@@ -39,6 +39,7 @@ func (f *ffmpeg)run(){
 		case m, ok:= <- f.metadata:
 		if(ok){
 			f.log.Info("ON METADATA w= %w h= %h",m.Width, m.Height )
+			f.runEncoder(m)
 		}
 		case _, ok:= <- f.close_chan:
 		if(ok){
@@ -48,6 +49,23 @@ func (f *ffmpeg)run(){
 	}
 
 
+
+}
+
+
+func (f *ffmpeg)runEncoder(m *MetaData){
+	encoder:=&FFmpegEncoder{
+		m,
+		f.broadcast,
+		f.rtmp_status,
+		f.error,
+		f.log,
+		f.close_chan,
+	}
+
+	for i:=0;i<f.workers_length ;i++  {
+		go encoder.Run()
+	}
 
 }
 
