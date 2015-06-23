@@ -51,7 +51,7 @@ func (handler *RtmpHandler) OnReceived(conn rtmp.Conn, message *rtmp.Message) {
 	case rtmp.AUDIO_TYPE:
 		audioDataSize += int64(message.Buf.Len())
 	}
-	handler.log.Debug("on resived bytes: ",videoDataSize)
+	//handler.log.Debug("on resived bytes: ",videoDataSize)
 }
 
 func (handler *RtmpHandler) OnReceivedRtmpCommand(conn rtmp.Conn, command *rtmp.Command) {
