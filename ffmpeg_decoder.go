@@ -83,7 +83,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 		error <- NewError(4,2)
 		return
 	}
-
+		logger.Debug("wait data from decoder...")
 	for {
 		srcFrame, ok := <-data
 		if !ok {
@@ -91,13 +91,13 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 				logger.Error("frame error: ",error)
 				error <- NewError(5,2)
 			}
-
+			logger.Debug("release frame")
 			Release(srcFrame)
 			return
 		}
 
 		swsCtx.Scale(srcFrame, dstFrame)
-
+		logger.Debug("scale frame")
 		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
 			logger.Debug("frame ready")
 			if broadcast != nil {
@@ -107,6 +107,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 			}
 
 		}
+		logger.Debug("release frame after")
 		Release(srcFrame)
 	}
 
