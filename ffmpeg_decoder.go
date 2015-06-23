@@ -42,7 +42,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 	defer wg.Done()
 	logger.Debug("run worker")
 	codec, err := FindEncoder("mjpeg")
-	if err != nil && error != nil{
+	if err != nil{
 		logger.Error("can not find codec %e",err)
 		error <- NewError(2,1)
 		return
@@ -61,7 +61,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 		cc.SetStrictCompliance(FF_COMPLIANCE_EXPERIMENTAL)
 	}
 
-	if err := cc.Open(nil); err != nil && error != nil{
+	if err := cc.Open(nil); err != nil {
 		logger.Error("can not open codec")
 		error <- NewError(3,1)
 		return
@@ -78,7 +78,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 	logger.Debug("setting format")
 	defer Release(dstFrame)
 
-	if err := dstFrame.ImgAlloc(); err != nil && error != nil{
+	if err := dstFrame.ImgAlloc(); err != nil {
 		logger.Error("codec error: ",err)
 		error <- NewError(4,2)
 		return
@@ -87,10 +87,10 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 	for {
 		srcFrame, ok := <-data
 		if !ok {
-			if(error != nil){
-				logger.Error("frame error: ",error)
+
+				logger.Error("frame error: ")
 				error <- NewError(5,2)
-			}
+
 			logger.Debug("release frame")
 			Release(srcFrame)
 			return
@@ -100,12 +100,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 		logger.Debug("scale frame")
 		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
 			logger.Debug("frame ready")
-			if broadcast != nil {
 				writeToBroadcast(p.Data());
-			}else{
-				return
-			}
-
 		}
 		logger.Debug("release frame after")
 		Release(srcFrame)
