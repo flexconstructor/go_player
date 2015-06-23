@@ -144,7 +144,7 @@ func (f *FFmpegDecoder)Run(){
 			return
 		}
 
-	/*wg := new(sync.WaitGroup)
+	wg := new(sync.WaitGroup)
 
 	dataChan := make(chan *Frame)
 	f.log.Info("run decoding")
@@ -154,7 +154,7 @@ func (f *FFmpegDecoder)Run(){
 		go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error, f.log)
 
 	}
-	log.Debug("packages: ",len(inputCtx.GetNewPackets()))
+	/*log.Debug("packages: ",len(inputCtx.GetNewPackets()))
 	for packet := range inputCtx.GetNewPackets() {
 		if packet.StreamIndex() != srcVideoStream.Index() {
 			// skip non video streams
@@ -175,8 +175,8 @@ func (f *FFmpegDecoder)Run(){
 		return
 		//f.error <- NewError(6,1)
 	}
-
-	wg.Wait()*/
+*/
+	wg.Wait()
 
 }
 
