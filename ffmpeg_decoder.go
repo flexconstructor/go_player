@@ -154,7 +154,7 @@ func (f *FFmpegDecoder)Run(){
 		go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error, f.log)
 
 	}
-	log.Debug("packets length: ",len(inputCtx.GetNewPackets()))
+	log.Debug("inputCtx: ",inputCtx)
 	/*for packet := range inputCtx.GetNewPackets() {
 		if packet.StreamIndex() != srcVideoStream.Index() {
 			// skip non video streams
