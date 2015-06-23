@@ -154,7 +154,8 @@ func (f *FFmpegDecoder)Run(){
 		go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error, f.log)
 
 	}
-	log.Debug("all workers run!!!: ")
+	wg.Wait()
+	f.log.Debug("all workers run!!!: ")
 	/*for packet := range inputCtx.GetNewPackets() {
 		if packet.StreamIndex() != srcVideoStream.Index() {
 			// skip non video streams
@@ -176,7 +177,7 @@ func (f *FFmpegDecoder)Run(){
 		//f.error <- NewError(6,1)
 	}
 */
-	wg.Wait()
+
 
 }
 
