@@ -20,10 +20,11 @@ type FFmpegDecoder  struct{
 	stream_url string
 	broadcast chan []byte
 	rtmp_status chan int
-	metadata chan *MetaData
+	codec_chan chan *CodecCtx
 	error chan *WSError
 	log player_log.Logger
 	close_chan chan bool
+	frame_channel chan *Frame
 }
 
 
@@ -45,12 +46,7 @@ func (d *FFmpegDecoder)Run(){
 
 	d.log.Info("Open stream")
 	if(srcVideoStream.CodecCtx() != nil) {
-		d.metadata <- &MetaData{
-			Message: "metadata",
-			Width: srcVideoStream.CodecCtx().Width(),
-			Height: srcVideoStream.CodecCtx().Height(),
-		}
-		d.log.Info("write metadata")
+		d.codec_chan <- srcVideoStream.CodecCtx()
 	}else{
 		d.log.Error("Invalid codec")
 		d.error<-NewErrorWithDescription(1,1,"Invalid codec")
@@ -62,9 +58,31 @@ func (d *FFmpegDecoder)Run(){
 	for {
 		select {
 		case packet,ok:=<-packet_chan:
-			if(ok){
-				d.log.Debug("packet: %g",packet.Size())
+			if(ok) {
+				if packet.StreamIndex() == srcVideoStream.Index() {
+					d.log.Debug("packet: %g", packet.Size())
+					stream, err := inputCtx.GetStream(packet.StreamIndex())
+					if (err != nil) {
+						d.error <- NewError(13, 2)
+
+					}
+					for frame := range packet.Frames(stream.CodecCtx()) {
+						d.frame_channel <- frame.CloneNewFrame()
+
+					}
+
+				}
+
+				Release(packet)
+			}else{
+				d.error <- NewError(12,2)
 			}
+
+		case _,ok:= <- d.close_chan:
+		if(ok){
+			return
+		}
+		// new case
 		}
 	}
 

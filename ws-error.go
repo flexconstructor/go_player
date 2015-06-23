@@ -19,6 +19,8 @@ var error_map = map[uint8]string {
 	9: "Can not connect to remote stream",
 	10: "Connection closed from remote server",
 	11: "Streaming server not running",
+	12: "Can not decode packet",
+	13: "Can not decode chunk",
 
 }
 
