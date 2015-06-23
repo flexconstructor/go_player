@@ -131,14 +131,17 @@ func (f *FFmpegDecoder)Run(){
 		return
 	}
 	f.log.Info("Open stream")
-	if(f.metadata != nil && f.rtmp_status != nil){
-		f.metadata <- &MetaData{
-			Message: "metadata",
-			Width: srcVideoStream.CodecCtx().Width(),
-			Height: srcVideoStream.CodecCtx().Height(),
+		if(srcVideoStream.CodecCtx() != nil) {
+			f.metadata <- &MetaData{
+				Message: "metadata",
+				Width: srcVideoStream.CodecCtx().Width(),
+				Height: srcVideoStream.CodecCtx().Height(),
+			}
+			f.log.Info("write metadata")
+		}else{
+			f.log.Error("Invalid codec")
+		f.error<-NewErrorWithDescription(1,1,"Invalid codec")
 		}
-		f.log.Info("write metadata")
-	}
 
 	wg := new(sync.WaitGroup)
 
