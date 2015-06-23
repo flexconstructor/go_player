@@ -149,9 +149,10 @@ func (f *FFmpegDecoder)Run(){
 	dataChan := make(chan *Frame)
 	f.log.Info("run decoding")
 	for i := 0; i < 20; i++ {
-		//wg.Add(i)
-		//go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error)
-		f.log.Debug("run worker")
+		f.log.Debug("run worker",i)
+		wg.Add(i)
+		go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error)
+
 	}
 	log.Debug("packages: ",len(inputCtx.GetNewPackets()))
 	for packet := range inputCtx.GetNewPackets() {
