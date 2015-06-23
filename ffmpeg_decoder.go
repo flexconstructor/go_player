@@ -47,7 +47,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 		error <- NewError(2,1)
 		return
 	}
-
+	logger.Debug("codec find: ",codec)
 	cc := NewCodecCtx(codec)
 	defer Release(cc)
 	logger.Debug("new codec ctx: ",cc)
