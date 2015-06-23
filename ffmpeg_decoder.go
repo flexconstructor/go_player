@@ -109,7 +109,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 
 
 func writeToBroadcast(b []byte){
-
+	log.Debug("write bytes: %d",len(b))
 	broadcast <-b
 
 }
@@ -143,7 +143,7 @@ func (f *FFmpegDecoder)Run(){
 
 	dataChan := make(chan *Frame)
 	f.log.Info("run decoding")
-	for i := 0; i < 280; i++ {
+	for i := 0; i < 20; i++ {
 		wg.Add(i)
 		go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error)
 	}
@@ -151,6 +151,7 @@ func (f *FFmpegDecoder)Run(){
 	for packet := range inputCtx.GetNewPackets() {
 		if packet.StreamIndex() != srcVideoStream.Index() {
 			// skip non video streams
+			f.log.Warn("Skip no video streams: %g",packet.StreamIndex())
 			continue
 		}
 
@@ -162,13 +163,10 @@ func (f *FFmpegDecoder)Run(){
 		Release(packet)
 	}
 
-	/*if(f.error != nil){
+	if(f.error != nil){
 		f.error <- NewError(6,1)
 	}
-	if(dataChan != nil){
-	close(dataChan)
-	dataChan=nil
-	}*/
+
 	wg.Wait()
 
 }
