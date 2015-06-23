@@ -38,31 +38,31 @@ func assert(i interface{}, err error) interface{} {
 	return i
 }
 
-func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error chan *WSError) {
+func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error chan *WSError, logger player_log.Logger) {
 	defer wg.Done()
-	log.Debug("run worker")
+	logger.Debug("run worker")
 	codec, err := FindEncoder("mjpeg")
 	if err != nil && error != nil{
-		fatal(err)
+		logger.Error("can not find codec %e",err)
 		error <- NewError(2,1)
 		return
 	}
 
 	cc := NewCodecCtx(codec)
 	defer Release(cc)
-
+	logger.Debug("new codec ctx: ",cc)
 	w, h := srcCtx.Width(), srcCtx.Height()
 	cc.SetPixFmt(AV_PIX_FMT_YUVJ420P).SetWidth(w).SetHeight(h)
 	cc.SetWidth(w)
 	cc.SetHeight(h)
 	cc.SetTimeBase(srcCtx.TimeBase().AVR())
-
+	logger.Debug("codec settings created")
 	if codec.IsExperimental() {
 		cc.SetStrictCompliance(FF_COMPLIANCE_EXPERIMENTAL)
 	}
 
 	if err := cc.Open(nil); err != nil && error != nil{
-		fatal(err)
+		logger.Error("can not open codec")
 		error <- NewError(3,1)
 		return
 	}
@@ -75,10 +75,11 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 	SetWidth(w).
 	SetHeight(h).
 	SetFormat(AV_PIX_FMT_YUVJ420P)
+	logger.Debug("setting format")
 	defer Release(dstFrame)
 
 	if err := dstFrame.ImgAlloc(); err != nil && error != nil{
-		fatal(err)
+		logger.Error("codec error: ",err)
 		error <- NewError(4,2)
 		return
 	}
@@ -87,8 +88,10 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 		srcFrame, ok := <-data
 		if !ok {
 			if(error != nil){
+				logger.Error("frame error: ",error)
 				error <- NewError(5,2)
 			}
+
 			Release(srcFrame)
 			return
 		}
@@ -96,6 +99,7 @@ func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error 
 		swsCtx.Scale(srcFrame, dstFrame)
 
 		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
+			logger.Debug("frame ready")
 			if broadcast != nil {
 				writeToBroadcast(p.Data());
 			}else{
@@ -151,7 +155,7 @@ func (f *FFmpegDecoder)Run(){
 	for i := 0; i < 20; i++ {
 		f.log.Debug("run worker",i)
 		wg.Add(i)
-		go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error)
+		go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error, f.log)
 
 	}
 	log.Debug("packages: ",len(inputCtx.GetNewPackets()))
