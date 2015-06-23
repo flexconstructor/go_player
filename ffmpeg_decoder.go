@@ -2,20 +2,18 @@ package go_player
 
 import(
 
-	"runtime"
+
 	. "github.com/3d0c/gmf"
-	"runtime/debug"
-	"sync"
 	player_log "github.com/flexconstructor/go_player/log"
 )
 
-var broadcast chan []byte
+/*var broadcast chan []byte
 
 func fatal(err error) {
 	debug.PrintStack()
 	log.Error("fatal")
 
-}
+}*/
 
 
 type FFmpegDecoder  struct{
@@ -25,12 +23,58 @@ type FFmpegDecoder  struct{
 	metadata chan *MetaData
 	error chan *WSError
 	log player_log.Logger
+	close_chan chan bool
 }
 
 
 
+func (d *FFmpegDecoder)Run(){
+	d.log.Info("Run Decoder for %s",d.stream_url)
+	inputCtx,err:=NewInputCtx(d.stream_url)
+	if(err != nil){
+		d.error <-NewError(2,1)
+		return
+	}
+	defer inputCtx.CloseInputAndRelease()
+	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
+	if err != nil{
+		d.error <- NewError(1,1)
+		d.log.Error("stream not opend ")
+		return
+	}
 
-func assert(i interface{}, err error) interface{} {
+	d.log.Info("Open stream")
+	if(srcVideoStream.CodecCtx() != nil) {
+		d.metadata <- &MetaData{
+			Message: "metadata",
+			Width: srcVideoStream.CodecCtx().Width(),
+			Height: srcVideoStream.CodecCtx().Height(),
+		}
+		d.log.Info("write metadata")
+	}else{
+		d.log.Error("Invalid codec")
+		d.error<-NewErrorWithDescription(1,1,"Invalid codec")
+		return
+	}
+
+	packet_chan:=inputCtx.GetNewPackets()
+
+	for {
+		select {
+		case packet,ok:=<-packet_chan:
+			if(ok){
+				d.log.Debug("packet: %g",packet.Size())
+			}
+		}
+	}
+
+
+}
+
+func (d *FFmpegDecoder)Close(){
+d.close_chan<-true
+}
+/*func assert(i interface{}, err error) interface{} {
 	if err != nil {
 		fatal(err)
 	}
@@ -121,7 +165,7 @@ func (f *FFmpegDecoder)Run(){
 	broadcast=f.broadcast
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	/*inputCtx := assert(NewInputCtx(f.stream_url)).(*FmtCtx)
-	f.log.Info("open input codec: ",f.stream_url)*/
+	f.log.Info("open input codec: ",f.stream_url)
 	inputCtx,err:=NewInputCtx(f.stream_url)
 	if(err != nil){
 		f.log.Error("can not find codec")
@@ -129,6 +173,7 @@ func (f *FFmpegDecoder)Run(){
 		return
 	}
 	packet_chan:=inputCtx.GetNewPackets()
+
 	for {
 	 select {
 		case packet,ok:=<-packet_chan:
@@ -162,7 +207,7 @@ func (f *FFmpegDecoder)Run(){
 
 	/*for packet := range inputCtx.GetNewPackets() {
 		log.Debug("new Packet ",packet.StreamIndex())
-	}*/
+	}
 	dataChan := make(chan *Frame)
 	wg := new(sync.WaitGroup)
 	for i := 0; i < 20; i++ {
@@ -193,7 +238,7 @@ func (f *FFmpegDecoder)Run(){
 		return
 		//f.error <- NewError(6,1)
 	}
-*/
+
 
 
 }
@@ -201,3 +246,4 @@ func (f *FFmpegDecoder)Run(){
 func (d *FFmpegDecoder)Close(){
 d.log.Info("Close decoder")
 }
+*/

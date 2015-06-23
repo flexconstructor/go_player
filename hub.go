@@ -38,7 +38,8 @@ type hub struct {
 	//connection_handler IConnectionHandler
 }
 
-var decoder *FFmpegDecoder
+//var decoder *FFmpegDecoder
+var ff *ffmpeg
 var conn *RtmpConnector
 var meta *MetaData
 
@@ -68,13 +69,24 @@ service_token string,
 func (h *hub) run() {
 	defer h.Close()
 	h.log.Info("Hub run: url = %s id= %s",h.stream_url,h.stream_id)
-	decoder=&FFmpegDecoder{
+	/*decoder=&FFmpegDecoder{
 		stream_url: h.stream_url+"/"+h.stream_id,
 		broadcast:h.broadcast,
 		rtmp_status: h.rtmp_status,
 		metadata: h.metadata,
 		error: h.error,
 		log: h.log,
+	}*/
+	ff=&ffmpeg{
+		stream_url: h.stream_url+"/"+h.stream_id,
+		broadcast:h.broadcast,
+		rtmp_status: h.rtmp_status,
+		metadata: h.metadata,
+		error: h.error,
+		log: h.log,
+		close_chan: make(chan bool),
+		workers_length:20,
+
 	}
 	h.log.Debug("decoder created")
 
@@ -140,7 +152,8 @@ func (h *hub) run() {
 			h.log.Debug("Close rtmp")
 			return
 			}else{
-				go decoder.Run()
+				//go decoder.Run()
+				go ff.run()
 				h.log.Debug("run decoder")
 			}
 		h.log.Debug("RTMP STATUS: %g",s)
