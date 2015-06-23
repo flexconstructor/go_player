@@ -75,7 +75,8 @@ func (d *FFmpegDecoder)Run(){
 
 				Release(packet)
 			}else{
-				d.error <- NewError(12,2)
+				d.log.Error("can not decode stream: %e",err)
+				//d.error <- NewError(12,2)
 			}
 
 		case _,ok:= <- d.close_chan:
