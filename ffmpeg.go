@@ -32,7 +32,7 @@ func (f *ffmpeg)run(){
 		f.close_chan,
 	}
 
-	go decoder.Run()
+
 
 	for{
 		select {
@@ -48,12 +48,13 @@ func (f *ffmpeg)run(){
 		}
 	}
 
-
+	go decoder.Run()
 
 }
 
 
 func (f *ffmpeg)runEncoder(m *MetaData){
+	f.log.Info("run encoder")
 	encoder:=&FFmpegEncoder{
 		m,
 		f.broadcast,
