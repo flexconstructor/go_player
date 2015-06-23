@@ -13,7 +13,7 @@ var broadcast chan []byte
 
 func fatal(err error) {
 	debug.PrintStack()
-
+	log.Error("fatal")
 
 }
 
@@ -40,6 +40,7 @@ func assert(i interface{}, err error) interface{} {
 
 func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error chan *WSError) {
 	defer wg.Done()
+	log.Debug("run worker")
 	codec, err := FindEncoder("mjpeg")
 	if err != nil && error != nil{
 		fatal(err)
@@ -147,7 +148,7 @@ func (f *FFmpegDecoder)Run(){
 		wg.Add(i)
 		go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error)
 	}
-
+	log.Debug("packages: ",len(inputCtx.GetNewPackets()))
 	for packet := range inputCtx.GetNewPackets() {
 		if packet.StreamIndex() != srcVideoStream.Index() {
 			// skip non video streams
