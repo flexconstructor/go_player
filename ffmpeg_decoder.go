@@ -141,6 +141,7 @@ func (f *FFmpegDecoder)Run(){
 		}else{
 			f.log.Error("Invalid codec")
 		f.error<-NewErrorWithDescription(1,1,"Invalid codec")
+			return 
 		}
 
 	wg := new(sync.WaitGroup)
@@ -169,6 +170,7 @@ func (f *FFmpegDecoder)Run(){
 
 	if(f.error != nil){
 		f.log.Error("write error no stream")
+		return
 		//f.error <- NewError(6,1)
 	}
 
