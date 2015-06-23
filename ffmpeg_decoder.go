@@ -132,12 +132,12 @@ func (f *FFmpegDecoder)Run(){
 	}
 	f.log.Info("Open stream")
 		if(srcVideoStream.CodecCtx() != nil) {
-			f.metadata <- &MetaData{
+			/*f.metadata <- &MetaData{
 				Message: "metadata",
 				Width: srcVideoStream.CodecCtx().Width(),
 				Height: srcVideoStream.CodecCtx().Height(),
 			}
-			f.log.Info("write metadata")
+			f.log.Info("write metadata")*/
 		}else{
 			f.log.Error("Invalid codec")
 		f.error<-NewErrorWithDescription(1,1,"Invalid codec")
