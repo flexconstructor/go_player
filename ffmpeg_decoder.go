@@ -120,8 +120,23 @@ func (f *FFmpegDecoder)Run(){
 	f.log.Info("RUN DECODER")
 	broadcast=f.broadcast
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	inputCtx := assert(NewInputCtx(f.stream_url)).(*FmtCtx)
-	f.log.Info("open input codec: ",f.stream_url)
+	/*inputCtx := assert(NewInputCtx(f.stream_url)).(*FmtCtx)
+	f.log.Info("open input codec: ",f.stream_url)*/
+	inputCtx,err:=NewInputCtx(f.stream_url)
+	if(err != nil){
+		f.log.Error("can not find codec")
+		f.error <- NewError(2,1)
+		return
+	}
+	packet_chan:=inputCtx.GetNewPackets()
+	for {
+	 select {
+		case packet,ok:=<-packet_chan:
+		if(ok){
+			f.log.Debug("packet: ",packet)
+		}
+		}
+	}
 	defer inputCtx.CloseInputAndRelease()
 
 	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
@@ -145,9 +160,9 @@ func (f *FFmpegDecoder)Run(){
 		}
 
 
-	for packet := range inputCtx.GetNewPackets() {
+	/*for packet := range inputCtx.GetNewPackets() {
 		log.Debug("new Packet ",packet.StreamIndex())
-	}
+	}*/
 	dataChan := make(chan *Frame)
 	wg := new(sync.WaitGroup)
 	for i := 0; i < 20; i++ {
