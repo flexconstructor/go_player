@@ -144,10 +144,12 @@ func (f *FFmpegDecoder)Run(){
 			return
 		}
 
-	wg := new(sync.WaitGroup)
+
 
 	dataChan := make(chan *Frame)
-	f.log.Info("run decoding")
+	f.log.Info("packets: %d",len(inputCtx.GetNewPackets()))
+
+	wg := new(sync.WaitGroup)
 	for i := 0; i < 20; i++ {
 		f.log.Debug("run worker",i)
 		wg.Add(i)
@@ -155,7 +157,7 @@ func (f *FFmpegDecoder)Run(){
 
 	}
 	wg.Wait()
-	f.log.Debug("all workers run!!!: ")
+	f.log.Debug("all workers close: ")
 	/*for packet := range inputCtx.GetNewPackets() {
 		if packet.StreamIndex() != srcVideoStream.Index() {
 			// skip non video streams
