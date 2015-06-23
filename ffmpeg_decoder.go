@@ -141,7 +141,7 @@ func (f *FFmpegDecoder)Run(){
 		}else{
 			f.log.Error("Invalid codec")
 		f.error<-NewErrorWithDescription(1,1,"Invalid codec")
-			return 
+			return
 		}
 
 	wg := new(sync.WaitGroup)
@@ -149,8 +149,9 @@ func (f *FFmpegDecoder)Run(){
 	dataChan := make(chan *Frame)
 	f.log.Info("run decoding")
 	for i := 0; i < 20; i++ {
-		wg.Add(i)
-		go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error)
+		//wg.Add(i)
+		//go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error)
+		f.log.Debug("run worker")
 	}
 	log.Debug("packages: ",len(inputCtx.GetNewPackets()))
 	for packet := range inputCtx.GetNewPackets() {
