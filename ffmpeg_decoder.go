@@ -41,7 +41,7 @@ func assert(i interface{}, err error) interface{} {
 func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error chan *WSError, logger player_log.Logger) {
 	defer wg.Done()
 	logger.Debug("run worker")
-	codec, err := FindEncoder("mjpeg")
+	codec, err := FindEncoder(AV_CODEC_ID_MJPEG )
 	if err != nil{
 		logger.Error("can not find codec %e",err)
 		error <- NewError(2,1)
