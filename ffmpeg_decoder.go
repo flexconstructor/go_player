@@ -145,7 +145,9 @@ func (f *FFmpegDecoder)Run(){
 		}
 
 
-	f.log.Info("packets: %d",len(inputCtx.GetNewPackets()))
+	for packet := range inputCtx.GetNewPackets() {
+		log.Debug("new Packet ",packet.StreamIndex())
+	}
 	dataChan := make(chan *Frame)
 	wg := new(sync.WaitGroup)
 	for i := 0; i < 20; i++ {
