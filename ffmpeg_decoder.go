@@ -132,19 +132,19 @@ func (f *FFmpegDecoder)Run(){
 	}
 	f.log.Info("Open stream")
 		if(srcVideoStream.CodecCtx() != nil) {
-			/*f.metadata <- &MetaData{
+			f.metadata <- &MetaData{
 				Message: "metadata",
 				Width: srcVideoStream.CodecCtx().Width(),
 				Height: srcVideoStream.CodecCtx().Height(),
 			}
-			f.log.Info("write metadata")*/
+			f.log.Info("write metadata")
 		}else{
 			f.log.Error("Invalid codec")
 		f.error<-NewErrorWithDescription(1,1,"Invalid codec")
 			return
 		}
 
-	wg := new(sync.WaitGroup)
+	/*wg := new(sync.WaitGroup)
 
 	dataChan := make(chan *Frame)
 	f.log.Info("run decoding")
@@ -176,7 +176,7 @@ func (f *FFmpegDecoder)Run(){
 		//f.error <- NewError(6,1)
 	}
 
-	wg.Wait()
+	wg.Wait()*/
 
 }
 
