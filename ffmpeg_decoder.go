@@ -76,6 +76,8 @@ func (d *FFmpegDecoder)Run(){
 			}
 		Release(packet)
 	}
+
+	d.log.Info("Decoder stopped")
 }
 
 func (d *FFmpegDecoder)Close(){
