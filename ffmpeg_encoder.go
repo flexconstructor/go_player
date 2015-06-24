@@ -2,6 +2,7 @@ package go_player
 import (
 	player_log "github.com/flexconstructor/go_player/log"
 	"github.com/3d0c/gmf"
+	"sync"
 )
 
 type FFmpegEncoder struct {
@@ -12,11 +13,13 @@ type FFmpegEncoder struct {
 	log player_log.Logger
 	close_chan chan bool
 	frame_cannel chan *gmf.Frame
+	wg sync.WaitGroup
 
 }
 
 func (e *FFmpegEncoder)Run(){
 	e.log.Info("run encoder")
+	defer e.wg.Done()
 	codec, err := gmf.FindEncoder(gmf.AV_CODEC_ID_MJPEG )
 	if(err != nil){
 		e.error <- NewError(2,1)
@@ -48,7 +51,6 @@ func (e *FFmpegEncoder)Run(){
 	SetWidth(e.srcCodec.Width()).
 	SetHeight(e.srcCodec.Height()).
 	SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
-	e.log.Debug("setting format")
 	defer gmf.Release(dstFrame)
 
 	if err := dstFrame.ImgAlloc(); err != nil {
@@ -57,7 +59,7 @@ func (e *FFmpegEncoder)Run(){
 		return
 	}
 
-	e.log.Debug("wait data from decoder...")
+
 	for {
 		srcFrame, ok := <-e.frame_cannel
 		if !ok {
@@ -69,12 +71,10 @@ func (e *FFmpegEncoder)Run(){
 		}
 
 		swsCtx.Scale(srcFrame, dstFrame)
-		e.log.Debug("scale frame")
+
 		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
-			e.log.Debug("frame ready")
 			e.broadcast <-p.Data()
 		}
-		e.log.Debug("release frame after")
 		gmf.Release(srcFrame)
 	}
 

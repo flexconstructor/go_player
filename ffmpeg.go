@@ -3,6 +3,7 @@ import (
 	player_log "github.com/flexconstructor/go_player/log"
 	"runtime"
 	"github.com/3d0c/gmf"
+	"sync"
 )
 type ffmpeg struct {
 	stream_url string
@@ -65,6 +66,7 @@ func (f *ffmpeg)run(){
 
 func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 	f.log.Info("run encoder")
+	wg:=new(sync.WaitGroup)
 	encoder:=&FFmpegEncoder{
 		c,
 		f.broadcast,
@@ -73,11 +75,16 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 		f.log,
 		f.close_chan,
 		frame_channel,
+		wg,
 	}
 
 	for i:=0;i<f.workers_length ;i++  {
+		wg.Add(i)
 		go encoder.Run()
 	}
+
+	wg.Wait()
+	f.log.Info("All encoders is done!")
 
 }
 

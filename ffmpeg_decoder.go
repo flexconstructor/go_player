@@ -44,7 +44,7 @@ func (d *FFmpegDecoder)Run(){
 		return
 	}
 
-	d.log.Info("Open stream")
+
 	if(srcVideoStream.CodecCtx() != nil) {
 		d.codec_chan <- srcVideoStream.CodecCtx()
 	}else{
@@ -60,7 +60,6 @@ func (d *FFmpegDecoder)Run(){
 		case packet,ok:=<-packet_chan:
 			if(ok) {
 				if packet.StreamIndex() == srcVideoStream.Index() {
-					d.log.Debug("packet: %g", packet.Size())
 					stream, err := inputCtx.GetStream(packet.StreamIndex())
 					if (err != nil) {
 						d.error <- NewError(13, 2)
@@ -76,7 +75,7 @@ func (d *FFmpegDecoder)Run(){
 				Release(packet)
 			}else{
 				d.log.Error("can not decode stream: %e",err)
-				//d.error <- NewError(12,2)
+				d.error <- NewError(12,2)
 			}
 
 		case _,ok:= <- d.close_chan:
