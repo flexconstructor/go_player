@@ -59,7 +59,7 @@ func (d *FFmpegDecoder)Run(){
 		select {
 		case packet,ok:=<-packet_chan:
 			if(ok) {
-				if packet.StreamIndex() == srcVideoStream.Index() {
+				//if packet.StreamIndex() == srcVideoStream.Index() {
 					stream, err := inputCtx.GetStream(packet.StreamIndex())
 					d.log.Debug("stream: is video: %b duration: %d",stream.IsVideo(),packet.StreamIndex())
 					if (err != nil) {
@@ -71,7 +71,7 @@ func (d *FFmpegDecoder)Run(){
 
 					}
 
-				}
+				//}
 
 				Release(packet)
 			}else{

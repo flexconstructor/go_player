@@ -79,8 +79,7 @@ func (e *FFmpegEncoder)Run(){
 		gmf.Release(srcFrame)
 		e.log.Debug("release frame")
 	}
-	e.log.Error("all frames is writed")
-	return
+
 }
 
 func (e *FFmpegEncoder)Close(){
