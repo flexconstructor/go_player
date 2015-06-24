@@ -74,10 +74,10 @@ func (d *FFmpegDecoder)Run(){
 				d.frame_channel <- frame.CloneNewFrame()
 
 			}
-		//Release(packet)
+		Release(packet)
 
 	}
-	packets <- inputCtx.GetNextPacket()
+	
 	d.log.Info("Decoder stopped index %d",srcVideoStream.Index())
 
 }
