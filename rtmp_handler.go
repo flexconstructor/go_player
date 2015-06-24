@@ -36,22 +36,13 @@ func (handler *RtmpHandler) OnClosed(conn rtmp.Conn) {
 	if(handler.error_channel != nil){
 		handler.error_channel <- NewError(10,1)
 	}
-	/*err:= obConn.Connect()
-	if(err != nil && handler.error_channel != nil){
-		handler.error_channel <- NewError(10,1)
-	}*/
-
-
+	
 }
 
 func (handler *RtmpHandler) OnReceived(conn rtmp.Conn, message *rtmp.Message) {
-	switch message.Type {
-	case rtmp.VIDEO_TYPE:
-		videoDataSize += int64(message.Buf.Len())
-	case rtmp.AUDIO_TYPE:
-		audioDataSize += int64(message.Buf.Len())
-	}
-	//handler.log.Debug("on resived bytes: ",videoDataSize)
+
+	handler.log.Debug("on resived bytes: ",message.Buf.Len())
+
 }
 
 func (handler *RtmpHandler) OnReceivedRtmpCommand(conn rtmp.Conn, command *rtmp.Command) {
