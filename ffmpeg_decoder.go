@@ -60,9 +60,6 @@ func (d *FFmpegDecoder)Run(){
 			continue
 		}
 
-		if packet.StreamIndex() != srcVideoStream.Index() {
-			continue
-		}
 			stream, err := inputCtx.GetStream(srcVideoStream.Index())
 			d.log.Debug("stream: is video: %b duration: %d",stream.IsVideo(),srcVideoStream.Index())
 			if (err != nil) {
@@ -71,6 +68,7 @@ func (d *FFmpegDecoder)Run(){
 
 			}
 			for frame := range packet.Frames(stream.CodecCtx()) {
+				d.log.Info("new frame: ",frame.TimeStamp())
 				d.frame_channel <- frame.CloneNewFrame()
 
 			}
