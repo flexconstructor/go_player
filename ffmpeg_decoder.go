@@ -31,9 +31,8 @@ type FFmpegDecoder  struct{
 
 func (d *FFmpegDecoder)Run(){
 	d.log.Info("Run Decoder for %s",d.stream_url)
-	//inputCtx,err:=NewInputCtx(d.stream_url)
-	inputCtx,err:=NewInputCtxWithFormatName(d.stream_url,"h.264")
-	//inputCtx.SetInputFormat("libx264")
+	inputCtx,err:=NewInputCtx(d.stream_url)
+
 	if(err != nil){
 		d.error <-NewError(2,1)
 		return
@@ -62,13 +61,14 @@ func (d *FFmpegDecoder)Run(){
 			continue
 		}
 
-			stream, err := inputCtx.GetStream(srcVideoStream.Index())
-			d.log.Debug("stream: is video: %b Duration: %d",stream.IsVideo(),srcVideoStream.Duration())
+			stream, err := inputCtx.GetStream(packet.StreamIndex())
+
 			if (err != nil) {
 				d.log.Error("can not decode stream")
 				d.error <- NewError(13, 1)
 
 			}
+		d.log.Debug("stream: is video: %b Duration: %d",stream.IsVideo(),srcVideoStream.Duration())
 			for frame := range packet.Frames(stream.CodecCtx()) {
 				d.log.Info("new frame: ",frame.TimeStamp())
 				d.frame_channel <- frame.CloneNewFrame()
