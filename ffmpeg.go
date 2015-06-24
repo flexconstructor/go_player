@@ -50,7 +50,7 @@ func (f *ffmpeg)run(){
 				Width: c.Width(),
 				Height: c.Height(),
 			}
-			f.runEncoder(c, frame_cannel)
+			//f.runEncoder(c, frame_cannel)
 		}
 		case _, ok:= <- f.close_chan:
 		if(ok){
