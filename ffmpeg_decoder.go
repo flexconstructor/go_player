@@ -61,7 +61,7 @@ func (d *FFmpegDecoder)Run(){
 		}
 
 			stream, err := inputCtx.GetStream(srcVideoStream.Index())
-			d.log.Debug("stream: is video: %b duration: %d",stream.IsVideo(),srcVideoStream.Id())
+			d.log.Debug("stream: is video: %b Duration: %d",stream.IsVideo(),srcVideoStream.Duration())
 			if (err != nil) {
 				d.log.Error("can not decode stream")
 				d.error <- NewError(13, 1)
@@ -69,7 +69,7 @@ func (d *FFmpegDecoder)Run(){
 			}
 			for frame := range packet.Frames(stream.CodecCtx()) {
 				d.log.Info("new frame: ",frame.TimeStamp())
-				d.frame_channel <- frame.CloneNewFrame()
+				d.frame_channel <- frame
 
 			}
 		Release(packet)
