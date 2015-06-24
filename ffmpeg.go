@@ -54,6 +54,7 @@ func (f *ffmpeg)run(){
 		}
 		case _, ok:= <- f.close_chan:
 		if(ok){
+			f.close()
 			return
 		}
 		}

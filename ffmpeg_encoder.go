@@ -58,8 +58,7 @@ func (e *FFmpegEncoder)Run(){
 		e.error <- NewError(4,2)
 		return
 	}
-	e.log.Debug("close worker ")
-	return
+
 	for {
 		srcFrame, ok := <-e.frame_cannel
 		if !ok {
@@ -69,10 +68,11 @@ func (e *FFmpegEncoder)Run(){
 			gmf.Release(srcFrame)
 			return
 		}
-
+		e.log.Debug("new frame ")
 		swsCtx.Scale(srcFrame, dstFrame)
 
 		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
+			e.log.Debug("frame ready")
 			e.broadcast <-p.Data()
 		}
 		gmf.Release(srcFrame)
