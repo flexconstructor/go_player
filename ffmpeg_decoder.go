@@ -53,17 +53,43 @@ func (d *FFmpegDecoder)Run(){
 		return
 	}
 
-	packet_chan:=inputCtx.GetNewPackets()
+	for packet := range inputCtx.GetNewPackets() {
+		if packet.StreamIndex() != srcVideoStream.Index() {
+			// skip non video streams
+			d.log.Warn("Skip no video streams: %g",packet.StreamIndex())
+			continue
+		}
+
+		if packet.StreamIndex() == srcVideoStream.Index() {
+			stream, err := inputCtx.GetStream(srcVideoStream.Index())
+			d.log.Debug("stream: is video: %b duration: %d",stream.IsVideo(),srcVideoStream.Index())
+			if (err != nil) {
+				d.log.Error("can not decode stream")
+				d.error <- NewError(13, 1)
+
+			}
+			for frame := range packet.Frames(stream.CodecCtx()) {
+				d.frame_channel <- frame.CloneNewFrame()
+
+			}
+
+		}
+
+		Release(packet)
+	}
+
+	/*packet_chan:=inputCtx.GetNewPackets()
 
 	for {
 		select {
 		case packet,ok:=<-packet_chan:
 			if(ok) {
-				//if packet.StreamIndex() == srcVideoStream.Index() {
+				if packet.StreamIndex() == srcVideoStream.Index() {
 					stream, err := inputCtx.GetStream(srcVideoStream.Index())
 					d.log.Debug("stream: is video: %b duration: %d",stream.IsVideo(),srcVideoStream.Index())
 					if (err != nil) {
-						d.error <- NewError(13, 2)
+						d.log.Error("can not decode stream")
+						d.error <- NewError(13, 1)
 
 					}
 					for frame := range packet.Frames(stream.CodecCtx()) {
@@ -71,7 +97,7 @@ func (d *FFmpegDecoder)Run(){
 
 					}
 
-				//}
+				}
 
 				Release(packet)
 			}else{
@@ -88,7 +114,7 @@ func (d *FFmpegDecoder)Run(){
 		}
 	}
 
-
+*/
 }
 
 func (d *FFmpegDecoder)Close(){
