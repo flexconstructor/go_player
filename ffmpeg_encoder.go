@@ -71,11 +71,11 @@ func (e *FFmpegEncoder)Run(){
 		e.log.Debug("new frame ")
 		swsCtx.Scale(srcFrame, dstFrame)
 
-		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
+	/*	if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
 			e.log.Debug("frame ready ",p.Size())
 			e.broadcast <-p.Data()
 
-		}
+		}*/
 		gmf.Release(srcFrame)
 		e.log.Debug("release frame")
 	}
