@@ -32,7 +32,7 @@ type FFmpegDecoder  struct{
 func (d *FFmpegDecoder)Run(){
 	d.log.Info("Run Decoder for %s",d.stream_url)
 	//inputCtx,err:=NewInputCtx(d.stream_url)
-	inputCtx,err:=NewInputCtxWithFormatName(d.stream_url,"libx264")
+	inputCtx,err:=NewInputCtxWithFormatName(d.stream_url,"h.264")
 	//inputCtx.SetInputFormat("libx264")
 	if(err != nil){
 		d.error <-NewError(2,1)
