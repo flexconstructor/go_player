@@ -61,7 +61,7 @@ func (d *FFmpegDecoder)Run(){
 		}
 
 			stream, err := inputCtx.GetStream(srcVideoStream.Index())
-			d.log.Debug("stream: is video: %b duration: %d",stream.IsVideo(),srcVideoStream.Index())
+			d.log.Debug("stream: is video: %b duration: %d",stream.IsVideo(),srcVideoStream.Id())
 			if (err != nil) {
 				d.log.Error("can not decode stream")
 				d.error <- NewError(13, 1)
@@ -72,63 +72,15 @@ func (d *FFmpegDecoder)Run(){
 				d.frame_channel <- frame.CloneNewFrame()
 
 			}
-
-
-
 		Release(packet)
 	}
-
-	/*packet_chan:=inputCtx.GetNewPackets()
-
-	for {
-		select {
-		case packet,ok:=<-packet_chan:
-			if(ok) {
-				if packet.StreamIndex() == srcVideoStream.Index() {
-					stream, err := inputCtx.GetStream(srcVideoStream.Index())
-					d.log.Debug("stream: is video: %b duration: %d",stream.IsVideo(),srcVideoStream.Index())
-					if (err != nil) {
-						d.log.Error("can not decode stream")
-						d.error <- NewError(13, 1)
-
-					}
-					for frame := range packet.Frames(stream.CodecCtx()) {
-						d.frame_channel <- frame.CloneNewFrame()
-
-					}
-
-				}
-
-				Release(packet)
-			}else{
-				d.log.Error("can not decode stream: %e",packet.Size())
-				d.error <- NewError(12,2)
-			}
-
-		case _,ok:= <- d.close_chan:
-		if(ok){
-			d.log.Debug("close decoder")
-			return
-		}
-		// new case
-		}
-	}
-
-*/
 }
 
 func (d *FFmpegDecoder)Close(){
 	d.log.Info("close decoder")
 d.close_chan<-true
 }
-/*func assert(i interface{}, err error) interface{} {
-	if err != nil {
-		fatal(err)
-	}
-
-	return i
-}
-
+/*
 func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error chan *WSError, logger player_log.Logger) {
 	defer wg.Done()
 	logger.Debug("run worker")

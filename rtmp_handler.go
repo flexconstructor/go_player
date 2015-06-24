@@ -36,13 +36,10 @@ func (handler *RtmpHandler) OnClosed(conn rtmp.Conn) {
 	if(handler.error_channel != nil){
 		handler.error_channel <- NewError(10,1)
 	}
-	
+
 }
 
 func (handler *RtmpHandler) OnReceived(conn rtmp.Conn, message *rtmp.Message) {
-
-	handler.log.Debug("on resived bytes: ",message.Buf.Len())
-
 }
 
 func (handler *RtmpHandler) OnReceivedRtmpCommand(conn rtmp.Conn, command *rtmp.Command) {
