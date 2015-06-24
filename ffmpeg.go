@@ -79,7 +79,7 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 	}
 
 	for i:=0;i<f.workers_length ;i++  {
-		wg.Add(i)
+		wg.Add(1)
 		go encoder.Run()
 	}
 
