@@ -73,12 +73,13 @@ func (e *FFmpegEncoder)Run(){
 
 		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
 			e.log.Debug("frame ready ",p.Size())
-			//e.broadcast <-p.Data()
+			e.broadcast <-p.Data()
 
 		}
 		gmf.Release(srcFrame)
 		e.log.Debug("release frame")
 	}
+	e.log.Error("all frames is writed")
 	return
 }
 
