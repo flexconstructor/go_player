@@ -13,7 +13,7 @@ type FFmpegEncoder struct {
 	log player_log.Logger
 	close_chan chan bool
 	frame_cannel chan *gmf.Frame
-	wg sync.WaitGroup
+	wg *sync.WaitGroup
 
 }
 
