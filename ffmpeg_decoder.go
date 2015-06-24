@@ -61,6 +61,7 @@ func (d *FFmpegDecoder)Run(){
 			if(ok) {
 				if packet.StreamIndex() == srcVideoStream.Index() {
 					stream, err := inputCtx.GetStream(packet.StreamIndex())
+					d.log.Debug("stream: is video: %b duration: %d",stream.IsVideo(),stream.Duration())
 					if (err != nil) {
 						d.error <- NewError(13, 2)
 
