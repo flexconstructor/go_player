@@ -32,6 +32,7 @@ type FFmpegDecoder  struct{
 func (d *FFmpegDecoder)Run(){
 	d.log.Info("Run Decoder for %s",d.stream_url)
 	inputCtx,err:=NewInputCtx(d.stream_url)
+	inputCtx.IsNoFile()
 	if(err != nil){
 		d.error <-NewError(2,1)
 		return
@@ -69,7 +70,7 @@ func (d *FFmpegDecoder)Run(){
 			}
 			for frame := range packet.Frames(stream.CodecCtx()) {
 				d.log.Info("new frame: ",frame.TimeStamp())
-				d.frame_channel <- frame
+				d.frame_channel <- frame.CloneNewFrame()
 
 			}
 		Release(packet)

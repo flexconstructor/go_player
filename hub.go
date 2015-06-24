@@ -85,7 +85,7 @@ func (h *hub) run() {
 		error: h.error,
 		log: h.log,
 		close_chan: make(chan bool),
-		workers_length:1,
+		workers_length:256,
 
 	}
 	h.log.Debug("decoder created")
