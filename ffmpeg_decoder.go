@@ -77,7 +77,7 @@ func (d *FFmpegDecoder)Run(){
 		Release(packet)
 	}
 
-	d.log.Info("Decoder stopped")
+	d.log.Info("Decoder stopped index %d",srcVideoStream.Index())
 }
 
 func (d *FFmpegDecoder)Close(){
