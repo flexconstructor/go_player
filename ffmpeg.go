@@ -50,7 +50,7 @@ func (f *ffmpeg)run(){
 				Width: c.Width(),
 				Height: c.Height(),
 			}
-			//f.runEncoder(c, frame_cannel)
+			f.runEncoder(c, frame_cannel)
 		}
 		case _, ok:= <- f.close_chan:
 		if(ok){
@@ -65,7 +65,7 @@ func (f *ffmpeg)run(){
 
 
 func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
-	f.log.Info("run encoder")
+	f.log.Info("-----run encode-------r")
 	wg:=new(sync.WaitGroup)
 	encoder:=&FFmpegEncoder{
 		c,
