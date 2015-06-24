@@ -74,7 +74,7 @@ func (d *FFmpegDecoder)Run(){
 
 				Release(packet)
 			}else{
-				d.log.Error("can not decode stream: %e",err)
+				d.log.Error("can not decode stream: %e",packet.Size())
 				d.error <- NewError(12,2)
 			}
 

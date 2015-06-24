@@ -100,6 +100,7 @@ func (c *WSConnection)Run(){
 				c.write(websocket.TextMessage,error_object)
 			}
 			if(error.level==1){
+				c.lgr.Error("error level = %g descripton= %s",error.level, error.description)
 				return
 			}
 		}
