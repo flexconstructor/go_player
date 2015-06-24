@@ -58,7 +58,7 @@ func (e *FFmpegEncoder)Run(){
 		e.error <- NewError(4,2)
 		return
 	}
-
+	e.log.Debug("close worker")
 	return
 	for {
 		srcFrame, ok := <-e.frame_cannel
