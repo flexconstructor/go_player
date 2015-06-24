@@ -61,7 +61,7 @@ func (d *FFmpegDecoder)Run(){
 			if(ok) {
 				if packet.StreamIndex() == srcVideoStream.Index() {
 					stream, err := inputCtx.GetStream(packet.StreamIndex())
-					d.log.Debug("stream: is video: %b duration: %d",stream.IsVideo(),stream.Duration())
+					d.log.Debug("stream: is video: %b duration: %d",stream.IsVideo(),packet.StreamIndex())
 					if (err != nil) {
 						d.error <- NewError(13, 2)
 
@@ -81,6 +81,7 @@ func (d *FFmpegDecoder)Run(){
 
 		case _,ok:= <- d.close_chan:
 		if(ok){
+			d.log.Debug("close decoder")
 			return
 		}
 		// new case

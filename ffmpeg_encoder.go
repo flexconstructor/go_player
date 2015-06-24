@@ -78,7 +78,7 @@ func (e *FFmpegEncoder)Run(){
 		gmf.Release(srcFrame)
 		e.log.Debug("release frame")
 	}
-
+	return
 }
 
 func (e *FFmpegEncoder)Close(){

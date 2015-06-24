@@ -83,10 +83,12 @@ func (c *WSConnection)Run(){
 				return
 			}
 			if err := c.write(websocket.BinaryMessage, message); err != nil {
+				c.lgr.Error("can not wright binary")
 				return
 			}
 		case <-ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
+				c.lgr.Error("can not write ping")
 				return
 			}
 		case metadata, ok:= <- c.metadata:
