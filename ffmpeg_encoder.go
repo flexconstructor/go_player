@@ -19,7 +19,7 @@ type FFmpegEncoder struct {
 
 func (e *FFmpegEncoder)Run(){
 	e.log.Info("run encoder")
-	defer e.wg.Done()
+	defer e.Close()
 	codec, err := gmf.FindEncoder(gmf.AV_CODEC_ID_MJPEG )
 	if(err != nil){
 		e.error <- NewError(2,1)
@@ -79,4 +79,9 @@ func (e *FFmpegEncoder)Run(){
 		e.log.Debug("release frame")
 	}
 
+}
+
+func (e *FFmpegEncoder)Close(){
+	e.log.Info("close ffmpeg encoder worker")
+	e.wg.Done()
 }

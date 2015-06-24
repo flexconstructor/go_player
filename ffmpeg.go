@@ -85,6 +85,7 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 
 	wg.Wait()
 	f.log.Info("All encoders is done!")
+	f.close_chan <- true
 
 }
 

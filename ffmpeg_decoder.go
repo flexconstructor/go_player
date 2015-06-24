@@ -91,6 +91,7 @@ func (d *FFmpegDecoder)Run(){
 }
 
 func (d *FFmpegDecoder)Close(){
+	d.log.Info("close decoder")
 d.close_chan<-true
 }
 /*func assert(i interface{}, err error) interface{} {
