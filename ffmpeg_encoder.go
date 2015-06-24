@@ -59,7 +59,7 @@ func (e *FFmpegEncoder)Run(){
 		return
 	}
 
-
+	return
 	for {
 		srcFrame, ok := <-e.frame_cannel
 		if !ok {
@@ -76,6 +76,7 @@ func (e *FFmpegEncoder)Run(){
 			e.broadcast <-p.Data()
 		}
 		gmf.Release(srcFrame)
+		e.log.Debug("release frame")
 	}
 
 }
