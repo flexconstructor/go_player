@@ -48,7 +48,7 @@ func (d *FFmpegDecoder)Run(){
 
 
 	if(srcVideoStream.CodecCtx() != nil) {
-		//d.codec_chan <- srcVideoStream.CodecCtx()
+		d.codec_chan <- srcVideoStream.CodecCtx()
 	}else{
 		d.log.Error("Invalid codec")
 		d.error<-NewErrorWithDescription(1,1,"Invalid codec")
@@ -70,8 +70,8 @@ func (d *FFmpegDecoder)Run(){
 					d.log.Debug("stream: is video: %t Duration: %d",stream.IsVideo(),srcVideoStream.Duration())
 					for frame := range packet.Frames(stream.CodecCtx()) {
 						d.log.Info("new frame: ",frame)
-						//d.frame_channel <- frame.CloneNewFrame()
-						Release(frame)
+						d.frame_channel <- frame.CloneNewFrame()
+
 					}
 					d.log.Debug("next ->")
 					Release(packet)
