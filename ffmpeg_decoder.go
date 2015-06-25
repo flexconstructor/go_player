@@ -55,13 +55,14 @@ func (d *FFmpegDecoder)Run(){
 	}
 	//packets:= inputCtx.GetNewPackets()
 	//packets:= make(chan *Packet)
+	d.log.Debug("get packets")
 	pack:=inputCtx.GetNextPacket();
 
 	if(pack != nil) {
-		log.Debug("has packet: %d", pack.Size())
+		d.log.Debug("has packet: %d", pack.Size())
 		//packets <- pack;
 	}else{
-		log.Error("Has no packets")
+		d.log.Error("Has no packets")
 		return
 	}
 
