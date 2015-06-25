@@ -47,14 +47,14 @@ func (d *FFmpegDecoder)Run(){
 
 
 	if(srcVideoStream.CodecCtx() != nil) {
-		d.codec_chan <- srcVideoStream.CodecCtx()
+		//d.codec_chan <- srcVideoStream.CodecCtx()
 	}else{
 		d.log.Error("Invalid codec")
 		d.error<-NewErrorWithDescription(1,1,"Invalid codec")
 		return
 	}
 	//packets:= inputCtx.GetNewPackets()
-	packets:= make(chan *Packet)
+	//packets:= make(chan *Packet)
 	pack:=inputCtx.GetNextPacket();
 
 	if(pack != nil) {
@@ -65,7 +65,7 @@ func (d *FFmpegDecoder)Run(){
 		return
 	}
 
-	for{
+	/*for{
 		select {
 		case packet,ok:=<-packets:
 		if(!ok){
@@ -73,7 +73,7 @@ func (d *FFmpegDecoder)Run(){
 		}
 		log.Debug("Has new packet: %d",packet.Size())
 		}
-	}
+	}*/
 	/*for packet := range  packets{
 		if packet.StreamIndex() != srcVideoStream.Index() {
 			// skip non video streams
