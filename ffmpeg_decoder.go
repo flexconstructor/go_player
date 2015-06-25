@@ -58,11 +58,24 @@ func (d *FFmpegDecoder)Run(){
 
 	d.log.Debug("get packets")
 	for{
-		pack:=inputCtx.GetNextPacket();
-		if(pack != nil) {
-			d.log.Info("has new packet %d", pack.Size())
+		packet:=inputCtx.GetNextPacket();
+		if(packet != nil) {
+			if packet.StreamIndex() != srcVideoStream.Index() {
+				d.log.Info("has new packet %d", packet.Size())
+				stream, err := inputCtx.GetStream(packet.StreamIndex())
+				if (err != nil) {
+					d.log.Error("can not decode stream")
+					d.error <- NewError(13, 1)
+				}else{
+					d.log.Debug("stream: is video: %t Duration: %d",stream.IsVideo(),srcVideoStream.Duration())
+				}
+			}else{
+				continue
+			}
+
 		}else{
 			d.log.Error("nil packet")
+			continue
 		}
 
 	}
