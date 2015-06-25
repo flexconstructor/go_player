@@ -149,8 +149,8 @@ func (d *FFmpegDecoder)Run(){
 
 func (d *FFmpegDecoder)parseFrames(stream *Stream, packet *Packet){
 	for frame := range packet.Frames(stream.CodecCtx()) {
-		d.log.Info("new frame: ",frame.TimeStamp())
-		d.frame_channel <- frame.CloneNewFrame()
+		d.log.Info("new frame: %b",frame.TimeStamp())
+		//d.frame_channel <- frame.CloneNewFrame()
 	}
 
 	Release(packet)
