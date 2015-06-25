@@ -53,7 +53,9 @@ func (d *FFmpegDecoder)Run(){
 		d.error<-NewErrorWithDescription(1,1,"Invalid codec")
 		return
 	}
-	packets:= inputCtx.GetNewPackets()
+	//packets:= inputCtx.GetNewPackets()
+	packets:= make(chan *Packet)
+	packets <- inputCtx.GetNextPacket();
 	for packet := range  packets{
 		if packet.StreamIndex() != srcVideoStream.Index() {
 			// skip non video streams
@@ -75,14 +77,14 @@ func (d *FFmpegDecoder)Run(){
 
 			}
 		Release(packet)
-
+		packets <- inputCtx.GetNextPacket();
 	}
-	pack:= inputCtx.GetNextPacket();
+	/*pack:= inputCtx.GetNextPacket();
 	if(pack == nil){
 		d.log.Error("has no new packets")
 		return
-	}
-	d.log.Info("Decoder stopped index but has next packet %d",pack.Size())
+	}*/
+	d.log.Info("Decoder stopped ")
 
 }
 
