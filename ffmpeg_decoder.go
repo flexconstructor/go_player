@@ -59,10 +59,10 @@ func (d *FFmpegDecoder)Run(){
 
 	if(pack != nil) {
 		log.Debug("has packet: %d", pack.Size())
-		packets <- pack;
+		//packets <- pack;
 	}else{
 		log.Error("Has no packets")
-		return 
+		return
 	}
 
 	for{
