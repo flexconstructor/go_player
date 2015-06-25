@@ -57,7 +57,16 @@ func (d *FFmpegDecoder)Run(){
 	//packets:= inputCtx.GetNewPackets()
 
 	d.log.Debug("get packets")
-	pack:=inputCtx.GetNextPacket();
+	for{
+		pack:=inputCtx.GetNextPacket();
+		if(pack != nil) {
+			d.log.Info("has new packet %d", pack.Size())
+		}else{
+			break
+		}
+
+	}
+	/*pack:=inputCtx.GetNextPacket();
 
 	if(pack != nil) {
 		d.log.Debug("has packet: %d", pack.Size())
