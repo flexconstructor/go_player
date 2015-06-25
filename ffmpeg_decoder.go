@@ -56,7 +56,16 @@ func (d *FFmpegDecoder)Run(){
 	//packets:= inputCtx.GetNewPackets()
 	packets:= make(chan *Packet)
 	packets <- inputCtx.GetNextPacket();
-	for packet := range  packets{
+	for{
+		select {
+		case packet,ok:=<-packets:
+		if(!ok){
+			return
+		}
+		log.Debug("Has new packet: %d",packet.Size())
+		}
+	}
+	/*for packet := range  packets{
 		if packet.StreamIndex() != srcVideoStream.Index() {
 			// skip non video streams
 			d.log.Warn("Skip no video streams: %g",packet.StreamIndex())
@@ -77,8 +86,8 @@ func (d *FFmpegDecoder)Run(){
 
 			}
 		Release(packet)
-		packets <- inputCtx.GetNextPacket();
-	}
+
+	}*/
 	/*pack:= inputCtx.GetNextPacket();
 	if(pack == nil){
 		d.log.Error("has no new packets")
