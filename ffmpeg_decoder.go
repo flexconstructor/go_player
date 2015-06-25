@@ -68,12 +68,13 @@ func (d *FFmpegDecoder)Run(){
 					d.error <- NewError(13, 2)
 				}else{
 					d.log.Debug("stream: is video: %t Duration: %d",stream.IsVideo(),srcVideoStream.Duration())
-					/*for frame := range packet.Frames(stream.CodecCtx()) {
-						d.log.Info("new frame: ",frame.TimeStamp())
-						d.frame_channel <- frame.CloneNewFrame()
-					}*/
-					go d.parseFrames(stream, packet)
-
+					for frame := range packet.Frames(stream.CodecCtx()) {
+						d.log.Info("new frame: ",frame)
+						//d.frame_channel <- frame.CloneNewFrame()
+						Release(frame)
+					}
+					d.log.Debug("next ->")
+					Release(packet)
 				}
 			}else{
 				d.log.Debug("is not right stream !")
@@ -148,11 +149,12 @@ func (d *FFmpegDecoder)Run(){
 
 
 func (d *FFmpegDecoder)parseFrames(stream *Stream, packet *Packet){
+	d.log.Debug("parse frames:")
 	for frame := range packet.Frames(stream.CodecCtx()) {
-		d.log.Info("new frame: %b",frame.TimeStamp())
+		d.log.Info("new frame: ",frame)
 		//d.frame_channel <- frame.CloneNewFrame()
 	}
-
+	d.log.Debug("close packet")
 	Release(packet)
 }
 
