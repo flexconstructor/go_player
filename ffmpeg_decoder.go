@@ -62,7 +62,7 @@ func (d *FFmpegDecoder)Run(){
 		if(pack != nil) {
 			d.log.Info("has new packet %d", pack.Size())
 		}else{
-			break
+			d.log.Error("nil packet")
 		}
 
 	}
