@@ -25,6 +25,7 @@ type FFmpegDecoder  struct{
 	log player_log.Logger
 	close_chan chan bool
 	frame_channel chan *Frame
+	packet_channel chan *Packet
 }
 
 
@@ -54,27 +55,35 @@ func (d *FFmpegDecoder)Run(){
 		return
 	}
 	//packets:= inputCtx.GetNewPackets()
-	packets:= make(chan *Packet)
+
 	d.log.Debug("get packets")
 	pack:=inputCtx.GetNextPacket();
 
 	if(pack != nil) {
 		d.log.Debug("has packet: %d", pack.Size())
-		packets <- pack;
+		d.packet_channel <- pack;
 	}else{
 		d.log.Error("Has no packets")
 		return
 	}
 
-	/*for{
+	for{
 		select {
-		case packet,ok:=<-packets:
+		case packet,ok:=<-d.packet_channel:
 		if(!ok){
 			return
 		}
-		log.Debug("Has new packet: %d",packet.Size())
+		d.log.Debug("Select new packet: %d",packet.Size())
+		Release(packet)
+		pack=inputCtx.GetNextPacket();
+		if(pack != nil) {
+			d.packet_channel <- pack
+		}else{
+			d.log.Error("has no more packets")
+			return
 		}
-	}*/
+		}
+	}
 	/*for packet := range  packets{
 		if packet.StreamIndex() != srcVideoStream.Index() {
 			// skip non video streams
@@ -106,6 +115,9 @@ func (d *FFmpegDecoder)Run(){
 	d.log.Info("Decoder stopped ")
 
 }
+
+
+
 
 func (d *FFmpegDecoder)Close(){
 	d.log.Info("close decoder")

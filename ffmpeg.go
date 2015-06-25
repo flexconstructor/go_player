@@ -35,6 +35,7 @@ func (f *ffmpeg)run(){
 		f.log,
 		f.close_chan,
 		frame_cannel,
+		make(chan *gmf.Packet),
 	}
 
 	go decoder.Run()
