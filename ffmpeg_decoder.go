@@ -60,7 +60,7 @@ func (d *FFmpegDecoder)Run(){
 	for{
 		packet:=inputCtx.GetNextPacket();
 		if(packet != nil) {
-			if packet.StreamIndex() != srcVideoStream.Index() {
+			if packet.StreamIndex() == srcVideoStream.Index() {
 				d.log.Info("has new packet %d", packet.Size())
 				stream, err := inputCtx.GetStream(packet.StreamIndex())
 				if (err != nil) {
@@ -70,6 +70,7 @@ func (d *FFmpegDecoder)Run(){
 					d.log.Debug("stream: is video: %t Duration: %d",stream.IsVideo(),srcVideoStream.Duration())
 				}
 			}else{
+				d.log.Debug("is not right stream !")
 				continue
 			}
 
