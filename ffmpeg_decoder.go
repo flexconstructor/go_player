@@ -68,6 +68,11 @@ func (d *FFmpegDecoder)Run(){
 					d.error <- NewError(13, 1)
 				}else{
 					d.log.Debug("stream: is video: %t Duration: %d",stream.IsVideo(),srcVideoStream.Duration())
+					for frame := range packet.Frames(stream.CodecCtx()) {
+						d.log.Info("new frame: ",frame.TimeStamp())
+						d.frame_channel <- frame.CloneNewFrame()
+					}
+					Release(packet)
 				}
 			}else{
 				d.log.Debug("is not right stream !")
