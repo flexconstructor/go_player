@@ -77,8 +77,12 @@ func (d *FFmpegDecoder)Run(){
 		Release(packet)
 
 	}
-	go d.Run()
-	d.log.Info("Decoder stopped index %d",srcVideoStream.Index())
+	pack:= inputCtx.GetNextPacket();
+	if(pack == nil){
+		d.log.Error("has no new packets")
+		return
+	}
+	d.log.Info("Decoder stopped index but has next packet %d",pack.Size())
 
 }
 
