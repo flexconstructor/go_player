@@ -125,6 +125,7 @@ func (c *WSConnection)Close(){
 	c.ws.Close()
 	pl, err:=GetPlayerInstance();
 	if(err != nil){
+		c.lgr.Error("NO Player found: ", err)
 		return
 	}
 	pl.closes <-c

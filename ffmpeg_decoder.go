@@ -67,7 +67,7 @@ func (d *FFmpegDecoder)Run(){
 			}
 
 		}else{
-			d.log.Error("nil packet")
+			//d.log.Error("nil packet")
 			continue
 		}
 

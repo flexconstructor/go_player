@@ -89,9 +89,9 @@ defer p.stopInstance()
 			}
 		case c,ok:= <- p.closes:
 		if(ok){
-			p.closeConnection(c)
-		}
 
+		}
+			p.closeConnection(c)
 		}
 		}
 }
