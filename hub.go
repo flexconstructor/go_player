@@ -199,6 +199,7 @@ func (h *hub) run() {
 
 func (h *hub)Close(){
 	h.log.Debug("Close hub ",h.stream_id)
+
 	for c := range h.connections {
 		c.Close()
 	}
