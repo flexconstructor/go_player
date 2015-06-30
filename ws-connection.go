@@ -63,7 +63,6 @@ func NewWSConnection(w http.ResponseWriter, r *http.Request, l player_log.Logger
 
 func (c *WSConnection) write(mt int, payload []byte) error {
 	c.ws.SetWriteDeadline(time.Now().Add(writeWait))
-	c.lgr.Debug("write: mt= %d len=%d",mt,len(payload))
 	return c.ws.WriteMessage(mt, payload)
 }
 
