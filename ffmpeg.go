@@ -42,8 +42,6 @@ func (f *ffmpeg)run(){
 		select {
 		case c, ok:= <-codec_chan:
 		if(ok){
-			//f.log.Info("ON METADATA w= %w h= %h",m.Width, m.Height )
-
 			f.metadata <- &MetaData{
 				Message: "metadata",
 				Width: c.Width(),
@@ -92,7 +90,8 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 
 func (f *ffmpeg)close(){
 	f.log.Info("Close ffmpeg!")
-	f.rtmp_status <-0
+	f.rtmp_status <-1
+	f.log.Debug("write status")
 
 }
 
