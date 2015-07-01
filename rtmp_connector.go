@@ -49,6 +49,7 @@ func (c *RtmpConnector)Run() {
 			}
 		case b:=<-c.close_channel:
 		if(b==true){
+			c.log.Debug("calling close channel")
 			return
 		}
 		}

@@ -98,6 +98,7 @@ func (h *hub) run() {
  		rtmp_url:	h.stream_url,
  		stream_id: h.stream_id,
 		error_cannel: h.error,
+		close_channel:h.rtmp_close,
 		log: h.log,
  		 handler: &RtmpHandler{
  			 stream_status: h.rtmp_status,
