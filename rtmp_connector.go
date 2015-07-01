@@ -1,7 +1,6 @@
 package  go_player
 import(
 	rtmp "github.com/zhangpeihao/gortmp"
-	rtmp_log "github.com/zhangpeihao/log"
 	player_log "github.com/flexconstructor/go_player/log"
 
 )
