@@ -50,6 +50,8 @@ func (f *ffmpeg)run(){
 				Height: c.Height(),
 			}
 			f.runEncoder(c, frame_cannel)
+			f.log.Debug("test close")
+			f.close_channel <-true
 		}
 
 		case <- f.close_channel:
@@ -99,9 +101,6 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 
 func (f *ffmpeg)Close(){
 	f.log.Info("Close ffmpeg!")
-	//f.close_channel <- true
-	close(f.close_channel)
-	f.log.Debug("write status")
 
 
 }
