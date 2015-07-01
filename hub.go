@@ -88,7 +88,7 @@ func (h *hub) run() {
 		metadata: h.metadata,
 		error: h.error,
 		log: h.log,
-		close_chan: make(chan bool),
+		close_chan: h.rtmp_close,
 		workers_length:20,
 
 	}

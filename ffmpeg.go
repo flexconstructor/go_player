@@ -37,7 +37,7 @@ func (f *ffmpeg)run(){
 		frame_cannel,
 		make(chan *gmf.Packet),
 	}
-
+	defer decoder.Close()
 	go decoder.Run()
 
 	for{
@@ -55,9 +55,15 @@ func (f *ffmpeg)run(){
 		}
 		case _, ok:= <- f.close_chan:
 		if(ok){
-			f.close()
+			f.log.Debug("call close ffmpeg")
 			return
 		}
+		case status := <- f.rtmp_status:
+		if(status==0){
+			f.log.Debug("rtmp status 0");
+			return
+		}
+
 		}
 	}
 
