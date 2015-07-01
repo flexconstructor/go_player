@@ -36,6 +36,7 @@ func (f *ffmpeg)run(){
 		make(chan *gmf.Packet),
 	}
 	defer decoder.Close()
+	defer f.log.Debug("ffmpeg closed!!!")
 	go decoder.Run()
 
 	for{
@@ -89,8 +90,8 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 }
 
 func (f *ffmpeg)close(){
-	f.log.Info("Close ffmpeg!")
-	f.rtmp_status <-1
+	f.log.Info("Close ffmpeg!",f.rtmp_status)
+	f.rtmp_status <- 0
 	f.log.Debug("write status")
 
 }
