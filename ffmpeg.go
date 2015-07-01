@@ -13,6 +13,7 @@ type ffmpeg struct {
 	log player_log.Logger
 	workers_length int
 	close_channel chan bool
+	wg sync.WaitGroup
 
 }
 
@@ -20,6 +21,7 @@ type ffmpeg struct {
 
 
 func (f *ffmpeg)run(){
+
 	f.log.Info("run ffmpeg for %s",f.stream_url)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	codec_chan:= make(chan *gmf.CodecCtx)
@@ -37,7 +39,7 @@ func (f *ffmpeg)run(){
 	defer decoder.Close()
 	defer f.log.Debug("ffmpeg closed!!!")
 	go decoder.Run()
-
+	f.wg.Add(1)
 	for{
 		select {
 		case c, ok:= <-codec_chan:
@@ -53,7 +55,7 @@ func (f *ffmpeg)run(){
 		case close, ok:= <-f.close_channel:
 			f.log.Debug("call close_chan %t",close)
 		if(ok !=true && close !=true){
-			f.log.Debug("CLOSE FFMPEG")
+
 			return
 		}
 
@@ -66,6 +68,8 @@ func (f *ffmpeg)run(){
 */
 		}
 	}
+	f.wg.Wait()
+	f.log.Debug("CLOSE FFMPEG")
 
 }
 
@@ -99,6 +103,7 @@ func (f *ffmpeg)Close(){
 	f.log.Info("Close ffmpeg!")
 	close(f.close_channel)
 	f.log.Debug("write status")
+	f.wg.Done()
 
 }
 
