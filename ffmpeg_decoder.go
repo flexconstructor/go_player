@@ -48,6 +48,11 @@ func (d *FFmpegDecoder)Run(){
 	}
 
 	for{
+		select {
+			case <- d.close_chan:
+			d.log.Debug("close chan called")
+			return
+		default:
 		packet:=inputCtx.GetNextPacket();
 		if(packet != nil) {
 			if packet.StreamIndex() == srcVideoStream.Index() {
@@ -74,6 +79,8 @@ func (d *FFmpegDecoder)Run(){
 
 	}
 
+	}
+
 	d.log.Info("Decoder stopped ")
 
 }
@@ -82,5 +89,7 @@ func (d *FFmpegDecoder)Run(){
 
 func (d *FFmpegDecoder)Close(){
 	d.log.Info("close decoder")
+	d.close_chan <- true
+	d.log.Debug("decoder closed")
 //d.close_chan<-true
 }
