@@ -37,6 +37,7 @@ func (f *ffmpeg)run(){
 		packet_channel: make(chan *gmf.Packet),
 	}
 	defer decoder.Close()
+	defer close(frame_cannel)
 	defer f.log.Debug("ffmpeg closed!!!")
 	go decoder.Run()
 
@@ -44,6 +45,7 @@ func (f *ffmpeg)run(){
 		select {
 		case <- f.close_channel:
 			f.log.Debug("call close_chan")
+
 			return
 
 
@@ -69,7 +71,7 @@ func (f *ffmpeg)run(){
 		}
 	}
 
-	f.log.Debug("CLOSE FFMPEG")
+
 
 }
 
@@ -103,6 +105,7 @@ func (f *ffmpeg)Close(){
 	f.log.Info("Close ffmpeg!")
 	f.close_channel <- true
 	f.log.Debug("write close channel")
+
 
 
 }

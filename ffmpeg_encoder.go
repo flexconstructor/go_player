@@ -62,10 +62,13 @@ func (e *FFmpegEncoder)Run(){
 		srcFrame, ok := <-e.frame_cannel
 		if !ok {
 
-			e.log.Error("frame error: ")
-			e.error <- NewError(5,2)
-			gmf.Release(srcFrame)
-			break
+			//e.log.Error("frame error: ")
+			//e.error <- NewError(5,2)
+			//gmf.Release(srcFrame)
+			//break
+			e.log("close encoder")
+			return
+
 		}
 
 		swsCtx.Scale(srcFrame, dstFrame)
