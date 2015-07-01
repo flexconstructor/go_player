@@ -54,7 +54,7 @@ func (f *ffmpeg)run(){
 				Width: c.Width(),
 				Height: c.Height(),
 			}
-			f.runEncoder(c, frame_cannel)
+			go f.runEncoder(c, frame_cannel)
 
 		}
 
