@@ -95,7 +95,7 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 
 }
 
-func (f *ffmpeg)close(){
+func (f *ffmpeg)Close(){
 	f.log.Info("Close ffmpeg!")
 	f.close_channel <-true
 	f.log.Debug("write status")

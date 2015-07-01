@@ -83,7 +83,7 @@ func (h *hub) run() {
 
 	}
 
-	defer func (){ff.close_channel <-true}();
+	defer ff.Close();
 
 	h.log.Debug("decoder created")
 
