@@ -37,7 +37,6 @@ func (f *ffmpeg)run(){
 		packet_channel: make(chan *gmf.Packet),
 	}
 	defer decoder.Close()
-	defer close(frame_cannel)
 	defer f.log.Debug("ffmpeg closed!!!")
 	go decoder.Run()
 

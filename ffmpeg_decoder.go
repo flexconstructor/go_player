@@ -24,6 +24,7 @@ type FFmpegDecoder  struct{
 
 func (d *FFmpegDecoder)Run(){
 	d.log.Info("Run Decoder for %s",d.stream_url)
+	defer close(d.frame_channel)
 	inputCtx,err:=NewInputCtx(d.stream_url)
 
 	if(err != nil){
