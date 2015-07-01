@@ -210,8 +210,9 @@ func (h *hub)Close(){
 		c.Close()
 	}
 	h.exit_channel <- h
-	h.rtmp_close <- true
 	h.ffmpeg_close <- true
+	h.rtmp_close <- true
+
 	h.log.Debug("hub closed")
 
 }
