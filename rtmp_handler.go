@@ -40,6 +40,7 @@ func (handler *RtmpHandler) OnClosed(conn rtmp.Conn) {
 }
 
 func (handler *RtmpHandler) OnReceived(conn rtmp.Conn, message *rtmp.Message) {
+	handler.log("resived")
 }
 
 func (handler *RtmpHandler) OnReceivedRtmpCommand(conn rtmp.Conn, command *rtmp.Command) {

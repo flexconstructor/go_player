@@ -20,9 +20,6 @@ type RtmpConnector struct {
 func (c *RtmpConnector)Run() {
 	var err error
 	c.log.Info("Run RTMP connection: ",c.rtmp_url)
-	l := rtmp_log.NewLogger("/home/mediaapi/app/logs/player_logs", "player", nil, 60, 3600*24, true)
-	rtmp.InitLogger(l)
-	defer l.Close()
 	createStreamChan = make(chan rtmp.OutboundStream)
 	obConn, err = rtmp.Dial(c.rtmp_url, c.handler, 100)
 
@@ -31,7 +28,7 @@ func (c *RtmpConnector)Run() {
 		c.error_cannel <- NewError(1,1)
 		return ;
 	}
-	defer obConn.Close()
+	defer c.Close()
 
 	err = obConn.Connect()
 	if err != nil && c.error_cannel != nil{
