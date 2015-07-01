@@ -75,7 +75,7 @@ func (h *hub) run() {
 	ff=&ffmpeg{
 		stream_url: h.stream_url+"/"+h.stream_id,
 		broadcast:h.broadcast,
-		close_channel: make(chan bool,1),
+		close_channel: make(chan bool),
 		metadata: h.metadata,
 		error: h.error,
 		log: h.log,
