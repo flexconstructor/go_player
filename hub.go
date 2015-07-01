@@ -209,7 +209,7 @@ func (h *hub)Close(){
 	h.rtmp_close <- true
 	h.log.Debug("close ffmpeg")
 	//h.ffmpeg_close <- true
-	h.log.Debug("write to ffmpeg_close")
+	h.log.Debug("write to ffmpeg_close: ",h.ffmpeg_close)
 
 	if(len(h.connections)>0){
 		for c := range h.connections {
