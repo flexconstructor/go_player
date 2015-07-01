@@ -8,11 +8,11 @@ import (
 type ffmpeg struct {
 	stream_url string
 	broadcast chan []byte
-	rtmp_status chan int
 	metadata chan *MetaData
 	error chan *WSError
 	log player_log.Logger
 	workers_length int
+	close_channel chan bool
 
 }
 
@@ -25,15 +25,14 @@ func (f *ffmpeg)run(){
 	codec_chan:= make(chan *gmf.CodecCtx)
 	frame_cannel:= make(chan *gmf.Frame)
 	decoder:=&FFmpegDecoder{
-		f.stream_url,
-		f.broadcast,
-		f.rtmp_status,
-		codec_chan,
-		f.error,
-		f.log,
-		make(chan bool),
-		frame_cannel,
-		make(chan *gmf.Packet),
+		stream_url: f.stream_url,
+		broadcast:f.broadcast,
+		codec_chan: codec_chan,
+		error: f.error,
+		log: f.log,
+		close_chan: make(chan bool),
+		frame_channel: frame_cannel,
+		packet_channel: make(chan *gmf.Packet),
 	}
 	defer decoder.Close()
 	defer f.log.Debug("ffmpeg closed!!!")
@@ -51,13 +50,20 @@ func (f *ffmpeg)run(){
 			f.runEncoder(c, frame_cannel)
 		}
 
-		case status := <- f.rtmp_status:
+		case close, ok:= <-f.close_channel:
+			f.log.Debug("call close_chan %t",close)
+		if(ok ==true && close==true){
+			f.log.Debug("CLOSE FFMPEG")
+			return
+		}
+
+		/*case status := <- f.rtmp_status:
 		f.log.Debug("call rtmp status: %d",status)
 		if(status==0){
 			f.log.Debug("rtmp status 0");
 			return
 		}
-
+*/
 		}
 	}
 
@@ -70,7 +76,7 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 	encoder:=&FFmpegEncoder{
 		c,
 		f.broadcast,
-		f.rtmp_status,
+		make(chan int),
 		f.error,
 		f.log,
 		make(chan bool),
@@ -90,8 +96,8 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 }
 
 func (f *ffmpeg)close(){
-	f.log.Info("Close ffmpeg!",f.rtmp_status)
-	f.rtmp_status <- 0
+	f.log.Info("Close ffmpeg!")
+	f.close_channel <-true
 	f.log.Debug("write status")
 
 }
