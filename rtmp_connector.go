@@ -28,7 +28,7 @@ func (c *RtmpConnector)Run() {
 		c.error_cannel <- NewError(1,1)
 		return ;
 	}
-	defer c.Close()
+
 
 	err = obConn.Connect()
 	if err != nil && c.error_cannel != nil{
@@ -36,6 +36,7 @@ func (c *RtmpConnector)Run() {
 		c.error_cannel <- NewError(1,1)
 		return
 	}
+	defer obConn.Close()
 	for {
 		select {
 		case stream := <-createStreamChan:
