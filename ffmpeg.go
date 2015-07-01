@@ -53,6 +53,7 @@ func (f *ffmpeg)run(){
 		}
 
 		case status := <- f.rtmp_status:
+		f.log.Debug("call rtmp status: %d",status)
 		if(status==0){
 			f.log.Debug("rtmp status 0");
 			return
