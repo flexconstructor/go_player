@@ -206,13 +206,15 @@ func (h *hub) run() {
 func (h *hub)Close(){
 	h.log.Debug("Close hub ",h.stream_id)
 
-	for c := range h.connections {
-		c.Close()
-	}
 	h.exit_channel <- h
 	h.ffmpeg_close <- true
 	h.rtmp_close <- true
+	h.log.Debug("close connections %d",len(h.connections))
+	for c := range h.connections {
+		c.Close()
+	}
 
-	h.log.Debug("hub closed")
+
+
 
 }
