@@ -31,7 +31,7 @@ type hub struct {
 
 	rtmp_status chan int
 	exit_channel chan *hub
-
+	rtmp_close chan bool
 	metadata chan *MetaData
 	error chan *WSError
 	log player_log.Logger
@@ -64,6 +64,7 @@ exit_channel chan *hub,
 		log: logger,
 		service_token: service_token,
 		exit_channel: exit_channel,
+		rtmp_close: make(chan bool),
 
 
 	}
@@ -207,5 +208,6 @@ func (h *hub)Close(){
 		c.Close()
 	}
 	h.exit_channel <- h
+	h.rtmp_close <- true
 
 }

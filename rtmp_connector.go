@@ -12,6 +12,7 @@ type RtmpConnector struct {
 	stream_id string
 	handler *RtmpHandler
 	error_cannel chan *WSError
+	close_channel chan bool
 	log player_log.Logger
 
 }
@@ -46,6 +47,10 @@ func (c *RtmpConnector)Run() {
 				c.error_cannel <- NewError(7,1)
 				return
 			}
+		case b:=<-c.close_channel:
+		if(b==true){
+			return
+		}
 		}
 	}
 
