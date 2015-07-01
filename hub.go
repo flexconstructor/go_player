@@ -159,7 +159,6 @@ func (h *hub) run() {
 			h.log.Debug("Close rtmp")
 			return
 			}else{
-				//go decoder.Run()
 				go ff.run()
 				h.log.Debug("run decoder")
 			}
@@ -212,6 +211,7 @@ func (h *hub)Close(){
 	}
 	h.exit_channel <- h
 	h.rtmp_close <- true
-	h.ffmpeg_close <-true
+	h.ffmpeg_close <- true
+	h.log.Debug("hub closed")
 
 }

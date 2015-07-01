@@ -54,9 +54,9 @@ func (f *ffmpeg)run(){
 			f.runEncoder(c, frame_cannel)
 		}
 		case close:= <- f.close_chan:
-
+			f.log.Debug("call close ffmpeg %t",close)
 		if(close==true){
-			f.log.Debug("call close ffmpeg")
+
 			return
 		}
 		case status := <- f.rtmp_status:
