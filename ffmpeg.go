@@ -13,7 +13,7 @@ type ffmpeg struct {
 	log player_log.Logger
 	workers_length int
 	close_channel chan bool
-	wg sync.WaitGroup
+
 
 }
 
@@ -39,7 +39,7 @@ func (f *ffmpeg)run(){
 	defer decoder.Close()
 	defer f.log.Debug("ffmpeg closed!!!")
 	go decoder.Run()
-	f.wg.Add(1)
+
 	for{
 		select {
 		case c, ok:= <-codec_chan:
@@ -52,12 +52,10 @@ func (f *ffmpeg)run(){
 			f.runEncoder(c, frame_cannel)
 		}
 
-		case close, ok:= <-f.close_channel:
-			f.log.Debug("call close_chan %t",close)
-		if(ok !=true && close !=true){
-
+		case <- f.close_channel:
+			f.log.Debug("call close_chan")
 			return
-		}
+
 
 		/*case status := <- f.rtmp_status:
 		f.log.Debug("call rtmp status: %d",status)
@@ -68,7 +66,7 @@ func (f *ffmpeg)run(){
 */
 		}
 	}
-	f.wg.Wait()
+
 	f.log.Debug("CLOSE FFMPEG")
 
 }
@@ -101,9 +99,10 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 
 func (f *ffmpeg)Close(){
 	f.log.Info("Close ffmpeg!")
+	f.close_channel <- true
 	close(f.close_channel)
 	f.log.Debug("write status")
-	f.wg.Done()
+
 
 }
 
