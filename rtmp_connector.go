@@ -61,7 +61,8 @@ func (c *RtmpConnector)Run() {
 
 func (c *RtmpConnector)Close(){
 	c.log.Info("close connection")
-	if(obConn != nil){
+	/*if(obConn != nil){
 		obConn.Close()
-	}
+	}*/
+	c.close_channel <-true
 }

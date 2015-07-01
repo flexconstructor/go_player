@@ -31,7 +31,7 @@ type hub struct {
 
 	rtmp_status chan int
 	exit_channel chan *hub
-	rtmp_close chan bool
+
 	metadata chan *MetaData
 	error chan *WSError
 	log player_log.Logger
@@ -64,9 +64,6 @@ exit_channel chan *hub,
 		log: logger,
 		service_token: service_token,
 		exit_channel: exit_channel,
-		rtmp_close: make(chan bool),
-
-
 
 	}
 }
@@ -94,7 +91,7 @@ func (h *hub) run() {
  		rtmp_url:	h.stream_url,
  		stream_id: h.stream_id,
 		error_cannel: h.error,
-		close_channel:h.rtmp_close,
+		close_channel:make(chan bool),
 		log: h.log,
  		 handler: &RtmpHandler{
  			 stream_status: h.rtmp_status,
@@ -102,6 +99,7 @@ func (h *hub) run() {
 			 log: h.log,
  		 },
 	}
+	defer conn.Close()
 	h.log.Debug("connection created")
 
 	for {
@@ -200,7 +198,6 @@ func (h *hub) run() {
 func (h *hub)Close(){
 	h.log.Debug("Close hub %s",h.stream_id)
 	h.exit_channel <- h
-	h.rtmp_close <- true
 	if(len(h.connections)>0){
 		for c := range h.connections {
 			c.Close()
