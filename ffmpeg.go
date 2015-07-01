@@ -52,7 +52,7 @@ func (f *ffmpeg)run(){
 
 		case close, ok:= <-f.close_channel:
 			f.log.Debug("call close_chan %t",close)
-		if(ok ==true && close==true){
+		if(ok !=true && close !=true){
 			f.log.Debug("CLOSE FFMPEG")
 			return
 		}
@@ -97,7 +97,7 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 
 func (f *ffmpeg)Close(){
 	f.log.Info("Close ffmpeg!")
-	f.close_channel <-true
+	close(f.close_channel)
 	f.log.Debug("write status")
 
 }
