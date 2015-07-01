@@ -26,8 +26,10 @@ type GoPlayer struct  {
 	updates chan  *WSConnection
 	closes chan *WSConnection
 	stops chan *GoPlayer
+	hub_close chan *hub
 	log player_log.Logger
 	service_token string
+
 	handler IConnectionHandler
 }
 
@@ -56,6 +58,7 @@ if(player_instance != nil){
 		updates:make(chan *WSConnection),
 		closes: make(chan *WSConnection),
 		stops: make(chan *GoPlayer),
+		hub_close: make(chan *hub),
 		service_token: service_token,
 		handler: connectionHandler,
 	}
@@ -92,7 +95,13 @@ defer p.stopInstance()
 
 		}
 			p.closeConnection(c)
+		case h,ok:= <-p.hub_close:
+		if(ok){
+			p.log.Debug("remove hub from map")
+			delete(p.streams_map, h.stream_id)
 		}
+		}
+
 		}
 }
 
@@ -121,6 +130,7 @@ func (p *GoPlayer)initConnection(conn *WSConnection){
 			strconv.FormatUint(params.StreamID,10),
 			p.log,
 			p.service_token,
+			p.hub_close,
 		)
 		p.streams_map[params.StreamID]=h
 		go h.run()

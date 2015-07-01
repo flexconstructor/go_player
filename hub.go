@@ -30,6 +30,7 @@ type hub struct {
 	unregister chan *WSConnection
 
 	rtmp_status chan int
+	exit_channel chan *hub
 
 	metadata chan *MetaData
 	error chan *WSError
@@ -48,6 +49,7 @@ func NewHub(stream_url string,
 stream_name string,
 logger player_log.Logger,
 service_token string,
+exit_channel chan *hub,
 ) *hub{
 	return &hub{
 		stream_url: stream_url,
@@ -61,6 +63,7 @@ service_token string,
 		error: make(chan *WSError),
 		log: logger,
 		service_token: service_token,
+		exit_channel: exit_channel,
 
 
 	}
@@ -203,5 +206,6 @@ func (h *hub)Close(){
 	for c := range h.connections {
 		c.Close()
 	}
+	h.exit_channel <- h
 
 }
