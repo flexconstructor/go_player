@@ -66,7 +66,7 @@ func (e *FFmpegEncoder)Run(){
 			//e.error <- NewError(5,2)
 			//gmf.Release(srcFrame)
 			//break
-			e.log("close encoder")
+			e.log.Debug("close encoder")
 			return
 
 		}
