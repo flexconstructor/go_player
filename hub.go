@@ -32,6 +32,7 @@ type hub struct {
 	rtmp_status chan int
 	exit_channel chan *hub
 	rtmp_close chan bool
+	ffmpeg_close chan bool
 	metadata chan *MetaData
 	error chan *WSError
 	log player_log.Logger
@@ -65,6 +66,7 @@ exit_channel chan *hub,
 		service_token: service_token,
 		exit_channel: exit_channel,
 		rtmp_close: make(chan bool),
+		ffmpeg_close: make(chan bool),
 
 
 	}
@@ -88,7 +90,7 @@ func (h *hub) run() {
 		metadata: h.metadata,
 		error: h.error,
 		log: h.log,
-		close_chan: h.rtmp_close,
+		close_chan: h.ffmpeg_close,
 		workers_length:20,
 
 	}
@@ -210,5 +212,6 @@ func (h *hub)Close(){
 	}
 	h.exit_channel <- h
 	h.rtmp_close <- true
+	h.ffmpeg_close <-true
 
 }
