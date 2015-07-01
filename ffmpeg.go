@@ -42,6 +42,11 @@ func (f *ffmpeg)run(){
 
 	for{
 		select {
+		case <- f.close_channel:
+			f.log.Debug("call close_chan")
+			return
+
+
 		case c, ok:= <-codec_chan:
 		if(ok){
 			f.metadata <- &MetaData{
@@ -50,13 +55,8 @@ func (f *ffmpeg)run(){
 				Height: c.Height(),
 			}
 			f.runEncoder(c, frame_cannel)
-			f.log.Debug("test close")
-			f.close_channel <-true
-		}
 
-		case <- f.close_channel:
-			f.log.Debug("call close_chan")
-			return
+		}
 
 
 		/*case status := <- f.rtmp_status:
@@ -101,6 +101,8 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 
 func (f *ffmpeg)Close(){
 	f.log.Info("Close ffmpeg!")
+	f.close_channel <- true
+	f.log.Debug("write close channel")
 
 
 }
