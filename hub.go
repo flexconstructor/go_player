@@ -32,7 +32,6 @@ type hub struct {
 	rtmp_status chan int
 	exit_channel chan *hub
 	rtmp_close chan bool
-	ffmpeg_close chan bool
 	metadata chan *MetaData
 	error chan *WSError
 	log player_log.Logger
@@ -66,7 +65,7 @@ exit_channel chan *hub,
 		service_token: service_token,
 		exit_channel: exit_channel,
 		rtmp_close: make(chan bool),
-		ffmpeg_close: make(chan bool),
+
 
 
 	}
@@ -75,14 +74,7 @@ exit_channel chan *hub,
 func (h *hub) run() {
 	defer h.Close()
 	h.log.Info("Hub run: url = %s id= %s",h.stream_url,h.stream_id)
-	/*decoder=&FFmpegDecoder{
-		stream_url: h.stream_url+"/"+h.stream_id,
-		broadcast:h.broadcast,
-		rtmp_status: h.rtmp_status,
-		metadata: h.metadata,
-		error: h.error,
-		log: h.log,
-	}*/
+
 	ff=&ffmpeg{
 		stream_url: h.stream_url+"/"+h.stream_id,
 		broadcast:h.broadcast,
@@ -90,10 +82,12 @@ func (h *hub) run() {
 		metadata: h.metadata,
 		error: h.error,
 		log: h.log,
-		close_chan: h.ffmpeg_close,
 		workers_length:20,
 
 	}
+
+	defer ff.close()
+
 	h.log.Debug("decoder created")
 
 	conn = &RtmpConnector{
@@ -207,10 +201,6 @@ func (h *hub)Close(){
 	h.log.Debug("Close hub %s",h.stream_id)
 	h.exit_channel <- h
 	h.rtmp_close <- true
-	h.log.Debug("close ffmpeg")
-	//h.ffmpeg_close <- true
-	h.log.Debug("write to ffmpeg_close: ",h.ffmpeg_close)
-
 	if(len(h.connections)>0){
 		for c := range h.connections {
 			c.Close()

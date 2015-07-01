@@ -12,7 +12,6 @@ type ffmpeg struct {
 	metadata chan *MetaData
 	error chan *WSError
 	log player_log.Logger
-	close_chan chan bool
 	workers_length int
 
 }
@@ -22,7 +21,6 @@ type ffmpeg struct {
 
 func (f *ffmpeg)run(){
 	f.log.Info("run ffmpeg for %s",f.stream_url)
-	defer f.close()
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	codec_chan:= make(chan *gmf.CodecCtx)
 	frame_cannel:= make(chan *gmf.Frame)
@@ -33,7 +31,7 @@ func (f *ffmpeg)run(){
 		codec_chan,
 		f.error,
 		f.log,
-		f.close_chan,
+		make(chan bool),
 		frame_cannel,
 		make(chan *gmf.Packet),
 	}
@@ -53,12 +51,7 @@ func (f *ffmpeg)run(){
 			}
 			f.runEncoder(c, frame_cannel)
 		}
-		case close:= <- f.close_chan:
-			f.log.Debug("call close ffmpeg %t",close)
-		if(close==true){
 
-			return
-		}
 		case status := <- f.rtmp_status:
 		if(status==0){
 			f.log.Debug("rtmp status 0");
@@ -67,8 +60,6 @@ func (f *ffmpeg)run(){
 
 		}
 	}
-
-
 
 }
 
@@ -82,7 +73,7 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 		f.rtmp_status,
 		f.error,
 		f.log,
-		f.close_chan,
+		make(chan bool),
 		frame_channel,
 		wg,
 	}
@@ -94,12 +85,13 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 
 	wg.Wait()
 	f.log.Info("All encoders is done!")
-	f.close_chan <- true
+
 
 }
 
 func (f *ffmpeg)close(){
 	f.log.Info("Close ffmpeg!")
+	f.rtmp_status <-0
 
 }
 
