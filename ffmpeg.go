@@ -53,8 +53,9 @@ func (f *ffmpeg)run(){
 			}
 			f.runEncoder(c, frame_cannel)
 		}
-		case _, ok:= <- f.close_chan:
-		if(ok){
+		case close:= <- f.close_chan:
+
+		if(close==true){
 			f.log.Debug("call close ffmpeg")
 			return
 		}
