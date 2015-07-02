@@ -66,16 +66,20 @@ func (c *WSConnection) write(mt int, payload []byte) error {
 	return c.ws.WriteMessage(mt, payload)
 }
 
-func (c *WSConnection)Run(){
+func (c *WSConnection)Run(error *WSError){
 	c.lgr.Debug("Run connection")
 	player,err:=GetPlayerInstance()
 	if(err != nil){
 		c.lgr.Error("no player instance found")
 		return
 	}
-	c.lgr.Debug("write connection to player")
-	player.connects <- c
-	c.lgr.Debug("writed to player connects")
+	if(error.code ==0 && error.level==0) {
+		c.lgr.Debug("write connection to player")
+		player.connects <- c
+		c.lgr.Debug("writed to player connects")
+	}else{
+		c.error_channel <- error
+	}
 	ticker := time.NewTicker(pingPeriod)
 	defer c.Close()
 

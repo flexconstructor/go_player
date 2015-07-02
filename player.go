@@ -140,7 +140,7 @@ func (p *GoPlayer)stopInstance(){
 
 func (p *GoPlayer)initConnection(conn *WSConnection){
 	params:=conn.GetConnectionParameters()
-	p.log.Debug("init connection  with params: stream_id=  %g user_id= %g access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
+	p.log.Debug("init connection  with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
 	if(!ok){
 		p.log.Debug("init hub")
