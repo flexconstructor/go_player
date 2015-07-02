@@ -87,14 +87,18 @@ defer p.stopInstance()
 		case <-p.stops:
 			return
 		case c,ok:=<- p.connects:
-			if(ok){
+			if(ok) {
 				p.initConnection(c)
+			}else{
+				p.log.Error("can not write connection")
 			}
 		case c,ok:= <- p.closes:
-		if(ok){
-
-		}
+		if(ok) {
 			p.closeConnection(c)
+		}else{
+			p.log.Error("can not close connection")
+		}
+
 		case h,ok:= <-p.hub_close:
 		if(ok){
 			p.log.Debug("remove hub from map")

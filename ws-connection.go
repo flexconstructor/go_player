@@ -70,10 +70,12 @@ func (c *WSConnection)Run(){
 	c.lgr.Debug("Run connection")
 	player,err:=GetPlayerInstance()
 	if(err != nil){
+		c.lgr.Error("no player instance found")
 		return
 	}
-	player.connects<- c
-	c.lgr.Debug("write to player connects")
+	c.lgr.Debug("write connection to player")
+	player.connects <- c
+	c.lgr.Debug("writed to player connects")
 	ticker := time.NewTicker(pingPeriod)
 	defer c.Close()
 
