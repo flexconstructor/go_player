@@ -133,6 +133,7 @@ func (h *hub) run() {
 				c=nil
 				h.log.Debug("unregister connection. connection length: %d",len(h.connections))
 				if(len(h.connections)==0){
+					h.exit_channel <- h
 					return
 				}
 			}
@@ -145,6 +146,7 @@ func (h *hub) run() {
 					delete(h.connections, c)
 					c=nil
 					if(len(h.connections)==0){
+						h.exit_channel <- h
 						return
 					}
 				}
@@ -154,6 +156,7 @@ func (h *hub) run() {
 			h.log.Debug("RTMP STATUS: %g",s)
 			if(s==0) {
 			h.log.Debug(">>>>>>Close rtmp")
+				h.exit_channel <- h
 			return
 			}else{
 				go ff.run()
@@ -174,6 +177,7 @@ func (h *hub) run() {
 					delete(h.connections, c)
 					c=nil
 					if(len(h.connections)==0){
+						h.exit_channel <- h
 						return
 					}
 				}
@@ -189,6 +193,7 @@ func (h *hub) run() {
 					delete(h.connections, c)
 				    c=nil
 					if(len(h.connections)==0){
+						h.exit_channel <- h
 						return
 					}
 				}
@@ -203,7 +208,7 @@ func (h *hub) run() {
 
 func (h *hub)Close(){
 	h.log.Debug("Close hub %s",h.stream_id)
-	h.exit_channel <- h
+
 	if(len(h.connections)>0){
 		h.log.Debug("close connections %d",len(h.connections))
 		for c := range h.connections {

@@ -42,7 +42,7 @@ func (c *RtmpConnector)Run() {
 		select {
 		case stream := <-createStreamChan:
 		// Play
-			c.log.Info("Play stream: ",c.stream_id)
+			c.log.Info("Play stream: %d",c.stream_id)
 			err = stream.Play(c.stream_id+"?model_id="+c.stream_id+"&access_token="+c.service_token, nil, nil, nil)
 			if err != nil && c.error_cannel != nil{
 				c.log.Error("Can not play this stream")
