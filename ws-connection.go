@@ -102,16 +102,19 @@ func (c *WSConnection)Run(){
 				c.write(websocket.TextMessage, metadata)
 			}
 		case error, ok:= <- c.error_channel:
-		if(ok){
-			error_object,err:= error.JSON();
-			if(err==nil){
-				c.write(websocket.TextMessage,error_object)
+		c.lgr.Debug("call write error")
+		if(ok) {
+			error_object, err := error.JSON();
+			if (err==nil) {
+				c.write(websocket.TextMessage, error_object)
 				c.lgr.Debug("error writed")
 			}
-			if(error.level==1){
-				c.lgr.Error("error level = %d descripton= %s",error.level, error.description)
+			if (error.level==1) {
+				c.lgr.Error("error level = %d descripton= %s", error.level, error.description)
 				return
 			}
+		}else{
+			c.lgr.Error("can not write error!")
 		}
 		}
 	}
