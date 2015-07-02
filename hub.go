@@ -83,7 +83,7 @@ func (h *hub) run() {
 
 	}
 
-	defer ff.Close();
+	//defer ff.Close();
 
 	h.log.Debug("decoder created")
 
