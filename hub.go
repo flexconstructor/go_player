@@ -201,11 +201,14 @@ func (h *hub) run() {
 func (h *hub)Close(){
 	h.log.Debug("Close hub %s",h.stream_id)
 	h.exit_channel <- h
-	if(len(h.connections)>0){
+	/*if(len(h.connections)>0){
+		h.log.Debug("close connections %d",len(h.connections))
 		for c := range h.connections {
 			c.Close()
 		}
 
-	}
+
+	}*/
+	//close(h.broadcast)
 	h.log.Debug("hub closed")
 }
