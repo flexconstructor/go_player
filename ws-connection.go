@@ -67,12 +67,13 @@ func (c *WSConnection) write(mt int, payload []byte) error {
 }
 
 func (c *WSConnection)Run(){
+	c.lgr.Debug("Run connection")
 	player,err:=GetPlayerInstance()
 	if(err != nil){
 		return
 	}
 	player.connects<- c
-
+	c.lgr.Debug("write to player connects")
 	ticker := time.NewTicker(pingPeriod)
 	defer c.Close()
 
@@ -105,6 +106,7 @@ func (c *WSConnection)Run(){
 			error_object,err:= error.JSON();
 			if(err==nil){
 				c.write(websocket.TextMessage,error_object)
+				c.lgr.Debug("error writed")
 			}
 			if(error.level==1){
 				c.lgr.Error("error level = %d descripton= %s",error.level, error.description)
