@@ -108,7 +108,10 @@ defer p.stopInstance()
 		if(!ok){
 			panic("can not write update")
 		}
-		p.handler.OnUpdate(u)
+		err:=p.handler.OnUpdate(u)
+		if(err != nil){
+			u.error_channel <- err
+		}
 
 		}
 
@@ -147,7 +150,10 @@ func (p *GoPlayer)initConnection(conn *WSConnection){
 	}
 	p.log.Debug("register connection in hub")
 	h.register<-conn
-	p.handler.OnConnect(conn)
+	err:= p.handler.OnConnect(conn)
+	if(err != nil){
+		conn.error_channel <-err
+	}
 
 }
 
@@ -160,7 +166,10 @@ func (p *GoPlayer)closeConnection(conn *WSConnection){
 		return
 	}
 	h.unregister <- conn
-	p.handler.OnDisconnect(conn)
+	err:=p.handler.OnDisconnect(conn)
+	if(err != nil){
+		conn.error_channel <- err
+	}
 	p.log.Debug("live connections: %d",len(h.connections))
 	if(len(h.connections)==0){
 		delete(p.streams_map, params.StreamID)
