@@ -73,7 +73,7 @@ func (h *hub) run() {
 	h.log.Info("Hub run: url = %s id= %s",h.stream_url,h.stream_id)
 
 	ff=&ffmpeg{
-		stream_url: h.stream_url+"/"+h.stream_id,
+		stream_url: h.stream_url+"/"+h.stream_id+"?model_id="+h.stream_id+"&access_token="+h.service_token,
 		broadcast:h.broadcast,
 		close_channel: make(chan bool),
 		metadata: h.metadata,
@@ -93,6 +93,7 @@ func (h *hub) run() {
 		error_cannel: h.error,
 		close_channel:make(chan bool),
 		log: h.log,
+		service_token: h.service_token,
  		 handler: &RtmpHandler{
  			 stream_status: h.rtmp_status,
 			  error_channel: h.error,

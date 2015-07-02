@@ -13,8 +13,6 @@ type ffmpeg struct {
 	log player_log.Logger
 	workers_length int
 	close_channel chan bool
-
-
 }
 
 
