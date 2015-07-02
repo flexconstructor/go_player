@@ -107,7 +107,7 @@ func (c *WSConnection)Run(){
 				c.write(websocket.TextMessage,error_object)
 			}
 			if(error.level==1){
-				c.lgr.Error("error level = %g descripton= %s",error.level, error.description)
+				c.lgr.Error("error level = %d descripton= %s",error.level, error.description)
 				return
 			}
 		}
@@ -125,7 +125,7 @@ func (c *WSConnection)WriteError(e *WSError)(*error){
 
 
 func (c *WSConnection)Close(){
-	c.lgr.Debug("connection closed for user: %u",c.GetConnectionParameters().ClientID)
+	c.lgr.Debug("connection closed for user: %d",c.GetConnectionParameters().ClientID)
 	c.write(websocket.CloseMessage, []byte{})
 	c.ws.Close()
 	pl, err:=GetPlayerInstance();

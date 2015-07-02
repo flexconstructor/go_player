@@ -23,9 +23,9 @@ func (handler *RtmpHandler) OnStatus(conn rtmp.OutboundConn) {
 	status, err = obConn.Status()
 	if(err != nil && handler.error_channel != nil) {
 		handler.error_channel <- NewError(8, 2)
-		handler.log.Error("can not check status: ",err)
+		handler.log.Error("can not check status: %e",err)
 	}else{
-		handler.log.Info("rtmp status: ",status)
+		handler.log.Info("rtmp status: %d",status)
 	}
 
 }
@@ -49,7 +49,7 @@ func (handler *RtmpHandler) OnReceivedRtmpCommand(conn rtmp.Conn, command *rtmp.
 
 func (handler *RtmpHandler) OnStreamCreated(conn rtmp.OutboundConn, stream rtmp.OutboundStream) {
 	createStreamChan <- stream
-	handler.log.Info("On stream created: ",handler.stream_status)
+	handler.log.Info("On stream created: %d",handler.stream_status)
 	if(handler.stream_status != nil){
 		handler.stream_status <- 1
 	}
