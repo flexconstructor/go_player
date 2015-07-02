@@ -126,9 +126,10 @@ func (h *hub) run() {
 
 		case c := <-h.unregister:
 			if _, ok := h.connections[c]; ok {
-				h.log.Debug("unregister connection")
+
 				delete(h.connections, c)
 				c=nil
+				h.log.Debug("unregister connection. connection length: %d",len(h.connections))
 				if(len(h.connections)==0){
 					return
 				}

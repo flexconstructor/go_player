@@ -159,10 +159,10 @@ func (p *GoPlayer)initConnection(conn *WSConnection){
 
 func (p *GoPlayer)closeConnection(conn *WSConnection){
 	params:=conn.GetConnectionParameters()
-	p.log.Debug("Close connection with params: stream_id=  %g user_id= %g access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
+	p.log.Debug("Close connection with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
 	if(! ok){
-		p.log.Error("hub for stream %g not found!",params.StreamID)
+		p.log.Error("hub for stream %d not found!",params.StreamID)
 		return
 	}
 	h.unregister <- conn
@@ -177,59 +177,4 @@ func (p *GoPlayer)closeConnection(conn *WSConnection){
 	}
 }
 
-
-/*func CloseGoPlayer()(error, bool){
-
-	player, err:= GetPlayerInstance()
-	if(err != nil){
-		return err,false;
-	}
-	player.log.Info("Close Go Player")
-
-	for stream_name := range player.streams_map {
-			h:=player.streams_map[stream_name]
-			if(h != nil){
-				h.rtmp_status <-0;
-				delete(player.streams_map,stream_name)
-				h=nil
-		}
-	}
-	player_instance=nil
-	player.log.Close()
-	return nil, true
-}*/
-
-
-/*func(p *GoPlayer) Run(stream_name string) bool{
-
-	p.log.Info("Run player with stream: ",stream_name)
-	p.log.Info("APPName: ",p.app_name)
-	if(p.streams_map[stream_name] == nil) {
-		p.log.Debug("handle ws function: "+"/"+p.app_name+"/"+stream_name)
-		//newhub:= NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name, stream_name,p.log,p.service_token,p.handler)
-		p.route.HandleFunc("/"+stream_name, p.serveWebSocket)
-		//p.route.NewRoute().HandlerFunc("/"+stream_name, p.serveWebSocket)
-		p.log.Debug("-----")
-	//	p.streams_map[stream_name]=newhub
-		//go  newhub.run()
-	}
-	return true;
-}*/
-
-/*func (p *GoPlayer)GetStream(stream_id uint64)(*hub){
-
-return nil
-}
-
-func (p *GoPlayer) Close(stream_id uint64)bool{
-	/*p.log.Debug("CLOSE STREAM: ",stream_name)
-	p.route.HandleFunc("/"+p.app_name+"/"+stream_name, nil)
-	h := p.streams_map[stream_name]
-	if(h != nil){
-		h.rtmp_status <-0
-		return true
-	}
-*/
-//return false
-//}
 
