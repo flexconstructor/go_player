@@ -103,7 +103,7 @@ func (h *hub) run() {
 	defer conn.Close()
 	h.log.Debug("connection created")
 	defer h.Close()
-	var wg=sync.WaitGroup
+	wg:=new(sync.WaitGroup)
 	for {
 		select {
 		case c := <-h.register:
