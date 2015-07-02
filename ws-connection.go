@@ -91,7 +91,11 @@ func (c *WSConnection)Run(){
 				c.lgr.Error("can not write ping")
 				return
 			}
-		c.lgr.Debug("ping")
+		err= c.callUpdate()
+		if(err != nil){
+			c.lgr.Error("Update error")
+			return
+		}
 		case metadata, ok:= <- c.metadata:
 			if(ok) {
 				c.write(websocket.TextMessage, metadata)
@@ -134,4 +138,14 @@ func (c *WSConnection)Close(){
 
 func (c *WSConnection)GetConnectionParameters()(*ConnectionParams){
 	return c.params
+}
+
+func (c *WSConnection)callUpdate()(error){
+	pl, err:=GetPlayerInstance();
+	if(err != nil){
+		c.lgr.Error("NO Player found: ", err)
+		return err
+	}
+	pl.updates <- c
+	return nil;
 }

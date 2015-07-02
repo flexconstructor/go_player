@@ -104,6 +104,12 @@ defer p.stopInstance()
 			}
 			delete(p.streams_map, streamID)
 		}
+		case u,ok:= <- p.updates:
+		if(!ok){
+			panic("can not write update")
+		}
+		p.handler.OnUpdate(u)
+
 		}
 
 		}
