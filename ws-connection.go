@@ -113,7 +113,7 @@ func (c *WSConnection)Run(){
 			}
 			if (error.level==1) {
 				c.lgr.Error("error level = %d descripton= %s", error.level, error.description)
-				//return
+				return
 			}
 		}else{
 			c.lgr.Error("can not write error!")
