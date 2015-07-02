@@ -83,7 +83,7 @@ func (h *hub) run() {
 
 	}
 
-	//defer ff.Close();
+	defer ff.Close();
 
 	h.log.Debug("decoder created")
 
@@ -100,7 +100,7 @@ func (h *hub) run() {
 			 log: h.log,
  		 },
 	}
-	defer conn.Close()
+	//defer conn.Close()
 	h.log.Debug("connection created")
 	defer h.Close()
 	for {
