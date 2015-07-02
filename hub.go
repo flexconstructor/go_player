@@ -177,8 +177,11 @@ func (h *hub) run() {
 				}
 			}
 		case e:= <-h.error:
-		h.log.Error("player error",e.description)
-			for c := range h.connections {
+		h.log.Error("player error: %s",e.description)
+		if(e.level==1){
+			return
+		}
+			/*for c := range h.connections {
 				select {
 				case c.error_channel <- e:
 				default:
@@ -188,7 +191,7 @@ func (h *hub) run() {
 					if(len(h.connections)==0){
 						return
 					}
-				}
+				}*/
 			}
 
 		}
