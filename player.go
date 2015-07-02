@@ -87,6 +87,7 @@ defer p.stopInstance()
 		case <-p.stops:
 			return
 		case c,ok:=<- p.connects:
+		p.log.Debug("call write connection")
 			if(ok) {
 				p.initConnection(c)
 			}else{
