@@ -103,17 +103,20 @@ func (h *hub) run() {
 	defer conn.Close()
 	h.log.Debug("connection created")
 	defer h.Close()
+	var wg=sync.WaitGroup
 	for {
 		select {
 		case c := <-h.register:
 			if(len(h.connections)==0){
 				h.log.Debug("first connection")
 				go conn.Run()
-
+				wg.Add(1)
+				wg.Wait()
 			}
 			h.connections[c] = true
 
 		h.log.Debug("Register connection")
+
 
 		if(meta != nil){
 			b, err:=meta.JSON()
@@ -157,7 +160,7 @@ func (h *hub) run() {
 				go ff.run()
 				h.log.Debug("run decoder")
 			}
-
+			wg.Done()
 		case meta= <- h.metadata:
 		b, err:=meta.JSON()
 		if(err != nil){
@@ -178,10 +181,8 @@ func (h *hub) run() {
 			}
 		case e:= <-h.error:
 		h.log.Error("player error: %s",e.description)
-		if(e.level==1){
-			return
-		}
-			/*for c := range h.connections {
+
+			for c := range h.connections {
 				select {
 				case c.error_channel <- e:
 				default:
@@ -191,7 +192,7 @@ func (h *hub) run() {
 					if(len(h.connections)==0){
 						return
 					}
-				}*/
+				}
 			}
 
 		}
@@ -204,14 +205,14 @@ func (h *hub) run() {
 func (h *hub)Close(){
 	h.log.Debug("Close hub %s",h.stream_id)
 	h.exit_channel <- h
-	/*if(len(h.connections)>0){
+	if(len(h.connections)>0){
 		h.log.Debug("close connections %d",len(h.connections))
 		for c := range h.connections {
 			c.Close()
 		}
 
 
-	}*/
-	//close(h.broadcast)
+	}
+
 	h.log.Debug("hub closed")
 }
