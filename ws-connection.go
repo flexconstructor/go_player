@@ -91,6 +91,7 @@ func (c *WSConnection)Run(){
 				c.lgr.Error("can not write ping")
 				return
 			}
+		c.lgr.Debug("ping")
 		case metadata, ok:= <- c.metadata:
 			if(ok) {
 				c.write(websocket.TextMessage, metadata)
