@@ -5,14 +5,14 @@
 package  go_player
 
 import(
-	"sync"
+
 	player_log "github.com/flexconstructor/go_player/log"
 )
 
 // hub maintains the set of active connections and broadcasts messages to the
 // connections.
 type hub struct {
-	sync.Mutex
+
 	//url of stream application
 	stream_url string
 	//stream name
@@ -103,15 +103,14 @@ func (h *hub) run() {
 	defer conn.Close()
 	h.log.Debug("connection created")
 	defer h.Close()
-	wg:=new(sync.WaitGroup)
+
 	for {
 		select {
 		case c := <-h.register:
 			if(len(h.connections)==0){
 				h.log.Debug("first connection")
 				go conn.Run()
-				wg.Add(1)
-				wg.Wait()
+
 			}
 			h.connections[c] = true
 
@@ -160,7 +159,7 @@ func (h *hub) run() {
 				go ff.run()
 				h.log.Debug("run decoder")
 			}
-			wg.Done()
+
 		case meta= <- h.metadata:
 		b, err:=meta.JSON()
 		if(err != nil){
