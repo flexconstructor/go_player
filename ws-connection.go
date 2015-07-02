@@ -121,8 +121,9 @@ func (c *WSConnection)Run(){
 
 
 func (c *WSConnection)WriteError(e *WSError)(*error){
-	c.lgr.Debug("write error to chan %e",e)
-	c.error_channel <-e
+
+	c.error_channel <- e
+	c.lgr.Debug("write error to chan ")
 	return nil
 }
 
