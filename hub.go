@@ -69,7 +69,7 @@ exit_channel chan *hub,
 }
 
 func (h *hub) run() {
-	defer h.Close()
+
 	h.log.Info("Hub run: url = %s id= %s",h.stream_url,h.stream_id)
 
 	ff=&ffmpeg{
@@ -102,7 +102,7 @@ func (h *hub) run() {
 	}
 	defer conn.Close()
 	h.log.Debug("connection created")
-
+	defer h.Close()
 	for {
 		select {
 		case c := <-h.register:

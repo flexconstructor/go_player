@@ -63,10 +63,10 @@ if(player_instance != nil){
 		handler: connectionHandler,
 	}
 
-	log.Debug("Init player instance rtmp hodt: ",player_instance.rtmp_host)
-	log.Debug("Init player instance rtmp port: ",player_instance.rtmp_port)
-	log.Debug("Init player instance rtmp app: ",player_instance.app_name)
-	log.Debug("Init player instance http port: ",player_instance.http_port)
+	log.Debug("Init player instance rtmp host: %s",player_instance.rtmp_host)
+	log.Debug("Init player instance rtmp port: %d",player_instance.rtmp_port)
+	log.Debug("Init player instance rtmp app: %s",player_instance.app_name)
+	log.Debug("Init player instance http port: %d",player_instance.http_port)
 	log.Debug("---------------------")
 	return player_instance
 }
