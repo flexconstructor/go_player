@@ -87,7 +87,7 @@ func (h *hub) run() {
 
 	h.log.Debug("decoder created")
 
-	conn = &RtmpConnector{
+	/*conn = &RtmpConnector{
  		rtmp_url:	h.stream_url,
  		stream_id: h.stream_id,
 		error_cannel: h.error,
@@ -102,6 +102,9 @@ func (h *hub) run() {
 	}
 	defer conn.Close()
 	h.log.Debug("connection created")
+	*/
+	go ff.run()
+	h.log.Debug("run decoder")
 	defer h.Close()
 
 	for {
@@ -109,7 +112,7 @@ func (h *hub) run() {
 		case c := <-h.register:
 			if(len(h.connections)==0){
 				h.log.Debug("first connection")
-				go conn.Run()
+				//go conn.Run()
 
 			}
 			h.connections[c] = true
@@ -156,8 +159,7 @@ func (h *hub) run() {
 			h.log.Debug(">>>>>>Close rtmp")
 			return
 			}else{
-				go ff.run()
-				h.log.Debug("run decoder")
+
 			}
 
 		case meta= <- h.metadata:
