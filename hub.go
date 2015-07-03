@@ -109,7 +109,10 @@ func (h *hub) run() {
 
 	for {
 		select {
-		case c := <-h.register:
+		case c, ok := <-h.register:
+		if(! ok){
+			return
+		}
 			if(len(h.connections)==0){
 				h.log.Debug("first connection")
 				//go conn.Run()
@@ -134,10 +137,12 @@ func (h *hub) run() {
 
 				delete(h.connections, c)
 				c=nil
-				h.log.Debug("unregister connection. connection length: %d",len(h.connections))
-				if(len(h.connections)==0){
+				h.log.Debug("unregister connection. connection length: %d", len(h.connections))
+				if (len(h.connections)==0) {
 					return
 				}
+			}else{
+				return
 			}
 		case m, ok := <-h.broadcast:
 			if(! ok){
@@ -157,7 +162,7 @@ func (h *hub) run() {
 				}
 			}
 
-		case s := <- h.rtmp_status:
+		/*case s, o := <- h.rtmp_status:
 			h.log.Debug("RTMP STATUS: %g",s)
 			if(s==0) {
 			h.log.Debug(">>>>>>Close rtmp")
@@ -165,8 +170,11 @@ func (h *hub) run() {
 			}else{
 
 			}
-
-		case meta= <- h.metadata:
+		*/
+		case meta, ok= <- h.metadata:
+		if(! ok){
+			return
+		}
 		b, err:=meta.JSON()
 		if(err != nil){
 			continue
@@ -184,7 +192,10 @@ func (h *hub) run() {
 					}
 				}
 			}
-		case e:= <-h.error:
+		case e, ok:= <-h.error:
+		if(! ok){
+			return 
+		}
 		h.log.Error("player error: %s",e.description)
 
 			for c := range h.connections {
