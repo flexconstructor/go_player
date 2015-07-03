@@ -5,6 +5,7 @@ import(
 	"errors"
 	player_log "github.com/flexconstructor/go_player/log"
 	"strconv"
+	"sync"
 )
 
 var (
@@ -28,6 +29,7 @@ type GoPlayer struct  {
 	log player_log.Logger
 	service_token string
 	handler IConnectionHandler
+	mutex *sync.RWMutex
 }
 
 
@@ -139,6 +141,8 @@ func (p *GoPlayer)stopInstance(){
 
 
 func (p *GoPlayer)initConnection(conn *WSConnection){
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 	params:=conn.GetConnectionParameters()
 	p.log.Info("init connection  with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
@@ -162,6 +166,8 @@ func (p *GoPlayer)initConnection(conn *WSConnection){
 }
 
 func (p *GoPlayer)closeConnection(conn *WSConnection){
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 	params:=conn.GetConnectionParameters()
 	p.log.Debug("Close connection with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
