@@ -120,13 +120,13 @@ defer p.stopInstance()
 			u.error_channel <- err
 		}
 
-		default:
+	/*	default:
 		for h:= range  p.streams{
 
 			if(len(h.connections)==0){
 				h.Close()
 
-			}
+			}*/
 
 		}
 
