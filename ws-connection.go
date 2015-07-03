@@ -87,7 +87,7 @@ func (c *WSConnection)Run(){
 			}
 			if err := c.write(websocket.BinaryMessage, message); err != nil {
 				c.lgr.Error("can not wright binary")
-				continue
+				return 
 			}
 		case <-ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
