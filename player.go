@@ -120,16 +120,21 @@ defer p.stopInstance()
 			u.error_channel <- err
 		}
 
-	/*	default:
-		for h:= range  p.streams{
+		default:
+		if(len(p.streams_map)>0){
+			for i:=range p.streams_map{
+				h:=p.streams_map[i]
+				if(h != nil){
+					if(len(h.connections)==0){
+						h.Close()
+						delete(p.streams_map, h.stream_id)
+					}
+				}
 
-			if(len(h.connections)==0){
-				h.Close()
-
-			}*/
+			}
 
 		}
-
+		}
 		}
 
 		}
