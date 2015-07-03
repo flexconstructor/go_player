@@ -133,7 +133,7 @@ defer p.stopInstance()
 		}
 
 		}
-}
+
 
 func (p *GoPlayer)Stop(){
 p.log.Info("STOP GO PLAYER INSTANCE")
