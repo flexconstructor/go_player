@@ -178,7 +178,7 @@ func (p *GoPlayer)closeConnection(conn *WSConnection){
 		conn.error_channel <- err
 	}
 	p.log.Debug("live connections: %d",len(h.connections))
-	if(len(h.connections)==0){
+	if(len(h.connections)<=1){
 		delete(p.streams_map, params.StreamID)
 		p.log.Debug("remove hub from map with id: %d",params.StreamID)
 	}

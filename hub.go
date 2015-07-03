@@ -105,7 +105,7 @@ func (h *hub) run() {
 	*/
 	go ff.run()
 	h.log.Debug("run decoder")
-	defer h.Close()
+	//defer h.Close()
 
 	for {
 		select {
@@ -206,7 +206,7 @@ func (h *hub) run() {
 func (h *hub)Close(){
 	h.log.Debug("Close hub %s",h.stream_id)
 
-	if(len(h.connections)>0){
+	/*if(len(h.connections)>0){
 		h.log.Debug("close connections %d",len(h.connections))
 		for c := range h.connections {
 			c.Close()
@@ -215,5 +215,5 @@ func (h *hub)Close(){
 
 	}
 	h.exit_channel <- h
-	h.log.Debug("hub closed")
+	h.log.Debug("hub closed")*/
 }
