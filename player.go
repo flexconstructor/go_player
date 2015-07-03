@@ -87,14 +87,17 @@ defer p.stopInstance()
 		case c,ok:=<- p.connects:
 		p.log.Debug("call write connection")
 			if(ok) {
+				p.wg.Add(1)
 				p.initConnection(c)
+				p.wg.Wait()
 			}else{
 				p.log.Error("can not write connection")
 			}
 		case c,ok:= <- p.closes:
 		if(ok) {
-
+			p.wg.Add(1)
 			p.closeConnection(c)
+			p.wg.Wait()
 		}else{
 			p.log.Error("can not close connection")
 		}
@@ -144,7 +147,7 @@ func (p *GoPlayer)stopInstance(){
 
 func (p *GoPlayer)initConnection(conn *WSConnection){
 	defer p.wg.Done()
-	p.wg.Add(1)
+
 
 	params:=conn.GetConnectionParameters()
 	p.log.Info("init connection  with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
@@ -168,13 +171,13 @@ func (p *GoPlayer)initConnection(conn *WSConnection){
 		conn.error_channel <- err
 
 	}
-p.wg.Wait()
+
 	p.log.Debug("on connect complete")
 }
 
 func (p *GoPlayer)closeConnection(conn *WSConnection){
 	defer p.wg.Done()
-	p.wg.Add(1)
+
 	params:=conn.GetConnectionParameters()
 	p.log.Debug("Close connection with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
@@ -191,6 +194,6 @@ func (p *GoPlayer)closeConnection(conn *WSConnection){
 		return
 	}
 
-	p.wg.Wait()
+
 	p.log.Debug("on disconnect complete")
 	}
