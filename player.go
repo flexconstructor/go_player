@@ -29,7 +29,7 @@ type GoPlayer struct  {
 	log player_log.Logger
 	service_token string
 	handler IConnectionHandler
-	mutex *sync.RWMutex
+	wg *sync.WaitGroup
 }
 
 
@@ -58,6 +58,7 @@ if(player_instance != nil){
 		stops: make(chan *GoPlayer),
 		service_token: service_token,
 		handler: connectionHandler,
+		wg: new (sync.WaitGroup),
 	}
 
 	log.Debug("Init player instance rtmp host: %s",player_instance.rtmp_host)
@@ -92,6 +93,7 @@ defer p.stopInstance()
 			}
 		case c,ok:= <- p.closes:
 		if(ok) {
+			p.wg.Add(1)
 			p.closeConnection(c)
 		}else{
 			p.log.Error("can not close connection")
@@ -141,7 +143,8 @@ func (p *GoPlayer)stopInstance(){
 
 
 func (p *GoPlayer)initConnection(conn *WSConnection){
-
+	defer p.wg.Done()
+	p.wg.Add(1)
 
 	params:=conn.GetConnectionParameters()
 	p.log.Info("init connection  with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
@@ -164,12 +167,12 @@ func (p *GoPlayer)initConnection(conn *WSConnection){
 	if(err != nil){
 		conn.error_channel <-err
 	}
-
+p.wg.Wait()
 }
 
 func (p *GoPlayer)closeConnection(conn *WSConnection){
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+	defer p.wg.Done()
+	p.wg.Add(1)
 	params:=conn.GetConnectionParameters()
 	p.log.Debug("Close connection with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
@@ -184,4 +187,5 @@ func (p *GoPlayer)closeConnection(conn *WSConnection){
 		p.log.Error("disconnection error %s",err.description)
 	}
 	p.log.Debug("on disconnect complete")
+	p.wg.Wait()
 	}
