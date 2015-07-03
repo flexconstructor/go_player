@@ -100,7 +100,7 @@ defer p.stopInstance()
 			p.log.Error("can not close connection")
 		}
 
-		case h,ok:= <-p.hub_close:
+		/*case h,ok:= <-p.hub_close:
 		if(ok) {
 			p.log.Debug("remove hub from map: %s", h.stream_id)
 			streamID, err := strconv.ParseUint(h.stream_id, 10, 64)
@@ -110,7 +110,7 @@ defer p.stopInstance()
 			delete(p.streams_map, streamID)
 		}else{
 			p.log.Error("can not remove hub")
-		}
+		}*/
 		case u,ok:= <- p.updates:
 		if(!ok){
 			panic("can not write update")
@@ -118,6 +118,16 @@ defer p.stopInstance()
 		err:=p.handler.OnUpdate(u)
 		if(err != nil){
 			u.error_channel <- err
+		}
+
+		default:
+		for h:= range  p.streams{
+
+			if(len(h.connections)==0){
+				h.Close()
+
+			}
+
 		}
 
 		}
@@ -147,10 +157,9 @@ func (p *GoPlayer)initConnection(conn *WSConnection){
 	if(!ok){
 		p.log.Debug("init hub")
 		h=NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name,
-			strconv.FormatUint(params.StreamID,10),
+			params.StreamID,
 			p.log,
 			p.service_token,
-			p.hub_close,
 		)
 		p.streams_map[params.StreamID]=h
 		go h.run()
@@ -177,11 +186,11 @@ func (p *GoPlayer)closeConnection(conn *WSConnection){
 	if(err != nil){
 		conn.error_channel <- err
 	}
-	p.log.Debug("live connections: %d",len(h.connections))
+	/*p.log.Debug("live connections: %d",len(h.connections))
 	if(len(h.connections)<=1){
 		delete(p.streams_map, params.StreamID)
-		p.log.Debug("remove hub from map with id: %d",params.StreamID)
+		p.log.Debug("remove hub from map with id: %d",params.StreamID)*/
 	}
-}
+
 
 

@@ -73,6 +73,7 @@ func (c *WSConnection)Run(){
 		c.lgr.Error("no player instance found")
 		return
 	}
+	player.connects <- c
 	/*
 			c.lgr.Debug("write connection to player")
 			player.connects <- c
@@ -119,7 +120,7 @@ func (c *WSConnection)Run(){
 				return
 			}
 			if(error.level==0 && error.code==0){
-				player.connects <- c
+
 			}
 		}else{
 			c.lgr.Error("can not write error!")

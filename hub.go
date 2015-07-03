@@ -7,6 +7,7 @@ package  go_player
 import(
 
 	player_log "github.com/flexconstructor/go_player/log"
+	"strconv"
 )
 
 // hub maintains the set of active connections and broadcasts messages to the
@@ -16,7 +17,7 @@ type hub struct {
 	//url of stream application
 	stream_url string
 	//stream name
-	stream_id string
+	stream_id uint64
 	// Registered connections.
 	connections map[*WSConnection]bool
 
@@ -30,7 +31,7 @@ type hub struct {
 	unregister chan *WSConnection
 
 	rtmp_status chan int
-	exit_channel chan *hub
+	exit_channel chan bool
 
 	metadata chan *MetaData
 	error chan *WSError
@@ -46,14 +47,13 @@ var meta *MetaData
 
 
 func NewHub(stream_url string,
-stream_name string,
+stream_id uint64,
 logger player_log.Logger,
 service_token string,
-exit_channel chan *hub,
 ) *hub{
 	return &hub{
 		stream_url: stream_url,
-		stream_id: stream_name,
+		stream_id: stream_id,
 		broadcast:   make(chan []byte),
 		register:    make(chan *WSConnection),
 		unregister:  make(chan *WSConnection),
@@ -63,7 +63,8 @@ exit_channel chan *hub,
 		error: make(chan *WSError),
 		log: logger,
 		service_token: service_token,
-		exit_channel: exit_channel,
+		exit_channel: make(chan bool),
+
 
 	}
 }
@@ -71,9 +72,9 @@ exit_channel chan *hub,
 func (h *hub) run() {
 
 	h.log.Info("Hub run: url = %s id= %s",h.stream_url,h.stream_id)
-
+	stream_name:=strconv.FormatUint(h.stream_id,10)
 	ff=&ffmpeg{
-		stream_url: h.stream_url+"/"+h.stream_id+"?model_id="+h.stream_id+"&access_token="+h.service_token,
+		stream_url: h.stream_url+"/"+stream_name+"?model_id="+stream_name+"&access_token="+h.service_token,
 		broadcast:h.broadcast,
 		close_channel: make(chan bool),
 		metadata: h.metadata,
@@ -83,7 +84,7 @@ func (h *hub) run() {
 
 	}
 
-	defer ff.Close();
+
 
 	h.log.Debug("decoder created")
 
@@ -104,18 +105,17 @@ func (h *hub) run() {
 	h.log.Debug("connection created")
 	*/
 	go ff.run()
+	defer ff.Close();
 	h.log.Debug("run decoder")
-	defer h.Close()
 
 	for {
 		select {
 		case c, ok := <-h.register:
 		if(! ok){
-			return
+			continue
 		}
 			if(len(h.connections)==0){
 				h.log.Debug("first connection")
-				//go conn.Run()
 
 			}
 			h.connections[c] = true
@@ -139,15 +139,15 @@ func (h *hub) run() {
 				c=nil
 				h.log.Debug("unregister connection. connection length: %d", len(h.connections))
 				if (len(h.connections)==0) {
-					return
+					continue
 				}
 			}else{
-				return
+				continue
 			}
 		case m, ok := <-h.broadcast:
 			if(! ok){
 				h.log.Error("can not write chunk!")
-				return
+				continue
 			}
 			for c := range h.connections {
 				select {
@@ -155,10 +155,7 @@ func (h *hub) run() {
 				default:
 					c.Close()
 					delete(h.connections, c)
-					c=nil
-					if(len(h.connections)==0){
-						return
-					}
+
 				}
 			}
 
@@ -173,7 +170,7 @@ func (h *hub) run() {
 		*/
 		case meta, ok := <- h.metadata:
 		if(! ok){
-			return
+			continue
 		}
 		b, err:=meta.JSON()
 		if(err != nil){
@@ -186,15 +183,12 @@ func (h *hub) run() {
 				default:
 					c.Close()
 					delete(h.connections, c)
-					c=nil
-					if(len(h.connections)==0){
-						return
-					}
+
 				}
 			}
 		case e, ok:= <-h.error:
 		if(! ok){
-			return
+			continue
 		}
 		h.log.Error("player error: %s",e.description)
 
@@ -204,12 +198,11 @@ func (h *hub) run() {
 				default:
 					c.Close()
 					delete(h.connections, c)
-				    c=nil
-					if(len(h.connections)==0){
-						return
-					}
+
 				}
 			}
+		case <-h.exit_channel:
+		return
 
 		}
 	}
@@ -220,6 +213,7 @@ func (h *hub) run() {
 
 func (h *hub)Close(){
 	h.log.Debug("Close hub %s",h.stream_id)
+	h.exit_channel <- true
 
 	/*if(len(h.connections)>0){
 		h.log.Debug("close connections %d",len(h.connections))
