@@ -74,11 +74,7 @@ func (c *WSConnection)Run(){
 		return
 	}
 	player.connects <- c
-	/*
-			c.lgr.Debug("write connection to player")
-			player.connects <- c
-			c.lgr.Debug("writed to player connects")
-	*/
+
 	ticker := time.NewTicker(pingPeriod)
 	defer c.Close()
 
@@ -91,7 +87,7 @@ func (c *WSConnection)Run(){
 			}
 			if err := c.write(websocket.BinaryMessage, message); err != nil {
 				c.lgr.Error("can not wright binary")
-				return
+				continue
 			}
 		case <-ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
