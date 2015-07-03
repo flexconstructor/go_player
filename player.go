@@ -93,7 +93,7 @@ defer p.stopInstance()
 			}
 		case c,ok:= <- p.closes:
 		if(ok) {
-			p.wg.Add(1)
+
 			p.closeConnection(c)
 		}else{
 			p.log.Error("can not close connection")
@@ -164,10 +164,12 @@ func (p *GoPlayer)initConnection(conn *WSConnection){
 	p.log.Debug("register connection in hub")
 	h.register<-conn
 	err:= p.handler.OnConnect(conn)
-	if(err != nil){
-		conn.error_channel <-err
+	if(err != nil) {
+		conn.error_channel <- err
+
 	}
 p.wg.Wait()
+	p.log.Debug("on connect complete")
 }
 
 func (p *GoPlayer)closeConnection(conn *WSConnection){
@@ -183,9 +185,12 @@ func (p *GoPlayer)closeConnection(conn *WSConnection){
 	h.unregister <- conn
 	p.log.Debug("uregistred")
 	err:=p.handler.OnDisconnect(conn)
-	if(err != nil){
-		p.log.Error("disconnection error %s",err.description)
+	if(err != nil) {
+		p.log.Error("disconnection error %s", err.description)
+	}else{
+		return
 	}
-	p.log.Debug("on disconnect complete")
+
 	p.wg.Wait()
+	p.log.Debug("on disconnect complete")
 	}
