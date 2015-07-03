@@ -41,8 +41,6 @@ func (f *ffmpeg)run(){
 	for{
 		select {
 		case <- f.close_channel:
-			f.log.Debug("call close_chan")
-
 			return
 
 
@@ -56,20 +54,8 @@ func (f *ffmpeg)run(){
 			go f.runEncoder(c, frame_cannel)
 
 		}
-
-
-		/*case status := <- f.rtmp_status:
-		f.log.Debug("call rtmp status: %d",status)
-		if(status==0){
-			f.log.Debug("rtmp status 0");
-			return
-		}
-*/
 		}
 	}
-
-
-
 }
 
 
@@ -101,9 +87,6 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 func (f *ffmpeg)Close(){
 	f.log.Info("Close ffmpeg!")
 	f.close_channel <- true
-	f.log.Debug("write close channel")
-
-
 
 }
 

@@ -64,13 +64,10 @@ service_token string,
 		log: logger,
 		service_token: service_token,
 		exit_channel: make(chan bool),
-
-
 	}
 }
 
 func (h *hub) run() {
-
 	h.log.Info("Hub run: url = %s id= %s",h.stream_url,h.stream_id)
 	stream_name:=strconv.FormatUint(h.stream_id,10)
 	ff=&ffmpeg{
@@ -80,33 +77,11 @@ func (h *hub) run() {
 		metadata: h.metadata,
 		error: h.error,
 		log: h.log,
-		workers_length:20,
-
+		workers_length:256,
 	}
 
-
-
-	h.log.Debug("decoder created")
-
-	/*conn = &RtmpConnector{
- 		rtmp_url:	h.stream_url,
- 		stream_id: h.stream_id,
-		error_cannel: h.error,
-		close_channel:make(chan bool),
-		log: h.log,
-		service_token: h.service_token,
- 		 handler: &RtmpHandler{
- 			 stream_status: h.rtmp_status,
-			  error_channel: h.error,
-			 log: h.log,
- 		 },
-	}
-	defer conn.Close()
-	h.log.Debug("connection created")
-	*/
 	go ff.run()
 	defer ff.Close();
-	h.log.Debug("run decoder")
 
 	for {
 		select {
@@ -114,27 +89,17 @@ func (h *hub) run() {
 		if(! ok){
 			continue
 		}
-			if(len(h.connections)==0){
-				h.log.Debug("first connection")
-
-			}
 			h.connections[c] = true
-
-		h.log.Debug("Register connection")
-
 
 		if(meta != nil){
 			b, err:=meta.JSON()
 			if(err==nil) {
 				c.metadata <- b
-				h.log.Debug("send metadata")
+
 			}
 		}
-
-
 		case c := <-h.unregister:
 			if _, ok := h.connections[c]; ok {
-
 				delete(h.connections, c)
 				c=nil
 				h.log.Debug("unregister connection. connection length: %d", len(h.connections))
@@ -159,15 +124,6 @@ func (h *hub) run() {
 				}
 			}
 
-		/*case s, o := <- h.rtmp_status:
-			h.log.Debug("RTMP STATUS: %g",s)
-			if(s==0) {
-			h.log.Debug(">>>>>>Close rtmp")
-			return
-			}else{
-
-			}
-		*/
 		case meta, ok := <- h.metadata:
 		if(! ok){
 			continue
@@ -176,7 +132,7 @@ func (h *hub) run() {
 		if(err != nil){
 			continue
 		}
-		h.log.Debug("new metadata")
+
 			for c := range h.connections {
 				select {
 				case c.metadata <- b:
@@ -190,15 +146,12 @@ func (h *hub) run() {
 		if(! ok){
 			continue
 		}
-		h.log.Error("player error: %s",e.description)
-
 			for c := range h.connections {
 				select {
 				case c.error_channel <- e:
 				default:
 					c.Close()
 					delete(h.connections, c)
-
 				}
 			}
 		case <-h.exit_channel:
@@ -206,8 +159,6 @@ func (h *hub) run() {
 
 		}
 	}
-
-
 }
 
 
@@ -215,14 +166,4 @@ func (h *hub)Close(){
 	h.log.Debug("Close hub %s",h.stream_id)
 	h.exit_channel <- true
 
-	/*if(len(h.connections)>0){
-		h.log.Debug("close connections %d",len(h.connections))
-		for c := range h.connections {
-			c.Close()
-		}
-
-
-	}
-	h.exit_channel <- h
-	h.log.Debug("hub closed")*/
 }

@@ -108,22 +108,15 @@ func (c *WSConnection)Run(){
 				c.write(websocket.TextMessage, metadata)
 			}
 		case error, ok:= <- c.error_channel:
-		c.lgr.Debug("call write error")
 		if(ok) {
 			error_object, err := error.JSON();
 			if (err==nil) {
 				c.write(websocket.TextMessage, error_object)
-				c.lgr.Debug("error writed")
 			}
 			if (error.level==1) {
 				c.lgr.Error("error level = %d descripton= %s", error.level, error.description)
 				return
 			}
-			if(error.level==0 && error.code==0){
-
-			}
-		}else{
-			c.lgr.Error("can not write error!")
 		}
 		}
 	}
@@ -132,14 +125,14 @@ func (c *WSConnection)Run(){
 }
 
 
-func (c *WSConnection)WriteError(e *WSError)(*error){
+/*func (c *WSConnection)WriteError(e *WSError)(*error){
 
 	c.error_channel <- e
 	c.lgr.Debug("write error to chan ")
 	return nil
 }
 
-
+*/
 func (c *WSConnection)Close(){
 	c.lgr.Debug("connection closed for user: %d",c.GetConnectionParameters().ClientID)
 	c.write(websocket.CloseMessage, []byte{})

@@ -21,15 +21,12 @@ type GoPlayer struct  {
 	rtmp_port int
 	http_port int
 	streams_map map[uint64]*hub
-	streams chan *hub
 	connects chan *WSConnection
 	updates chan  *WSConnection
 	closes chan *WSConnection
 	stops chan *GoPlayer
-	hub_close chan *hub
 	log player_log.Logger
 	service_token string
-
 	handler IConnectionHandler
 }
 
@@ -53,12 +50,10 @@ if(player_instance != nil){
 		http_port: http_port,
 		log: log,
 		streams_map: make(map[uint64]*hub),
-		streams: make(chan *hub),
 		connects:make(chan *WSConnection),
 		updates:make(chan *WSConnection),
 		closes: make(chan *WSConnection),
 		stops: make(chan *GoPlayer),
-		hub_close: make(chan *hub),
 		service_token: service_token,
 		handler: connectionHandler,
 	}
@@ -99,18 +94,6 @@ defer p.stopInstance()
 		}else{
 			p.log.Error("can not close connection")
 		}
-
-		/*case h,ok:= <-p.hub_close:
-		if(ok) {
-			p.log.Debug("remove hub from map: %s", h.stream_id)
-			streamID, err := strconv.ParseUint(h.stream_id, 10, 64)
-			if (err != nil) {
-				panic(err)
-			}
-			delete(p.streams_map, streamID)
-		}else{
-			p.log.Error("can not remove hub")
-		}*/
 		case u,ok:= <- p.updates:
 		if(!ok){
 			panic("can not write update")
@@ -157,7 +140,7 @@ func (p *GoPlayer)stopInstance(){
 
 func (p *GoPlayer)initConnection(conn *WSConnection){
 	params:=conn.GetConnectionParameters()
-	p.log.Debug("init connection  with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
+	p.log.Info("init connection  with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
 	if(!ok){
 		p.log.Debug("init hub")
@@ -190,13 +173,5 @@ func (p *GoPlayer)closeConnection(conn *WSConnection){
 	err:=p.handler.OnDisconnect(conn)
 	if(err != nil){
 		p.log.Error("disconnection error %s",err.description)
-		//conn.error_channel <- err
 	}
-	/*p.log.Debug("live connections: %d",len(h.connections))
-	if(len(h.connections)<=1){
-		delete(p.streams_map, params.StreamID)
-		p.log.Debug("remove hub from map with id: %d",params.StreamID)*/
 	}
-
-
-
