@@ -101,13 +101,15 @@ defer p.stopInstance()
 		}
 
 		case h,ok:= <-p.hub_close:
-		if(ok){
-			p.log.Debug("remove hub from map")
-			streamID,err:=strconv.ParseUint(h.stream_id, 10, 64)
-			if(err != nil){
+		if(ok) {
+			p.log.Debug("remove hub from map: %s", h.stream_id)
+			streamID, err := strconv.ParseUint(h.stream_id, 10, 64)
+			if (err != nil) {
 				panic(err)
 			}
 			delete(p.streams_map, streamID)
+		}else{
+			p.log.Error("can not remove hub")
 		}
 		case u,ok:= <- p.updates:
 		if(!ok){
