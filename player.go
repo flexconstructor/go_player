@@ -119,7 +119,7 @@ defer p.stopInstance()
 		}
 		}
 		}
-
+p.log.Debug("player exit!")
 		}
 
 
@@ -170,8 +170,10 @@ func (p *GoPlayer)closeConnection(conn *WSConnection){
 		return
 	}
 	h.unregister <- conn
+	p.log.Debug("uregistred")
 	err:=p.handler.OnDisconnect(conn)
 	if(err != nil){
 		p.log.Error("disconnection error %s",err.description)
 	}
+	p.log.Debug("on disconnect complete")
 	}
