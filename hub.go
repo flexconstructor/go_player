@@ -89,7 +89,9 @@ func (h *hub) run() {
 		if(! ok){
 			continue
 		}
+
 			h.connections[c] = true
+			h.log.Debug("register connection: %d",len(h.connections))
 
 		if(meta != nil){
 			b, err:=meta.JSON()
