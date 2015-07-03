@@ -85,6 +85,7 @@ func (c *WSConnection)Run(){
 		select {
 		case message, ok := <-c.send:
 			if !ok {
+				c.lgr.Error("can not write message")
 				return
 			}
 			if err := c.write(websocket.BinaryMessage, message); err != nil {

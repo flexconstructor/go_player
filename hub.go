@@ -139,7 +139,11 @@ func (h *hub) run() {
 					return
 				}
 			}
-		case m := <-h.broadcast:
+		case m, ok := <-h.broadcast:
+			if(! ok){
+				h.log.Error("can not write chunk!")
+				return
+			}
 			for c := range h.connections {
 				select {
 				case c.send <- m:
