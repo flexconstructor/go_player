@@ -105,7 +105,7 @@ func (h *hub) run() {
 	*/
 	go ff.run()
 	h.log.Debug("run decoder")
-	//defer h.Close()
+	defer h.Close()
 
 	for {
 		select {
