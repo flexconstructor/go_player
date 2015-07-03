@@ -171,7 +171,7 @@ func (h *hub) run() {
 
 			}
 		*/
-		case meta, ok= <- h.metadata:
+		case meta, ok := <- h.metadata:
 		if(! ok){
 			return
 		}
@@ -194,7 +194,7 @@ func (h *hub) run() {
 			}
 		case e, ok:= <-h.error:
 		if(! ok){
-			return 
+			return
 		}
 		h.log.Error("player error: %s",e.description)
 
