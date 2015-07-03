@@ -141,8 +141,8 @@ func (p *GoPlayer)stopInstance(){
 
 
 func (p *GoPlayer)initConnection(conn *WSConnection){
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+
+
 	params:=conn.GetConnectionParameters()
 	p.log.Info("init connection  with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
@@ -153,6 +153,8 @@ func (p *GoPlayer)initConnection(conn *WSConnection){
 			p.log,
 			p.service_token,
 		)
+
+
 		p.streams_map[params.StreamID]=h
 		go h.run()
 	}
