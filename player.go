@@ -189,7 +189,8 @@ func (p *GoPlayer)closeConnection(conn *WSConnection){
 	h.unregister <- conn
 	err:=p.handler.OnDisconnect(conn)
 	if(err != nil){
-		conn.error_channel <- err
+		p.log.Error("disconnection error %s",err.description)
+		//conn.error_channel <- err
 	}
 	/*p.log.Debug("live connections: %d",len(h.connections))
 	if(len(h.connections)<=1){
