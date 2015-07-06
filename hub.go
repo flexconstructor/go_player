@@ -119,7 +119,7 @@ func (h *hub) run() {
 				select {
 				case c.send <- m:
 				default:
-					c.Close()
+					//c.Close()
 					delete(h.connections, c)
 
 				}
@@ -138,7 +138,7 @@ func (h *hub) run() {
 				select {
 				case c.metadata <- b:
 				default:
-					c.Close()
+				//	c.Close()
 					delete(h.connections, c)
 
 				}
@@ -151,7 +151,7 @@ func (h *hub) run() {
 				select {
 				case c.error_channel <- e:
 				default:
-					c.Close()
+					//c.Close()
 					delete(h.connections, c)
 				}
 			}
