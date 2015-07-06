@@ -1,89 +1,81 @@
 package go_player
 
-import(
-
-
+import (
 	. "github.com/3d0c/gmf"
 	player_log "github.com/flexconstructor/go_player/log"
 )
 
-
-type FFmpegDecoder  struct{
-	stream_url string
-	broadcast chan []byte
-	rtmp_status chan int
-	codec_chan chan *CodecCtx
-	error chan *WSError
-	log player_log.Logger
-	close_chan chan bool
-	frame_channel chan *Frame
+type FFmpegDecoder struct {
+	stream_url     string
+	broadcast      chan []byte
+	rtmp_status    chan int
+	codec_chan     chan *CodecCtx
+	error          chan *WSError
+	log            player_log.Logger
+	close_chan     chan bool
+	frame_channel  chan *Frame
 	packet_channel chan *Packet
 }
 
-
-
-func (d *FFmpegDecoder)Run(){
-	d.log.Info("Run Decoder for %s",d.stream_url)
+func (d *FFmpegDecoder) Run() {
+	d.log.Info("Run Decoder for %s", d.stream_url)
 	defer close(d.frame_channel)
-	inputCtx,err:=NewInputCtx(d.stream_url)
+	inputCtx, err := NewInputCtx(d.stream_url)
 
-	if(err != nil){
-		d.error <-NewError(2,1)
+	if err != nil {
+		d.error <- NewError(2, 1)
 		return
 	}
 	defer inputCtx.CloseInputAndRelease()
 	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
-	if err != nil{
-		d.error <- NewError(1,1)
+	if err != nil {
+		d.error <- NewError(1, 1)
 		d.log.Error("stream not opend ")
 		return
 	}
 
-
-	if(srcVideoStream.CodecCtx() != nil) {
+	if srcVideoStream.CodecCtx() != nil {
 		d.codec_chan <- srcVideoStream.CodecCtx()
-	}else{
+	} else {
 		d.log.Error("Invalid codec")
-		d.error<-NewErrorWithDescription(1,1,"Invalid codec")
+		d.error <- NewErrorWithDescription(1, 1, "Invalid codec")
 		return
 	}
 
-	for{
+	for {
 		select {
-			case <- d.close_chan:
+		case <-d.close_chan:
 			return
 		default:
-		packet:=inputCtx.GetNextPacket();
-		if(packet != nil) {
-			if packet.StreamIndex() == srcVideoStream.Index() {
-				stream, err := inputCtx.GetStream(packet.StreamIndex())
-				if (err != nil) {
-					d.log.Error("can not decode stream")
-					d.error <- NewError(13, 2)
-				}else{
-					for frame := range packet.Frames(stream.CodecCtx()) {
-						d.frame_channel <- frame.CloneNewFrame()
-					}
+			packet := inputCtx.GetNextPacket()
+			if packet != nil {
+				if packet.StreamIndex() == srcVideoStream.Index() {
+					stream, err := inputCtx.GetStream(packet.StreamIndex())
+					if err != nil {
+						d.log.Error("can not decode stream")
+						d.error <- NewError(13, 2)
+					} else {
+						for frame := range packet.Frames(stream.CodecCtx()) {
+							d.frame_channel <- frame.CloneNewFrame()
+						}
 
-					Release(packet)
+						Release(packet)
+					}
+				} else {
+					continue
 				}
-			}else{
+
+			} else {
 				continue
 			}
 
-		}else{
-			continue
 		}
-
-	}
 
 	}
 
 }
 
-
-
-func (d *FFmpegDecoder)Close(){
+func (d *FFmpegDecoder) Close() {
 	d.log.Info("close decoder")
 	d.close_chan <- true
 }

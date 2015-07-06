@@ -1,75 +1,72 @@
 package go_player
+
 import (
+	player_log "github.com/flexconstructor/go_player/log"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"time"
-	player_log "github.com/flexconstructor/go_player/log"
-
-
 )
 
 const (
-// Time allowed to write a message to the peer.
+	// Time allowed to write a message to the peer.
 	writeWait = 2 * time.Second
-// Time allowed to read the next pong message from the peer.
+	// Time allowed to read the next pong message from the peer.
 	pongWait = 2 * time.Second
 
-// Send pings to peer with this period. Must be less than pongWait.
+	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 1) / 2
 
-// Maximum message size allowed from peer.
+	// Maximum message size allowed from peer.
 	maxMessageSize = 512
 )
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool { return true },
+	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
 type ConnectionParams struct {
-	StreamID uint64
-	ClientID uint64
+	StreamID    uint64
+	ClientID    uint64
 	AccessToken string
 }
 
-type WSConnection struct{
-ws *websocket.Conn
-send chan []byte
-metadata chan []byte
-error_channel chan *WSError
-lgr player_log.Logger
-params *ConnectionParams
+type WSConnection struct {
+	ws            *websocket.Conn
+	send          chan []byte
+	metadata      chan []byte
+	error_channel chan *WSError
+	lgr           player_log.Logger
+	params        *ConnectionParams
 }
 
-
-func NewWSConnection(w http.ResponseWriter, r *http.Request, l player_log.Logger, params *ConnectionParams)(*WSConnection,error){
+func NewWSConnection(w http.ResponseWriter, r *http.Request, l player_log.Logger, params *ConnectionParams) (*WSConnection, error) {
 	ws, err := upgrader.Upgrade(w, r, nil)
-	if(err != nil){
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
-	conn:=&WSConnection{
-		ws:ws,
-		send: make(chan []byte, 256),
+	conn := &WSConnection{
+		ws:            ws,
+		send:          make(chan []byte, 256),
 		error_channel: make(chan *WSError, 1),
-		metadata:make(chan []byte),
-		lgr:l,
-		params:params,
+		metadata:      make(chan []byte),
+		lgr:           l,
+		params:        params,
 	}
 
-	return conn,nil
+	return conn, nil
 }
-
 
 func (c *WSConnection) write(mt int, payload []byte) error {
 	c.ws.SetWriteDeadline(time.Now().Add(writeWait))
 	return c.ws.WriteMessage(mt, payload)
 }
 
-func (c *WSConnection)Run(){
+func (c *WSConnection) Run() {
 	c.lgr.Debug("Run connection")
-	player,err:=GetPlayerInstance()
-	if(err != nil){
+	player, err := GetPlayerInstance()
+	if err != nil {
 		c.lgr.Error("no player instance found")
 		return
 	}
@@ -94,71 +91,57 @@ func (c *WSConnection)Run(){
 				c.lgr.Error("can not write ping")
 				return
 			}
-		err:= c.callUpdate()
-		if(err != nil){
-			c.lgr.Error("Update error")
-			return
-		}
-		case metadata, ok:= <- c.metadata:
-			if(ok) {
-				c.write(websocket.TextMessage, metadata)
-			}
-		case error, ok:= <- c.error_channel:
-		if(ok) {
-			error_object, err := error.JSON();
-			if (err==nil) {
-				c.write(websocket.TextMessage, error_object)
-			}
-			if (error.level==1) {
-				c.lgr.Error("error level = %d descripton= %s", error.level, error.description)
+			err := c.callUpdate()
+			if err != nil {
+				c.lgr.Error("Update error")
 				return
 			}
-		}
+		case metadata, ok := <-c.metadata:
+			if ok {
+				c.write(websocket.TextMessage, metadata)
+			}
+		case error, ok := <-c.error_channel:
+			if ok {
+				error_object, err := error.JSON()
+				if err == nil {
+					c.write(websocket.TextMessage, error_object)
+				}
+				if error.level == 1 {
+					c.lgr.Error("error level = %d descripton= %s", error.level, error.description)
+					return
+				}
+			}
 		}
 	}
 
-
 }
 
-
-/*func (c *WSConnection)WriteError(e *WSError)(*error){
-
-	c.error_channel <- e
-	c.lgr.Debug("write error to chan ")
-	return nil
-}
-
-*/
-func (c *WSConnection)Close(){
-	c.lgr.Debug("connection closed for user: %d",c.GetConnectionParameters().ClientID)
-	write_error:=c.write(websocket.CloseMessage, []byte{})
-	if(write_error != nil){
+func (c *WSConnection) Close() {
+	c.lgr.Debug("connection closed for user: %d", c.GetConnectionParameters().ClientID)
+	write_error := c.write(websocket.CloseMessage, []byte{})
+	if write_error != nil {
 		c.lgr.Error("can not write close message")
 
 	}
-	c.lgr.Debug("close message written")
 	c.ws.Close()
-	c.lgr.Debug("socket closed")
-	pl, err:=GetPlayerInstance();
-	if(err != nil){
+	pl, err := GetPlayerInstance()
+	if err != nil {
 		c.lgr.Error("NO Player found: ", err)
 		return
 	}
-	c.lgr.Debug("write close to player")
-	pl.closes <-c
-	c.lgr.Debug("written close-----")
+	pl.closes <- c
 }
 
-func (c *WSConnection)GetConnectionParameters()(*ConnectionParams){
+func (c *WSConnection) GetConnectionParameters() *ConnectionParams {
 	return c.params
 }
 
-func (c *WSConnection)callUpdate()(error){
-	pl, err:=GetPlayerInstance();
-	if(err != nil){
+func (c *WSConnection) callUpdate() error {
+	pl, err := GetPlayerInstance()
+	if err != nil {
 		c.lgr.Error("NO Player found: ", err)
 		return err
 	}
 	pl.updates <- c
-	return nil;
+	return nil
 }

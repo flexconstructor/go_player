@@ -1,27 +1,27 @@
 package go_player
+
 import (
-	player_log "github.com/flexconstructor/go_player/log"
 	"github.com/3d0c/gmf"
+	player_log "github.com/flexconstructor/go_player/log"
 	"sync"
 )
 
 type FFmpegEncoder struct {
-	srcCodec *gmf.CodecCtx
-	broadcast chan []byte
-	rtmp_status chan int
-	error chan *WSError
-	log player_log.Logger
-	close_chan chan bool
+	srcCodec     *gmf.CodecCtx
+	broadcast    chan []byte
+	rtmp_status  chan int
+	error        chan *WSError
+	log          player_log.Logger
+	close_chan   chan bool
 	frame_cannel chan *gmf.Frame
-	wg *sync.WaitGroup
-
+	wg           *sync.WaitGroup
 }
 
-func (e *FFmpegEncoder)Run(){
+func (e *FFmpegEncoder) Run() {
 	defer e.Close()
-	codec, err := gmf.FindEncoder(gmf.AV_CODEC_ID_MJPEG )
-	if(err != nil){
-		e.error <- NewError(2,1)
+	codec, err := gmf.FindEncoder(gmf.AV_CODEC_ID_MJPEG)
+	if err != nil {
+		e.error <- NewError(2, 1)
 		return
 	}
 
@@ -38,7 +38,7 @@ func (e *FFmpegEncoder)Run(){
 
 	if err := cc.Open(nil); err != nil {
 		e.log.Error("can not open codec")
-		e.error <- NewError(3,1)
+		e.error <- NewError(3, 1)
 		return
 	}
 
@@ -47,14 +47,14 @@ func (e *FFmpegEncoder)Run(){
 
 	// convert to RGB, optionally resize could be here
 	dstFrame := gmf.NewFrame().
-	SetWidth(e.srcCodec.Width()).
-	SetHeight(e.srcCodec.Height()).
-	SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
+		SetWidth(e.srcCodec.Width()).
+		SetHeight(e.srcCodec.Height()).
+		SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
 	defer gmf.Release(dstFrame)
 
 	if err := dstFrame.ImgAlloc(); err != nil {
-		e.log.Error("codec error: ",err)
-		e.error <- NewError(4,2)
+		e.log.Error("codec error: ", err)
+		e.error <- NewError(4, 2)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (e *FFmpegEncoder)Run(){
 		swsCtx.Scale(srcFrame, dstFrame)
 
 		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
-			e.broadcast <-p.Data()
+			e.broadcast <- p.Data()
 
 		}
 		gmf.Release(srcFrame)
@@ -75,6 +75,6 @@ func (e *FFmpegEncoder)Run(){
 
 }
 
-func (e *FFmpegEncoder)Close(){
+func (e *FFmpegEncoder) Close() {
 	e.wg.Done()
 }

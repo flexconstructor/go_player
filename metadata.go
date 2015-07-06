@@ -1,17 +1,15 @@
-package  go_player
+package go_player
+
 import (
 	"encoding/json"
-
 )
 
-type MetaData  struct{
+type MetaData struct {
 	Message string
-	Width int
-	Height int
-
+	Width   int
+	Height  int
 }
 
-func (m *MetaData)JSON()([]byte, error){
+func (m *MetaData) JSON() ([]byte, error) {
 	return json.Marshal(m)
 }
-

@@ -1,68 +1,63 @@
 package go_player
+
 import (
+	"github.com/3d0c/gmf"
 	player_log "github.com/flexconstructor/go_player/log"
 	"runtime"
-	"github.com/3d0c/gmf"
 	"sync"
 )
+
 type ffmpeg struct {
-	stream_url string
-	broadcast chan []byte
-	metadata chan *MetaData
-	error chan *WSError
-	log player_log.Logger
+	stream_url     string
+	broadcast      chan []byte
+	metadata       chan *MetaData
+	error          chan *WSError
+	log            player_log.Logger
 	workers_length int
-	close_channel chan bool
+	close_channel  chan bool
 }
 
+func (f *ffmpeg) run() {
 
-
-
-func (f *ffmpeg)run(){
-
-	f.log.Info("run ffmpeg for %s",f.stream_url)
+	f.log.Info("run ffmpeg for %s", f.stream_url)
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	codec_chan:= make(chan *gmf.CodecCtx)
-	frame_cannel:= make(chan *gmf.Frame)
-	decoder:=&FFmpegDecoder{
-		stream_url: f.stream_url,
-		broadcast:f.broadcast,
-		codec_chan: codec_chan,
-		error: f.error,
-		log: f.log,
-		close_chan: make(chan bool),
-		frame_channel: frame_cannel,
+	codec_chan := make(chan *gmf.CodecCtx)
+	frame_cannel := make(chan *gmf.Frame)
+	decoder := &FFmpegDecoder{
+		stream_url:     f.stream_url,
+		broadcast:      f.broadcast,
+		codec_chan:     codec_chan,
+		error:          f.error,
+		log:            f.log,
+		close_chan:     make(chan bool),
+		frame_channel:  frame_cannel,
 		packet_channel: make(chan *gmf.Packet),
 	}
 	defer decoder.Close()
 	defer f.log.Debug("ffmpeg closed!!!")
 	go decoder.Run()
 
-	for{
+	for {
 		select {
-		case <- f.close_channel:
+		case <-f.close_channel:
 			return
 
-
-		case c, ok:= <-codec_chan:
-		if(ok){
-			f.metadata <- &MetaData{
-				Message: "metadata",
-				Width: c.Width(),
-				Height: c.Height(),
+		case c, ok := <-codec_chan:
+			if ok {
+				f.metadata <- &MetaData{
+					Message: "metadata",
+					Width:   c.Width(),
+					Height:  c.Height(),
+				}
+				go f.runEncoder(c, frame_cannel)
 			}
-			go f.runEncoder(c, frame_cannel)
-
-		}
 		}
 	}
 }
 
-
-func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
-	f.log.Info("-----run encode-------r")
-	wg:=new(sync.WaitGroup)
-	encoder:=&FFmpegEncoder{
+func (f *ffmpeg) runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame) {
+	wg := new(sync.WaitGroup)
+	encoder := &FFmpegEncoder{
 		c,
 		f.broadcast,
 		make(chan int),
@@ -73,22 +68,15 @@ func (f *ffmpeg)runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame){
 		wg,
 	}
 
-	for i:=0;i<f.workers_length ;i++  {
+	for i := 0; i < f.workers_length; i++ {
 		wg.Add(1)
 		go encoder.Run()
 	}
-
 	wg.Wait()
 	f.log.Info("All encoders is done!")
-
-
 }
 
-func (f *ffmpeg)Close(){
+func (f *ffmpeg) Close() {
 	f.log.Info("Close ffmpeg!")
 	f.close_channel <- true
-
 }
-
-
-
