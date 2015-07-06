@@ -107,6 +107,7 @@ func (h *hub) run() {
 
 			}else{
 				h.log.Error("can not unregister connection")
+				h.log.Debug("connection: ",c)
 				continue
 			}
 		case m, ok := <-h.broadcast:
