@@ -29,7 +29,7 @@ type GoPlayer struct  {
 	log player_log.Logger
 	service_token string
 	handler IConnectionHandler
-	wg *sync.WaitGroup
+
 }
 
 
@@ -58,7 +58,8 @@ if(player_instance != nil){
 		stops: make(chan *GoPlayer),
 		service_token: service_token,
 		handler: connectionHandler,
-		wg: new (sync.WaitGroup),
+
+
 	}
 
 	log.Debug("Init player instance rtmp host: %s",player_instance.rtmp_host)
@@ -87,17 +88,17 @@ defer p.stopInstance()
 		case c,ok:=<- p.connects:
 		p.log.Debug("call write connection")
 			if(ok) {
-				p.wg.Add(1)
+
 				p.initConnection(c)
-				p.wg.Wait()
+
 			}else{
 				p.log.Error("can not write connection")
 			}
 		case c,ok:= <- p.closes:
 		if(ok) {
-			p.wg.Add(1)
+
 			p.closeConnection(c)
-			p.wg.Wait()
+
 		}else{
 			p.log.Error("can not close connection")
 		}
@@ -146,9 +147,6 @@ func (p *GoPlayer)stopInstance(){
 
 
 func (p *GoPlayer)initConnection(conn *WSConnection){
-	defer p.wg.Done()
-
-
 	params:=conn.GetConnectionParameters()
 	p.log.Info("init connection  with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
@@ -176,8 +174,6 @@ func (p *GoPlayer)initConnection(conn *WSConnection){
 }
 
 func (p *GoPlayer)closeConnection(conn *WSConnection){
-	defer p.wg.Done()
-
 	params:=conn.GetConnectionParameters()
 	p.log.Debug("Close connection with params: stream_id=  %d user_id= %d access_token= %s",params.StreamID, params.ClientID, params.AccessToken)
 	h,ok:=p.streams_map[params.StreamID]
