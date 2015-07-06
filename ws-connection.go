@@ -134,6 +134,7 @@ func (c *WSConnection)Close(){
 	write_error:=c.write(websocket.CloseMessage, []byte{})
 	if(write_error != nil){
 		c.lgr.Error("can not write close message")
+		return s
 	}
 	c.lgr.Debug("close message written")
 	c.ws.Close()

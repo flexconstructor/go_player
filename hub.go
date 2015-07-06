@@ -68,7 +68,7 @@ service_token string,
 }
 
 func (h *hub) run() {
-	h.log.Info("Hub run: url = %s id= %s",h.stream_url,h.stream_id)
+	h.log.Info("Hub run: url = %s id= %d",h.stream_url,h.stream_id)
 	stream_name:=strconv.FormatUint(h.stream_id,10)
 	ff=&ffmpeg{
 		stream_url: h.stream_url+"/"+stream_name+"?model_id="+stream_name+"&access_token="+h.service_token,
@@ -164,7 +164,7 @@ func (h *hub) run() {
 
 
 func (h *hub)Close(){
-	h.log.Debug("Close hub %s",h.stream_id)
+	h.log.Debug("Close hub %d",h.stream_id)
 	h.exit_channel <- true
 
 }
