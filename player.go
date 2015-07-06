@@ -123,7 +123,7 @@ defer p.stopInstance()
 				}
 
 			}
-			p.log.Debug("default")
+
 		}
 		}
 		}
