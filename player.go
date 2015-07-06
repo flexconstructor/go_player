@@ -5,7 +5,7 @@ import(
 	"errors"
 	player_log "github.com/flexconstructor/go_player/log"
 	"strconv"
-	"sync"
+	
 )
 
 var (
