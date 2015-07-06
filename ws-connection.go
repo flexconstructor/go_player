@@ -131,14 +131,21 @@ func (c *WSConnection)Run(){
 */
 func (c *WSConnection)Close(){
 	c.lgr.Debug("connection closed for user: %d",c.GetConnectionParameters().ClientID)
-	c.write(websocket.CloseMessage, []byte{})
+	write_error:=c.write(websocket.CloseMessage, []byte{})
+	if(write_error != nil){
+		c.lgr.Error("can not write close message")
+	}
+	c.lgr.Debug("close message written")
 	c.ws.Close()
+	c.lgr.Debug("socket closed")
 	pl, err:=GetPlayerInstance();
 	if(err != nil){
 		c.lgr.Error("NO Player found: ", err)
 		return
 	}
+	c.lgr.Debug("write close to player")
 	pl.closes <-c
+	c.lgr.Debug("written close-----")
 }
 
 func (c *WSConnection)GetConnectionParameters()(*ConnectionParams){
