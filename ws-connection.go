@@ -51,7 +51,7 @@ func NewWSConnection(w http.ResponseWriter, r *http.Request, l player_log.Logger
 	conn:=&WSConnection{
 		ws:ws,
 		send: make(chan []byte, 256),
-		error_channel: make(chan *WSError),
+		error_channel: make(chan *WSError, 1),
 		metadata:make(chan []byte),
 		lgr:l,
 		params:params,
