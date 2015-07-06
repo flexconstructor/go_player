@@ -118,11 +118,12 @@ defer p.stopInstance()
 					if(len(h.connections)==0){
 						h.Close()
 						delete(p.streams_map, h.stream_id)
+						p.log.Debug("hub deleted")
 					}
 				}
 
 			}
-
+			p.log.Debug("default")
 		}
 		}
 		}
