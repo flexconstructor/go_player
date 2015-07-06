@@ -5,7 +5,7 @@ import(
 	"errors"
 	player_log "github.com/flexconstructor/go_player/log"
 	"strconv"
-	
+
 )
 
 var (
@@ -52,10 +52,10 @@ if(player_instance != nil){
 		http_port: http_port,
 		log: log,
 		streams_map: make(map[uint64]*hub),
-		connects:make(chan *WSConnection),
-		updates:make(chan *WSConnection),
-		closes: make(chan *WSConnection),
-		stops: make(chan *GoPlayer),
+		connects:make(chan *WSConnection, 1),
+		updates:make(chan *WSConnection, 1),
+		closes: make(chan *WSConnection, 1),
+		stops: make(chan *GoPlayer, 1),
 		service_token: service_token,
 		handler: connectionHandler,
 
