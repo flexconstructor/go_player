@@ -16,7 +16,8 @@ type ffmpeg struct {
 	workers_length int
 	close_channel  chan bool
 }
-
+//Run ffmpeg functionality. Create decoder.
+//Resave methadata. Run encoding to jpg when metadata income.
 func (f *ffmpeg) run() {
 
 	f.log.Info("run ffmpeg for %s", f.stream_url)
@@ -54,7 +55,7 @@ func (f *ffmpeg) run() {
 		}
 	}
 }
-
+//Run encoding frames to jpeg images. Make pull of encoders.
 func (f *ffmpeg) runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame) {
 	wg := new(sync.WaitGroup)
 	encoder := &FFmpegEncoder{
@@ -75,7 +76,7 @@ func (f *ffmpeg) runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame) {
 	wg.Wait()
 	f.log.Info("All encoders is done!")
 }
-
+//Close ffmpeg
 func (f *ffmpeg) Close() {
 	f.log.Info("Close ffmpeg!")
 	f.close_channel <- true

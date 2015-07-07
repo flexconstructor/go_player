@@ -3,7 +3,7 @@ package go_player
 import (
 	"errors"
 	player_log "github.com/flexconstructor/go_player/log"
-	"strconv"
+
 )
 
 var (
@@ -12,52 +12,34 @@ var (
 )
 
 type GoPlayer struct {
-	rtmp_host     string
-	app_name      string
-	rtmp_port     int
-	http_port     int
-	streams_map   map[uint64]*hub
+
+	streams_map   map[string]*hub
 	connects      chan *WSConnection
 	updates       chan *WSConnection
 	closes        chan *WSConnection
 	stops         chan *GoPlayer
 	log           player_log.Logger
-	service_token string
 	handler       IConnectionHandler
 }
 
 func InitGoPlayer(
-	rtmp_host string,
-	rtmp_port int,
-	app_name string,
-	http_port int,
 	log player_log.Logger,
-	service_token string,
 	connectionHandler IConnectionHandler) *GoPlayer {
 
 	if player_instance != nil {
 		return player_instance
 	}
 	player_instance = &GoPlayer{
-		rtmp_host:     rtmp_host,
-		rtmp_port:     rtmp_port,
-		app_name:      app_name,
-		http_port:     http_port,
+
 		log:           log,
-		streams_map:   make(map[uint64]*hub),
+		streams_map:   make(map[string]*hub),
 		connects:      make(chan *WSConnection, 1),
 		updates:       make(chan *WSConnection, 1),
 		closes:        make(chan *WSConnection, 1),
 		stops:         make(chan *GoPlayer, 1),
-		service_token: service_token,
 		handler:       connectionHandler,
 	}
-
-	log.Debug("Init player instance rtmp host: %s", player_instance.rtmp_host)
-	log.Debug("Init player instance rtmp port: %d", player_instance.rtmp_port)
-	log.Debug("Init player instance rtmp app: %s", player_instance.app_name)
-	log.Debug("Init player instance http port: %d", player_instance.http_port)
-	log.Debug("---------------------")
+	player_instance.log.Info("init go player")
 	return player_instance
 }
 
@@ -104,7 +86,7 @@ func (p *GoPlayer) Run() {
 					if h != nil {
 						if len(h.connections) == 0 {
 							h.Close()
-							delete(p.streams_map, h.stream_id)
+							delete(p.streams_map, h.stream_url)
 							p.log.Debug("hub deleted")
 						}
 					}
@@ -128,17 +110,18 @@ func (p *GoPlayer) stopInstance() {
 }
 
 func (p *GoPlayer) initConnection(conn *WSConnection) {
-	params := conn.GetConnectionParameters()
-	p.log.Info("init connection  with params: stream_id=  %d user_id= %d access_token= %s", params.StreamID, params.ClientID, params.AccessToken)
-	h, ok := p.streams_map[params.StreamID]
+	//params := conn.params
+	stream_url:=conn.GetSourceURL()
+	p.log.Debug("connect to url: %s",stream_url)
+	//p.log.Info("init connection  with params: stream_id=  %d user_id= %d access_token= %s", params.StreamID, params.ClientID, params.AccessToken)
+	h, ok := p.streams_map[stream_url]
 	if !ok {
-		h = NewHub("rtmp://"+p.rtmp_host+":"+strconv.Itoa(p.rtmp_port)+"/"+p.app_name,
-			params.StreamID,
+		h = NewHub(
+			stream_url,
 			p.log,
-			p.service_token,
 		)
 
-		p.streams_map[params.StreamID] = h
+		p.streams_map[stream_url] = h
 		go h.run()
 	}
 	h.register <- conn
@@ -150,11 +133,12 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 }
 
 func (p *GoPlayer) closeConnection(conn *WSConnection) {
-	params := conn.GetConnectionParameters()
-	p.log.Debug("Close connection with params: stream_id=  %d user_id= %d access_token= %s", params.StreamID, params.ClientID, params.AccessToken)
-	h, ok := p.streams_map[params.StreamID]
+	stream_url:= conn.request.URL.Path
+
+	//p.log.Debug("Close connection with params: stream_id=  %d user_id= %d access_token= %s", params.StreamID, params.ClientID, params.AccessToken)
+	h, ok := p.streams_map[stream_url]
 	if !ok {
-		p.log.Error("hub for stream %d not found!", params.StreamID)
+		//p.log.Error("hub for stream %d not found!", params.StreamID)
 		return
 	}
 	h.unregister <- conn

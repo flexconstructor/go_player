@@ -6,7 +6,7 @@ package go_player
 
 import (
 	player_log "github.com/flexconstructor/go_player/log"
-	"strconv"
+
 )
 
 // hub maintains the set of active connections and broadcasts messages to the
@@ -15,8 +15,6 @@ type hub struct {
 
 	//url of stream application
 	stream_url string
-	//stream name
-	stream_id uint64
 	// Registered connections.
 	connections map[*WSConnection]bool
 	// Inbound messages from the connections.
@@ -29,7 +27,7 @@ type hub struct {
 	metadata      chan *MetaData
 	error         chan *WSError
 	log           player_log.Logger
-	service_token string
+
 }
 
 //var decoder *FFmpegDecoder
@@ -37,13 +35,10 @@ var ff *ffmpeg
 var meta *MetaData
 
 func NewHub(stream_url string,
-	stream_id uint64,
 	logger player_log.Logger,
-	service_token string,
 ) *hub {
 	return &hub{
 		stream_url:    stream_url,
-		stream_id:     stream_id,
 		broadcast:     make(chan []byte),
 		register:      make(chan *WSConnection, 1),
 		unregister:    make(chan *WSConnection, 1),
@@ -51,16 +46,14 @@ func NewHub(stream_url string,
 		metadata:      make(chan *MetaData),
 		error:         make(chan *WSError, 1),
 		log:           logger,
-		service_token: service_token,
 		exit_channel:  make(chan bool, 1),
 	}
 }
 
 func (h *hub) run() {
-	h.log.Info("Hub run: url = %s id= %d", h.stream_url, h.stream_id)
-	stream_name := strconv.FormatUint(h.stream_id, 10)
+	h.log.Info("Hub run: url = %s ", h.stream_url)
 	ff = &ffmpeg{
-		stream_url:     h.stream_url + "/" + stream_name + "?model_id=" + stream_name + "&access_token=" + h.service_token,
+		stream_url:     h.stream_url,
 		broadcast:      h.broadcast,
 		close_channel:  make(chan bool),
 		metadata:       h.metadata,
@@ -145,6 +138,6 @@ func (h *hub) run() {
 }
 
 func (h *hub) Close() {
-	h.log.Debug("Close hub %d", h.stream_id)
+	h.log.Debug("Close hub %s", h.stream_url)
 	h.exit_channel <- true
 }

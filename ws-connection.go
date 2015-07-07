@@ -26,11 +26,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
-type ConnectionParams struct {
-	StreamID    uint64
-	ClientID    uint64
-	AccessToken string
-}
+
 
 type WSConnection struct {
 	ws            *websocket.Conn
@@ -38,21 +34,23 @@ type WSConnection struct {
 	metadata      chan []byte
 	error_channel chan *WSError
 	lgr           player_log.Logger
-	params        *ConnectionParams
+	request       *http.Request
+	source_url    string
 }
 
-func NewWSConnection(w http.ResponseWriter, r *http.Request, l player_log.Logger, params *ConnectionParams) (*WSConnection, error) {
+func NewWSConnection(source_url string, w http.ResponseWriter, r *http.Request, l player_log.Logger) (*WSConnection, error) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return nil, err
 	}
 	conn := &WSConnection{
+		source_url: source_url,
 		ws:            ws,
 		send:          make(chan []byte, 256),
 		error_channel: make(chan *WSError, 1),
 		metadata:      make(chan []byte),
 		lgr:           l,
-		params:        params,
+		request:       r,
 	}
 
 	return conn, nil
@@ -117,7 +115,7 @@ func (c *WSConnection) Run() {
 }
 
 func (c *WSConnection) Close() {
-	c.lgr.Debug("connection closed for user: %d", c.GetConnectionParameters().ClientID)
+	//c.lgr.Debug("connection closed for user: %d", c.params.ClientID)
 	write_error := c.write(websocket.CloseMessage, []byte{})
 	if write_error != nil {
 		c.lgr.Error("can not write close message")
@@ -132,9 +130,6 @@ func (c *WSConnection) Close() {
 	pl.closes <- c
 }
 
-func (c *WSConnection) GetConnectionParameters() *ConnectionParams {
-	return c.params
-}
 
 func (c *WSConnection) callUpdate() error {
 	pl, err := GetPlayerInstance()
@@ -144,4 +139,12 @@ func (c *WSConnection) callUpdate() error {
 	}
 	pl.updates <- c
 	return nil
+}
+
+func (c *WSConnection)GetRequest()(* http.Request){
+	return c.request
+}
+
+func (c *WSConnection)GetSourceURL()(string){
+	return c.source_url
 }
