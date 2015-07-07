@@ -133,12 +133,12 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 }
 
 func (p *GoPlayer) closeConnection(conn *WSConnection) {
-	stream_url:= conn.request.URL.Path
+	stream_url:= conn.GetSourceURL();
 
-	//p.log.Debug("Close connection with params: stream_id=  %d user_id= %d access_token= %s", params.StreamID, params.ClientID, params.AccessToken)
+	p.log.Debug("Close connection with params:source url=  %s", stream_url)
 	h, ok := p.streams_map[stream_url]
 	if !ok {
-		//p.log.Error("hub for stream %d not found!", params.StreamID)
+		p.log.Error("hub for stream %s not found!", stream_url)
 		return
 	}
 	h.unregister <- conn
