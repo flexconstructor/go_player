@@ -1,13 +1,16 @@
 package go_player
 
 import "encoding/json"
-
+/*
+	Errors of web-socket connections.
+ */
 type WSError struct {
 	code        uint8
 	level       uint8
 	description string
 }
 
+// Map of string representation for error.
 var error_map = map[uint8]string{
 	1:  "No video stream found",
 	2:  "No codec found for this stream",
@@ -24,6 +27,7 @@ var error_map = map[uint8]string{
 	13: "Can not decode chunk",
 }
 
+// Create new error instance.
 func NewError(code uint8, level uint8) *WSError {
 	error_description, ok := error_map[code]
 	if !ok {
@@ -37,6 +41,7 @@ func NewError(code uint8, level uint8) *WSError {
 	return er
 }
 
+// Create new error instance with external code and description.
 func NewErrorWithDescription(code uint8, level uint8, description string) *WSError {
 	return &WSError{
 		code:        code,
@@ -45,6 +50,7 @@ func NewErrorWithDescription(code uint8, level uint8, description string) *WSErr
 	}
 }
 
+// Get JSON like representation of error instance.
 func (er *WSError) JSON() ([]byte, error) {
 	var m map[string]interface{}
 	if er.level == 0 {

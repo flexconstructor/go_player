@@ -26,7 +26,6 @@ func (f *ffmpeg) run() {
 	frame_cannel := make(chan *gmf.Frame)
 	decoder := &FFmpegDecoder{
 		stream_url:     f.stream_url,
-		broadcast:      f.broadcast,
 		codec_chan:     codec_chan,
 		error:          f.error,
 		log:            f.log,
@@ -44,6 +43,7 @@ func (f *ffmpeg) run() {
 			return
 
 		case c, ok := <-codec_chan:
+		// set the metadata from codec.
 			if ok {
 				f.metadata <- &MetaData{
 					Message: "metadata",
@@ -59,14 +59,13 @@ func (f *ffmpeg) run() {
 func (f *ffmpeg) runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame) {
 	wg := new(sync.WaitGroup)
 	encoder := &FFmpegEncoder{
-		c,
-		f.broadcast,
-		make(chan int),
-		f.error,
-		f.log,
-		make(chan bool),
-		frame_channel,
-		wg,
+		srcCodec: c,
+		broadcast: f.broadcast,
+		error: f.error,
+		log: f.log,
+		close_chan: make(chan bool),
+		frame_cannel: frame_channel,
+		wg: wg,
 	}
 
 	for i := 0; i < f.workers_length; i++ {

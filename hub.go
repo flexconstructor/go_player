@@ -1,7 +1,3 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package go_player
 
 import (
@@ -9,31 +5,30 @@ import (
 
 )
 
-// hub maintains the set of active connections and broadcasts messages to the
-// connections.
+/* The pool of web-socket connections for one model-stream.
+   The struct conains decode/encode module for one rtmp-stream,
+   map of web-socket connections for this.stream,
+   metadata object of this stream.
+*/
 type hub struct {
 
-	//url of stream application
-	stream_url string
-	// Registered connections.
-	connections map[*WSConnection]bool
-	// Inbound messages from the connections.
-	broadcast chan []byte
-	// Register requests from the connections.
-	register chan *WSConnection
-	// Unregister requests from connections.
-	unregister    chan *WSConnection
-	exit_channel  chan bool
-	metadata      chan *MetaData
-	error         chan *WSError
-	log           player_log.Logger
+	stream_url string                   // RTMP stream url.
+	connections map[*WSConnection]bool  // Registered connections.
+	broadcast chan []byte               // Channel for jpeg stream for client.
+	register chan *WSConnection         // Channel for register new connection.
+	unregister    chan *WSConnection    // Channel for unregister connection.
+	exit_channel  chan bool             // Channel for close hub.
+	metadata      chan *MetaData        // Stream metadata chennel.
+	error         chan *WSError         // Error channel.
+	log           player_log.Logger     // Logger reference.
 
 }
 
-//var decoder *FFmpegDecoder
-var ff *ffmpeg
-var meta *MetaData
 
+var ff *ffmpeg      // FFMPEG module for decode/encode stream
+var meta *MetaData  // metadata of stream
+
+// Create new hub instance.
 func NewHub(stream_url string,
 	logger player_log.Logger,
 ) *hub {
@@ -50,6 +45,7 @@ func NewHub(stream_url string,
 	}
 }
 
+// run hub instance.
 func (h *hub) run() {
 	h.log.Info("Hub run: url = %s ", h.stream_url)
 	ff = &ffmpeg{
@@ -62,18 +58,20 @@ func (h *hub) run() {
 		workers_length: 256,
 	}
 
+	// run ffmpeg module.
 	go ff.run()
 	defer ff.Close()
 
 	for {
 		select {
+		// register new web-socket connection
 		case c, ok := <-h.register:
 			if !ok {
 				continue
 			}
 			h.connections[c] = true
 			h.log.Debug("register connection: %d", len(h.connections))
-
+			// try send metadata of stream to client.
 			if meta != nil {
 				b, err := meta.JSON()
 				if err == nil {
@@ -81,6 +79,7 @@ func (h *hub) run() {
 
 				}
 			}
+		// unregister web-socket connection when connection been closed.
 		case c := <-h.unregister:
 			if _, ok := h.connections[c]; ok {
 				delete(h.connections, c)
@@ -89,6 +88,7 @@ func (h *hub) run() {
 			} else {
 				continue
 			}
+		// send new jpeg data for clients.
 		case m, ok := <-h.broadcast:
 			if !ok {
 				continue
@@ -101,7 +101,7 @@ func (h *hub) run() {
 
 				}
 			}
-
+		// send methadata, when it income.
 		case meta, ok := <-h.metadata:
 			if !ok {
 				continue
@@ -119,6 +119,7 @@ func (h *hub) run() {
 
 				}
 			}
+		// close all connection when error message income
 		case e, ok := <-h.error:
 			if !ok {
 				continue
@@ -130,13 +131,14 @@ func (h *hub) run() {
 					delete(h.connections, c)
 				}
 			}
+		// close hub if exit message income.
 		case <-h.exit_channel:
 			return
 
 		}
 	}
 }
-
+// close hub function
 func (h *hub) Close() {
 	h.log.Debug("Close hub %s", h.stream_url)
 	h.exit_channel <- true

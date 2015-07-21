@@ -5,23 +5,26 @@ import (
 	player_log "github.com/flexconstructor/go_player/log"
 
 )
-
+/*
+	RTMP-stream to JPEG-stream convertor.
+ */
 var (
-	player_instance *GoPlayer = nil
-	log             player_log.Logger
+	player_instance *GoPlayer = nil    //singleton instance
+	log             player_log.Logger  // logger
 )
 
 type GoPlayer struct {
 
-	streams_map   map[string]*hub
-	connects      chan *WSConnection
-	updates       chan *WSConnection
-	closes        chan *WSConnection
-	stops         chan *GoPlayer
-	log           player_log.Logger
-	handler       IConnectionHandler
+	streams_map   map[string]*hub     // map of stream connections hub.
+	connects      chan *WSConnection  // channel for register new web-socket connection.
+	updates       chan *WSConnection  // channel for updates connection.
+	closes        chan *WSConnection  // channel for unregister connections.
+	stops         chan *GoPlayer      // close convertor instance channel.
+	log           player_log.Logger   // logger.
+	handler       IConnectionHandler  // hundler of connection events.
 }
 
+ // Init new player instance.
 func InitGoPlayer(
 	log player_log.Logger,
 	connectionHandler IConnectionHandler) *GoPlayer {
@@ -42,27 +45,30 @@ func InitGoPlayer(
 	player_instance.log.Info("init go player")
 	return player_instance
 }
-
+ // return instance of player.
 func GetPlayerInstance() (*GoPlayer, error) {
 	if player_instance == nil {
 		return nil, errors.New("goplayer not initialized!")
 	}
 	return player_instance, nil
 }
-
+ // run the player instance.
 func (p *GoPlayer) Run() {
 	p.log.Info("Run GO PLAYER INSTANCE")
 	defer p.stopInstance()
 	for {
 		select {
+		// stop player instance
 		case <-p.stops:
 			return
+		// init new connection
 		case c, ok := <-p.connects:
 			if ok {
 				p.initConnection(c)
 			} else {
 				p.log.Error("can not write connection")
 			}
+		// close connection
 		case c, ok := <-p.closes:
 			if ok {
 				p.closeConnection(c)
@@ -70,6 +76,7 @@ func (p *GoPlayer) Run() {
 			} else {
 				p.log.Error("can not close connection")
 			}
+		// update connection
 		case u, ok := <-p.updates:
 			if !ok {
 				panic("can not write update")
@@ -80,6 +87,7 @@ func (p *GoPlayer) Run() {
 			}
 
 		default:
+		// close hubs without active connections.
 			if len(p.streams_map) > 0 {
 				for i := range p.streams_map {
 					h := p.streams_map[i]
@@ -99,22 +107,23 @@ func (p *GoPlayer) Run() {
 
 }
 
+// Stop player.
 func (p *GoPlayer) Stop() {
 	p.log.Info("STOP GO PLAYER INSTANCE")
 	p.stops <- p
 }
 
+// Stop player instance.
 func (p *GoPlayer) stopInstance() {
 	p.log.Info("Player stopped")
 	player_instance = nil
 }
 
+// Register new web-socket connection.
 func (p *GoPlayer) initConnection(conn *WSConnection) {
-	//params := conn.params
 	stream_url:=conn.GetSourceURL()
-	p.log.Debug("connect to url: %s",stream_url)
-	//p.log.Info("init connection  with params: stream_id=  %d user_id= %d access_token= %s", params.StreamID, params.ClientID, params.AccessToken)
 	h, ok := p.streams_map[stream_url]
+	// if hub of requested stream not running - run new hub.
 	if !ok {
 		h = NewHub(
 			stream_url,
@@ -124,6 +133,7 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 		p.streams_map[stream_url] = h
 		go h.run()
 	}
+	// register connection in hub.
 	h.register <- conn
 	err := p.handler.OnConnect(conn)
 	if err != nil {
@@ -132,6 +142,7 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 
 }
 
+// Register close connection.
 func (p *GoPlayer) closeConnection(conn *WSConnection) {
 	stream_url:= conn.GetSourceURL();
 

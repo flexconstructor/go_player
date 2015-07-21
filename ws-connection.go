@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"time"
 )
-
+/*
+  Web-socket connection instance.
+ */
 const (
 	// Time allowed to write a message to the peer.
 	writeWait = 2 * time.Second
@@ -16,10 +18,11 @@ const (
 	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 1) / 2
 
-	// Maximum message size allowed from peer.
+	// Maximum message queue allowed from/to peer.
 	maxMessageSize = 512
 )
 
+// web-socket upgrader
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -38,6 +41,7 @@ type WSConnection struct {
 	source_url    string
 }
 
+// Create new web-socket instance.
 func NewWSConnection(source_url string, w http.ResponseWriter, r *http.Request, l player_log.Logger) (*WSConnection, error) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -56,13 +60,14 @@ func NewWSConnection(source_url string, w http.ResponseWriter, r *http.Request, 
 	return conn, nil
 }
 
+// Write message to web-socket buffer.
 func (c *WSConnection) write(mt int, payload []byte) error {
 	c.ws.SetWriteDeadline(time.Now().Add(writeWait))
 	return c.ws.WriteMessage(mt, payload)
 }
 
+// Run new web-socket connection.
 func (c *WSConnection) Run() {
-	c.lgr.Debug("Run connection")
 	player, err := GetPlayerInstance()
 	if err != nil {
 		c.lgr.Error("no player instance found")
@@ -72,9 +77,10 @@ func (c *WSConnection) Run() {
 
 	ticker := time.NewTicker(pingPeriod)
 	defer c.Close()
-
+	defer ticker.Stop()
 	for {
 		select {
+		// send message.
 		case message, ok := <-c.send:
 			if !ok {
 				c.lgr.Error("can not write message")
@@ -84,6 +90,7 @@ func (c *WSConnection) Run() {
 				c.lgr.Error("can not wright binary")
 				return
 			}
+		// send ping.
 		case <-ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
 				c.lgr.Error("can not write ping")
@@ -94,16 +101,19 @@ func (c *WSConnection) Run() {
 				c.lgr.Error("Update error")
 				return
 			}
+		// send metadata.
 		case metadata, ok := <-c.metadata:
 			if ok {
 				c.write(websocket.TextMessage, metadata)
 			}
+		// send error message.
 		case error, ok := <-c.error_channel:
 			if ok {
 				error_object, err := error.JSON()
 				if err == nil {
 					c.write(websocket.TextMessage, error_object)
 				}
+				// close connection if error is critical.
 				if error.level == 1 {
 					c.lgr.Error("error level = %d descripton= %s", error.level, error.description)
 					return
@@ -114,8 +124,8 @@ func (c *WSConnection) Run() {
 
 }
 
+// close connection.
 func (c *WSConnection) Close() {
-	//c.lgr.Debug("connection closed for user: %d", c.params.ClientID)
 	write_error := c.write(websocket.CloseMessage, []byte{})
 	if write_error != nil {
 		c.lgr.Error("can not write close message")
@@ -130,7 +140,7 @@ func (c *WSConnection) Close() {
 	pl.closes <- c
 }
 
-
+// dispatch update event for handler.
 func (c *WSConnection) callUpdate() error {
 	pl, err := GetPlayerInstance()
 	if err != nil {
@@ -141,10 +151,11 @@ func (c *WSConnection) callUpdate() error {
 	return nil
 }
 
+// Get http.Request instance for public.
 func (c *WSConnection)GetRequest()(* http.Request){
 	return c.request
 }
-
+// Get connection url for public.
 func (c *WSConnection)GetSourceURL()(string){
 	return c.source_url
 }

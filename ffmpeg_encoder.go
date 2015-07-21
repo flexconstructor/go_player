@@ -5,20 +5,23 @@ import (
 	player_log "github.com/flexconstructor/go_player/log"
 	"sync"
 )
-
+/*
+	Encode frames to jpeg images.
+ */
 type FFmpegEncoder struct {
-	srcCodec     *gmf.CodecCtx
-	broadcast    chan []byte
-	rtmp_status  chan int
-	error        chan *WSError
-	log          player_log.Logger
-	close_chan   chan bool
-	frame_cannel chan *gmf.Frame
-	wg           *sync.WaitGroup
+	srcCodec     *gmf.CodecCtx        // video codec
+	broadcast    chan []byte          // channel for result images
+	error        chan *WSError        // error channel
+	log          player_log.Logger    // logger
+	close_chan   chan bool            // channel for closing encoder
+	frame_cannel chan *gmf.Frame      // channel of source frames.
+	wg           *sync.WaitGroup      // wait group for closing all encode goroutines.
 }
 
+// Run encoder.
 func (e *FFmpegEncoder) Run() {
 	defer e.Close()
+	// get codec for jpeg encode.
 	codec, err := gmf.FindEncoder(gmf.AV_CODEC_ID_MJPEG)
 	if err != nil {
 		e.error <- NewError(2, 1)
@@ -27,6 +30,7 @@ func (e *FFmpegEncoder) Run() {
 
 	cc := gmf.NewCodecCtx(codec)
 	defer gmf.Release(cc)
+	// setts the properties of encode codec
 	cc.SetPixFmt(gmf.AV_PIX_FMT_YUVJ420P)
 	cc.SetWidth(e.srcCodec.Width())
 	cc.SetHeight(e.srcCodec.Height())
@@ -74,7 +78,7 @@ func (e *FFmpegEncoder) Run() {
 	}
 
 }
-
+// close encoder
 func (e *FFmpegEncoder) Close() {
 	e.wg.Done()
 }
