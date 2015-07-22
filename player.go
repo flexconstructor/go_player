@@ -88,7 +88,6 @@ func (p *GoPlayer) Run() {
 			}
 
 		default:
-		// close hubs without active connections.
 			if len(p.streams_map) > 0 {
 				for i := range p.streams_map {
 					h := p.streams_map[i]
