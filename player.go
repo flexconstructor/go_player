@@ -79,10 +79,11 @@ func (p *GoPlayer) Run() {
 		// update connection
 		case u, ok := <-p.updates:
 			if !ok {
-				panic("can not write update")
+				p.log.Debug("can not write update")
 			}
 			err := p.handler.OnUpdate(u)
 			if err != nil {
+				p.log.Debug("Update failed")
 				u.error_channel <- err
 			}
 
