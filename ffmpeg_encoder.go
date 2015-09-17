@@ -27,7 +27,7 @@ func (e *FFmpegEncoder) Run() {
 		e.error <- NewError(2, 1)
 		return
 	}
-
+	e.log("encoder run")
 	cc := gmf.NewCodecCtx(codec)
 	defer gmf.Release(cc)
 	// setts the properties of encode codec
