@@ -131,6 +131,7 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 		)
 
 		p.streams_map[stream_url] = h
+		p.log.Debug("NEW STREAM: %s",stream_url)
 		go h.run()
 	}
 	// register connection in hub.
