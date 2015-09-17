@@ -57,6 +57,7 @@ func (f *ffmpeg) run() {
 }
 //Run encoding frames to jpeg images. Make pull of encoders.
 func (f *ffmpeg) runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame) {
+	f.log.Debug("Run Encoder")
 	wg := new(sync.WaitGroup)
 	encoder := &FFmpegEncoder{
 		srcCodec: c,
@@ -72,6 +73,7 @@ func (f *ffmpeg) runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame) {
 		wg.Add(1)
 		go encoder.Run()
 	}
+	f.log.Debug("all workers running")
 	wg.Wait()
 	f.log.Info("All encoders is done!")
 }
