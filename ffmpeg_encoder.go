@@ -22,7 +22,7 @@ type FFmpegEncoder struct {
 
 // Run encoder.
 func (e *FFmpegEncoder) Run() {
-	defer e.recoverEncoder()
+
 	defer e.Close()
 	// get codec for jpeg encode.
 	codec, err := gmf.FindEncoder(gmf.AV_CODEC_ID_MJPEG)
@@ -58,7 +58,7 @@ func (e *FFmpegEncoder) Run() {
 		SetHeight(e.srcCodec.Height()).
 		SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
 	defer gmf.Release(dstFrame)
-
+	defer e.recoverEncoder()
 	if err := dstFrame.ImgAlloc(); err != nil {
 		e.log.Error("codec error: ", err)
 		e.error <- NewError(4, 2)
@@ -71,18 +71,19 @@ func (e *FFmpegEncoder) Run() {
 			e.log.Error("frame is invalid")
 			return
 		}
-		panic("Test panick!!!")
+
 		swsCtx.Scale(srcFrame, dstFrame)
 
 		if p, ready, err := dstFrame.EncodeNewPacket(cc); ready {
 			if(err != nil){
-				panic(err)
+				panic("Can not encode packet")
 			}
 			e.broadcast <- p.Data()
 			e.log.Debug("data size: %d",len(p.Data()))
 
 		}
 		gmf.Release(srcFrame)
+		panic("Test panick!!!")
 	}
 
 }
