@@ -88,7 +88,7 @@ func (p *GoPlayer) Run() {
 			}
 
 		default:
-			if len(p.streams_map) > 0 {
+			/*if len(p.streams_map) > 0 {
 				for i := range p.streams_map {
 					h := p.streams_map[i]
 					if h != nil {
@@ -101,7 +101,8 @@ func (p *GoPlayer) Run() {
 
 				}
 
-			}
+			}*/
+
 		}
 	}
 
