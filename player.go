@@ -58,6 +58,7 @@ func GetPlayerInstance() (*GoPlayer, error) {
 func (p *GoPlayer) Run() {
 	p.log.Info("Run GO PLAYER INSTANCE")
 	defer p.stopInstance()
+	defer p.recoverPlayer()
 	for {
 		select {
 		// stop player instance
@@ -95,9 +96,6 @@ func (p *GoPlayer) Run() {
 					h := p.streams_map[i]
 					if h != nil {
 						if len(h.connections) == 0 {
-							if(len(p.streams_map)>1){
-								panic("Test panic!")
-							}
 							p.log.Debug("call close hub")
 							h.Close()
 							p.log.Debug("hub closed")
