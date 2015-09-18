@@ -66,7 +66,7 @@ func (e *FFmpegEncoder) Run() {
 	}
 
 	for {
-		_, ok := <-e.frame_cannel
+		srcFrame, ok := <-e.frame_cannel
 		if !ok {
 			e.log.Error("frame is invalid")
 			return
@@ -91,7 +91,7 @@ func (e *FFmpegEncoder) Run() {
 		}*/
 		//gmf.Release(srcFrame)
 
-
+		srcFrame.Release()
 	}
 
 }
