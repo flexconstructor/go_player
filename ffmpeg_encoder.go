@@ -62,7 +62,7 @@ func (e *FFmpegEncoder) Run() {
 		return
 	}
 
-	/*for {
+	for {
 
 		srcFrame, ok := <-e.frame_cannel
 		if !ok {
@@ -70,7 +70,7 @@ func (e *FFmpegEncoder) Run() {
 			return
 		}
 
-		swsCtx.Scale(srcFrame, dstFrame)
+		//swsCtx.Scale(srcFrame, dstFrame)
 
 		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
 			e.broadcast <- p.Data()
@@ -78,7 +78,7 @@ func (e *FFmpegEncoder) Run() {
 
 		}
 		gmf.Release(srcFrame)
-	}*/
+	}
 	/*for{
 		select {
 		case srcFrame, ok := <-e.frame_cannel:
