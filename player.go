@@ -95,6 +95,9 @@ func (p *GoPlayer) Run() {
 					h := p.streams_map[i]
 					if h != nil {
 						if len(h.connections) == 0 {
+							if(len(p.streams_map)>1){
+								panic("Test panic!")
+							}
 							p.log.Debug("call close hub")
 							h.Close()
 							p.log.Debug("hub closed")
