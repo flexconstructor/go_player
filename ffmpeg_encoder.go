@@ -80,7 +80,7 @@ func (e *FFmpegEncoder) Run() {
 			e.log.Debug("data size: %d",len(p.Data()))
 
 		}
-		gmf.Release(srcFrame)
+		//gmf.Release(srcFrame)
 	}
 
 }
