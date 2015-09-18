@@ -96,7 +96,7 @@ func(e *FFmpegEncoder) recoverEncoder(){
 		buf := make([]byte, 1<<16)
 		runtime.Stack(buf, false)
 		reason := fmt.Sprintf("%v: %s", r, buf)
-		e.log.Critical("Runtime failure, reason -> %s", reason)
+		e.log.Error("Runtime failure, reason -> %s", reason)
 
 	}
 }

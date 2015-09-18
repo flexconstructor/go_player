@@ -91,7 +91,7 @@ func(f *ffmpeg) recoverFFMpeg(){
 		buf := make([]byte, 1<<16)
 		runtime.Stack(buf, false)
 		reason := fmt.Sprintf("%v: %s", r, buf)
-		f.log.Critical("Runtime failure, reason -> %s", reason)
+		f.log.Error("Runtime failure, reason -> %s", reason)
 	}
 
 }

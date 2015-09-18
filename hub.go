@@ -152,7 +152,7 @@ func(h *hub) recoverHub() {
 		buf := make([]byte, 1<<16)
 		runtime.Stack(buf, false)
 		reason := fmt.Sprintf("%v: %s", r, buf)
-		h.log.Critical("Runtime failure, reason -> %s", reason)
+		h.log.Error("Runtime failure, reason -> %s", reason)
 	}
 }
 

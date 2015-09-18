@@ -5,6 +5,8 @@ import (
 	"github.com/gorilla/websocket"
 	"net/http"
 	"time"
+	"runtime"
+	"fmt"
 )
 /*
   Web-socket connection instance.
@@ -159,4 +161,14 @@ func (c *WSConnection)GetRequest()(* http.Request){
 // Get connection url for public.
 func (c *WSConnection)GetSourceURL()(string){
 	return c.source_url
+}
+
+
+func(c *WSConnection) recoverConnection() {
+	if r := recover(); r != nil {
+		buf := make([]byte, 1<<16)
+		runtime.Stack(buf, false)
+		reason := fmt.Sprintf("%v: %s", r, buf)
+		c.lgr.Error("Runtime failure, reason -> %s", reason)
+	}
 }
