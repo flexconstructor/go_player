@@ -101,5 +101,6 @@ func(d *FFmpegDecoder) recoverDecoder(){
 		runtime.Stack(buf, false)
 		reason := fmt.Sprintf("%v: %s", r, buf)
 		d.log.Critical("Runtime failure, reason -> %s", reason)
+	}
 
 	}
