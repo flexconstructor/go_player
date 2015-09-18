@@ -71,7 +71,8 @@ func (e *FFmpegEncoder) Run() {
 		swsCtx.Scale(srcFrame, dstFrame)
 
 		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
-			e.broadcast <- p.Data()
+		//	e.broadcast <- p.Data()
+			e.log.Debug("data size: %d",len(p.Data()))
 
 		}
 		gmf.Release(srcFrame)
