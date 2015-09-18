@@ -79,7 +79,7 @@ func (e *FFmpegEncoder) Run() {
 		}
 		gmf.Release(srcFrame)
 	}*/
-	for{
+	/*for{
 		select {
 		case srcFrame, ok := <-e.frame_cannel:
 			if !ok {
@@ -94,10 +94,11 @@ func (e *FFmpegEncoder) Run() {
 				e.log.Debug("data size: %d",len(p.Data()))
 
 			}
+			srcFrame.Free()
 			gmf.Release(srcFrame)
 
 		}
-	}
+	}*/
 }
 // close encoder
 func (e *FFmpegEncoder) Close() {
