@@ -23,7 +23,7 @@ func (f *ffmpeg) run() {
 	f.log.Info("run ffmpeg for %s", f.stream_url)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	codec_chan := make(chan *gmf.CodecCtx)
-	frame_cannel := make(chan *gmf.Frame)
+	frame_cannel := make(chan *gmf.Frame,256)
 	decoder := &FFmpegDecoder{
 		stream_url:     f.stream_url,
 		codec_chan:     codec_chan,
