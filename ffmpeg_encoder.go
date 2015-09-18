@@ -63,7 +63,7 @@ func (e *FFmpegEncoder) Run() {
 	}
 
 	for {
-		<-e.frame_cannel
+		//<-e.frame_cannel
 		//srcFrame, ok := <-e.frame_cannel
 	/*	if !ok {
 			e.log.Error("frame is invalid")
