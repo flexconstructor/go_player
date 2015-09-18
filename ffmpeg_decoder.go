@@ -58,12 +58,13 @@ func (d *FFmpegDecoder) Run() {
 					if err != nil {
 						d.log.Error("can not decode stream")
 						d.error <- NewError(13, 2)
+						continue
 					} else {
 						// get next frame
 						for frame := range packet.Frames(stream.CodecCtx()) {
 							//d.frame_channel <- frame.CloneNewFrame()
 							d.log.Debug("write new frame: %d",frame.TimeStamp())
-							Release(frame)
+							//Release(frame)
 						}
 
 						Release(packet)
