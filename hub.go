@@ -55,7 +55,7 @@ func (h *hub) run() {
 		metadata:       h.metadata,
 		error:          h.error,
 		log:            h.log,
-		workers_length: 10,
+		workers_length: 1,
 	}
 
 	// run ffmpeg module.
