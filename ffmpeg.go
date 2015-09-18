@@ -5,6 +5,7 @@ import (
 	player_log "github.com/flexconstructor/go_player/log"
 	"runtime"
 	"sync"
+	"fmt"
 )
 
 type ffmpeg struct {
@@ -33,6 +34,7 @@ func (f *ffmpeg) run() {
 		frame_channel:  frame_cannel,
 		packet_channel: make(chan *gmf.Packet),
 	}
+	defer f.recoverFFMpeg()
 	defer decoder.Close()
 	defer f.log.Debug("ffmpeg closed!!!")
 	go decoder.Run()
@@ -83,3 +85,14 @@ func (f *ffmpeg) Close() {
 	f.log.Info("Close ffmpeg!")
 	f.close_channel <- true
 }
+
+func(f *ffmpeg) recoverFFMpeg(){
+	if r := recover(); r != nil {
+		buf := make([]byte, 1<<16)
+		runtime.Stack(buf, false)
+		reason := fmt.Sprintf("%v: %s", r, buf)
+		f.log.Critical("Runtime failure, reason -> %s", reason)
+	}
+
+}
+

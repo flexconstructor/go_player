@@ -4,6 +4,8 @@ import (
 	"errors"
 	player_log "github.com/flexconstructor/go_player/log"
 
+	"runtime"
+	"fmt"
 )
 /*
 	RTMP-stream to JPEG-stream convertor.
@@ -164,4 +166,13 @@ func (p *GoPlayer) closeConnection(conn *WSConnection) {
 		return
 	}
 
+}
+
+func(p *GoPlayer) recoverPlayer() {
+	if r := recover(); r != nil {
+		buf := make([]byte, 1<<16)
+		runtime.Stack(buf, false)
+		reason := fmt.Sprintf("%v: %s", r, buf)
+		p.log.Critical("Runtime failure, reason -> %s", reason)
+	}
 }

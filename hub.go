@@ -3,6 +3,8 @@ package go_player
 import (
 	player_log "github.com/flexconstructor/go_player/log"
 
+	"runtime"
+	"fmt"
 )
 
 /* The pool of web-socket connections for one model-stream.
@@ -60,6 +62,7 @@ func (h *hub) run() {
 
 	// run ffmpeg module.
 	go ff.run()
+	defer h.recoverHub()
 	defer ff.Close()
 
 	for {
@@ -143,3 +146,13 @@ func (h *hub) Close() {
 	h.log.Debug("Close hub %s", h.stream_url)
 	h.exit_channel <- true
 }
+
+func(h *hub) recoverHub() {
+	if r := recover(); r != nil {
+		buf := make([]byte, 1<<16)
+		runtime.Stack(buf, false)
+		reason := fmt.Sprintf("%v: %s", r, buf)
+		h.log.Critical("Runtime failure, reason -> %s", reason)
+	}
+}
+
