@@ -59,8 +59,8 @@ func (h *hub) run() {
 	}
 
 	// run ffmpeg module.
-	//go ff.run()
-	//defer ff.Close()
+	go ff.run()
+	defer ff.Close()
 
 	for {
 		select {
