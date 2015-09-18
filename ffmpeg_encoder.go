@@ -4,6 +4,8 @@ import (
 	"github.com/3d0c/gmf"
 	player_log "github.com/flexconstructor/go_player/log"
 	"sync"
+	"runtime"
+	"fmt"
 )
 /*
 	Encode frames to jpeg images.
@@ -20,6 +22,7 @@ type FFmpegEncoder struct {
 
 // Run encoder.
 func (e *FFmpegEncoder) Run() {
+	defer e.recoverEncoder()
 	defer e.Close()
 	// get codec for jpeg encode.
 	codec, err := gmf.FindEncoder(gmf.AV_CODEC_ID_MJPEG)
@@ -79,11 +82,21 @@ func (e *FFmpegEncoder) Run() {
 			e.log.Debug("data size: %d",len(p.Data()))
 
 		}
-		//gmf.Release(srcFrame)
+		gmf.Release(srcFrame)
 	}
 
 }
 // close encoder
 func (e *FFmpegEncoder) Close() {
 	e.wg.Done()
+}
+
+func(e *FFmpegEncoder) recoverEncoder(){
+	if r := recover(); r != nil {
+		buf := make([]byte, 1<<16)
+		runtime.Stack(buf, false)
+		reason := fmt.Sprintf("%v: %s", r, buf)
+		e.log.Critical("Runtime failure, reason -> %s", reason)
+
+	}
 }

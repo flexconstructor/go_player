@@ -3,6 +3,8 @@ package go_player
 import (
 	. "github.com/3d0c/gmf"
 	player_log "github.com/flexconstructor/go_player/log"
+	"runtime"
+	"fmt"
 )
 /*
 Decode video stream from rtmp url to frames
@@ -20,6 +22,7 @@ type FFmpegDecoder struct {
 // Run decode
 func (d *FFmpegDecoder) Run() {
 	d.log.Info("Run Decoder for %s", d.stream_url)
+	defer d.recoverDecoder()
 	defer close(d.frame_channel)
 	// create codec
 	inputCtx, err := NewInputCtx(d.stream_url)
@@ -91,3 +94,12 @@ func (d *FFmpegDecoder) Close() {
 	d.log.Info("close decoder")
 	d.close_chan <- true
 }
+
+func(d *FFmpegDecoder) recoverDecoder(){
+	if r := recover(); r != nil {
+		buf := make([]byte, 1<<16)
+		runtime.Stack(buf, false)
+		reason := fmt.Sprintf("%v: %s", r, buf)
+		d.log.Critical("Runtime failure, reason -> %s", reason)
+
+	}
