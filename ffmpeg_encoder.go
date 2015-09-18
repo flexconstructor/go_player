@@ -72,26 +72,16 @@ func (e *FFmpegEncoder) Run() {
 			return
 		}
 		e.log.Debug("new frame");
-		/*swsCtx.Scale(srcFrame, dstFrame)
+		swsCtx.Scale(srcFrame, dstFrame)
 		p, ready, err := dstFrame.EncodeNewPacket(cc)
 		if(err != nil){
 			panic("Can not encode packet")
 		}
 		if(ready == true){
 			e.broadcast <- p.Data()
-		}*/
+		}
+		gmf.Release(srcFrame)
 
-		/*if p, ready, err := dstFrame.EncodeNewPacket(cc); ready {
-			if(err != nil){
-				panic("Can not encode packet")
-			}
-			e.broadcast <- p.Data()
-			e.log.Debug("data size: %d",len(p.Data()))
-
-		}*/
-		//gmf.Release(srcFrame)
-
-		srcFrame.Release()
 	}
 
 }
