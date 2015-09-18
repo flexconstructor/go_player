@@ -68,7 +68,7 @@ func (e *FFmpegEncoder) Run() {
 			e.log.Error("frame is invalid")
 			return
 		}
-		e.log.Debug("valid frame")
+		e.log.Debug("chan len: %d",len(e.frame_cannel))
 		/*swsCtx.Scale(srcFrame, dstFrame)
 
 		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
