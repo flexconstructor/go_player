@@ -51,7 +51,7 @@ func (f *ffmpeg) run() {
 					Height:  c.Height(),
 				}
 				f.log.Debug("methadata: width= %d height= %d",c.Width(), c.Height())
-				//go f.runEncoder(c, frame_cannel)
+				go f.runEncoder(c, frame_cannel)
 			}
 		}
 	}

@@ -72,7 +72,10 @@ func (e *FFmpegEncoder) Run() {
 
 		swsCtx.Scale(srcFrame, dstFrame)
 
-		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
+		if p, ready, err := dstFrame.EncodeNewPacket(cc); ready {
+			if(err != nil){
+				panic(err)
+			}
 			e.broadcast <- p.Data()
 			e.log.Debug("data size: %d",len(p.Data()))
 
