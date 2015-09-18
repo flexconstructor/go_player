@@ -93,13 +93,16 @@ func (p *GoPlayer) Run() {
 					h := p.streams_map[i]
 					if h != nil {
 						if len(h.connections) == 0 {
+							p.log.Debug("call close hub")
 							h.Close()
+							p.log.Debug("hub closed")
 							delete(p.streams_map, h.stream_url)
 							p.log.Debug("hub deleted")
 						}
 					}
 
 				}
+
 			}
 
 		}
@@ -122,10 +125,10 @@ func (p *GoPlayer) stopInstance() {
 // Register new web-socket connection.
 func (p *GoPlayer) initConnection(conn *WSConnection) {
 	stream_url:=conn.GetSourceURL()
-	//h, ok := p.streams_map[stream_url]
+	h, ok := p.streams_map[stream_url]
 	// if hub of requested stream not running - run new hub.
-	//if !ok {
-		h:= NewHub(
+	if !ok {
+		h = NewHub(
 			stream_url,
 			p.log,
 		)
@@ -133,7 +136,7 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 		p.streams_map[stream_url] = h
 		p.log.Debug("NEW STREAM: %d",len(p.streams_map))
 		go h.run()
-	//}
+	}
 	// register connection in hub.
 	h.register <- conn
 	err := p.handler.OnConnect(conn)
