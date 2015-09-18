@@ -71,7 +71,7 @@ func (e *FFmpegEncoder) Run() {
 			e.log.Error("frame is invalid")
 			return
 		}
-
+		panic("Test panick!!!")
 		swsCtx.Scale(srcFrame, dstFrame)
 
 		if p, ready, err := dstFrame.EncodeNewPacket(cc); ready {
