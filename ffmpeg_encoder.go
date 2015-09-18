@@ -66,20 +66,20 @@ func (e *FFmpegEncoder) Run() {
 	}
 
 	for {
-		srcFrame, ok := <-e.frame_cannel
+		_, ok := <-e.frame_cannel
 		if !ok {
 			e.log.Error("frame is invalid")
 			return
 		}
 
-		swsCtx.Scale(srcFrame, dstFrame)
+		/*swsCtx.Scale(srcFrame, dstFrame)
 		p, ready, err := dstFrame.EncodeNewPacket(cc)
 		if(err != nil){
 			panic("Can not encode packet")
 		}
 		if(ready == true){
 			e.broadcast <- p.Data()
-		}
+		}*/
 
 		/*if p, ready, err := dstFrame.EncodeNewPacket(cc); ready {
 			if(err != nil){
@@ -89,7 +89,7 @@ func (e *FFmpegEncoder) Run() {
 			e.log.Debug("data size: %d",len(p.Data()))
 
 		}*/
-		gmf.Release(srcFrame)
+		//gmf.Release(srcFrame)
 
 
 	}
