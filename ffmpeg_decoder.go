@@ -67,13 +67,13 @@ func (d *FFmpegDecoder) Run() {
 							//d.frame_channel <- frame
 							//Release(frame)
 							//fmt.Println("format: %d",frame.)
-							 new_frame:= frame.CloneNewFrame()
-							if(new_frame != nil) {
-								d.frame_channel <- new_frame
+							 //new_frame:= frame.CloneNewFrame()
+							//if(new_frame != nil) {
+								d.frame_channel <- frame
 
-							}else{
-								panic("frame is invalid")
-							}
+							//}else{
+							//	panic("frame is invalid")
+							//}
 						}
 						Release(packet)
 					}
