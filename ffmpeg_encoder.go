@@ -50,14 +50,15 @@ func (e *FFmpegEncoder) Run() {
 	}
 
 	//swsCtx := gmf.NewSwsCtx(e.srcCodec, cc, gmf.SWS_BICUBIC)
-	swsCtx := gmf.NewSwsCtx(e.srcCodec, cc, gmf.SWS_FAST_BILINEAR)
+	swsCtx := gmf.NewSwsCtx(e.srcCodec, cc, gmf.SWS_GAUSS)
 	defer gmf.Release(swsCtx)
 
 	// convert to RGB, optionally resize could be here
 	dstFrame := gmf.NewFrame().
 		SetWidth(e.srcCodec.Width()).
 		SetHeight(e.srcCodec.Height()).
-		SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
+		//SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
+	SetFormat(gmf.AV_CODEC_ID_MJPEG)
 	defer gmf.Release(dstFrame)
 	defer e.recoverEncoder()
 	if err := dstFrame.ImgAlloc(); err != nil {
