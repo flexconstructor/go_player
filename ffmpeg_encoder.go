@@ -53,7 +53,7 @@ func (e *FFmpegEncoder) Run() {
 	defer gmf.Release(swsCtx)
 
 	// convert to RGB, optionally resize could be here
-	/*dstFrame := gmf.NewFrame().
+	dstFrame := gmf.NewFrame().
 		SetWidth(e.srcCodec.Width()).
 		SetHeight(e.srcCodec.Height()).
 		SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
@@ -64,7 +64,7 @@ func (e *FFmpegEncoder) Run() {
 		e.log.Error("codec error: ", err)
 		e.error <- NewError(4, 2)
 		return
-	}*/
+	}
 
 	for {
 		srcFrame, ok := <-e.frame_cannel
@@ -72,28 +72,16 @@ func (e *FFmpegEncoder) Run() {
 			e.log.Error("frame is invalid")
 			return
 		}
-
-		dstFrame := gmf.NewFrame().
-		SetWidth(e.srcCodec.Width()).
-		SetHeight(e.srcCodec.Height()).
-		SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
-
-		if err := dstFrame.ImgAlloc(); err != nil {
-			e.log.Error("codec error: ", err)
-			e.error <- NewError(4, 2)
-			return
-		}
-
 		e.log.Debug("new frame");
 		swsCtx.Scale(srcFrame, dstFrame)
-		p, ready, err := dstFrame.EncodeNewPacket(cc)
+		//p, ready, err := dstFrame.EncodeNewPacket(cc)
+		p, ready, err := dstFrame.FlushNewPacket(cc)
 		if(err != nil){
 			return
 		}
 		if(ready == true){
 			e.broadcast <- p.Data()
-			gmf.Release(p)
-			gmf.Release(dstFrame)
+
 			//gmf.Release(srcFrame)
 			//srcFrame.Free()
 		}

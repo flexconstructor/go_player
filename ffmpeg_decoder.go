@@ -70,7 +70,7 @@ func (d *FFmpegDecoder) Run() {
 							//fmt.Println("format: %d",frame.)
 							 //new_frame:= frame.CloneNewFrame()
 							//if(new_frame != nil) {
-							frame.SetBestPts()
+							
 								d.frame_channel <- frame
 
 							//}else{
