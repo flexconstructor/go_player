@@ -65,22 +65,22 @@ func (d *FFmpegDecoder) Run() {
 					} else {
 						// get next frame
 						for frame := range packet.Frames(stream.CodecCtx()) {
-							//new_frame:= frame.CloneNewFrame()
-							//if(new_frame != nil) {
-								d.frame_channel <- frame
-								
-							//}else{
-								//continue
-							//}
+							new_frame:= frame.CloneNewFrame()
+							if(new_frame != nil) {
+								d.frame_channel <- new_frame
+
+							}else{
+								panic("frame is invalid")
+							}
 						}
 						Release(packet)
 					}
 				} else {
-					continue
+					break
 				}
 
 			} else {
-				continue
+				break
 			}
 
 		}
