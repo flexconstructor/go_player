@@ -154,6 +154,7 @@ func (p *GoPlayer) closeConnection(conn *WSConnection) {
 	stream_url:= conn.GetSourceURL();
 
 	p.log.Debug("Close connection with params:source url=  %s", stream_url)
+	fmt.Println("Close connection: %s",stream_url)
 	h, ok := p.streams_map[stream_url]
 	if !ok {
 		p.log.Error("hub for stream %s not found!", stream_url)
