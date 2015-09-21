@@ -36,7 +36,6 @@ func (f *ffmpeg) run() {
 	}
 	defer f.recoverFFMpeg()
 	defer decoder.Close()
-	defer f.log.Debug("ffmpeg closed!!!")
 	go decoder.Run()
 
 	for {

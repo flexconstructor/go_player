@@ -63,7 +63,7 @@ func (h *hub) run() {
 
 	// run ffmpeg module.
 	go ff.run()
-	defer h.recoverHub()
+
 	defer ff.Close()
 
 	for {

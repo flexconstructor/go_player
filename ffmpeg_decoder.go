@@ -23,8 +23,7 @@ type FFmpegDecoder struct {
 func (d *FFmpegDecoder) Run() {
 	d.log.Info("Run Decoder for %s", d.stream_url)
 	fmt.Println("create decoder for: %s",d.stream_url)
-	defer d.recoverDecoder()
-	defer close(d.frame_channel)
+
 	// create codec
 	inputCtx, err := NewInputCtx(d.stream_url)
 	if err != nil {
@@ -59,7 +58,7 @@ func (d *FFmpegDecoder) Run() {
 			return
 		}
 
-			if packet.StreamIndex() == srcVideoStream.Index() {
+			//if packet.StreamIndex() == srcVideoStream.Index() {
 				stream, err := inputCtx.GetStream(packet.StreamIndex())
 				if(err != nil) {
 					d.error <- NewError(13, 2)
@@ -70,9 +69,9 @@ func (d *FFmpegDecoder) Run() {
 						d.frame_channel <- new_frame
 				}
 
-
+				Release(packet)
 			}
-		}
+		//}
 
 		}
 
