@@ -33,6 +33,7 @@ func (d *FFmpegDecoder) Run() {
 	defer inputCtx.CloseInputAndRelease()
 	// get the video stream from flv container (without audio and methadata)
 	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
+	defer srcVideoStream.Release()
 	if err != nil {
 		d.error <- NewError(1, 1)
 		d.log.Error("stream not opend ")
@@ -69,6 +70,7 @@ func (d *FFmpegDecoder) Run() {
 							//fmt.Println("format: %d",frame.)
 							 //new_frame:= frame.CloneNewFrame()
 							//if(new_frame != nil) {
+							frame.SetBestPts()
 								d.frame_channel <- frame
 
 							//}else{
@@ -94,6 +96,7 @@ func (d *FFmpegDecoder) Run() {
 func (d *FFmpegDecoder) Close() {
 	d.log.Info("close decoder")
 	d.close_chan <- true
+	fmt.Println("close decoder")
 }
 
 func(d *FFmpegDecoder) recoverDecoder(){
