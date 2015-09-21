@@ -72,7 +72,7 @@ func (e *FFmpegEncoder) Run() {
 			return
 		}
 		e.log.Debug("new frame");
-		//swsCtx.Scale(srcFrame, dstFrame)
+		swsCtx.Scale(srcFrame, dstFrame)
 		p, ready, err := dstFrame.EncodeNewPacket(cc)
 		if(err != nil){
 			return
@@ -80,7 +80,7 @@ func (e *FFmpegEncoder) Run() {
 		if(ready == true){
 			e.broadcast <- p.Data()
 			gmf.Release(p)
-			gmf.Release(srcFrame)
+			//gmf.Release(srcFrame)
 			//srcFrame.Free()
 		}
 		//gmf.Release(srcFrame)
