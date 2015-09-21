@@ -22,6 +22,7 @@ type FFmpegDecoder struct {
 // Run decode
 func (d *FFmpegDecoder) Run() {
 	d.log.Info("Run Decoder for %s", d.stream_url)
+	fmt.Println("create decoder for: %s",d.stream_url)
 	defer d.recoverDecoder()
 	defer close(d.frame_channel)
 	// create codec
@@ -48,7 +49,36 @@ func (d *FFmpegDecoder) Run() {
 		return
 	}
 
-	for {
+	packets_chan:= inputCtx.GetNewPackets();
+	for{
+		select{
+		case <-d.close_chan:
+			return
+		case packet,ok:= <- packets_chan:
+		if(! ok){
+			return
+		}
+			if packet.StreamIndex() == srcVideoStream.Index() {
+				stream, err := inputCtx.GetStream(packet.StreamIndex())
+				if(err != nil) {
+					d.error <- NewError(13, 2)
+					return
+				}else{
+					for frame := range packet.Frames(stream.CodecCtx()) {
+						new_frame:= frame.CloneNewFrame()
+						d.frame_channel <- new_frame
+
+				}
+
+
+			}
+		}
+
+		}
+
+	}
+
+	/*for {
 		select {
 		case <-d.close_chan:
 			return
@@ -70,7 +100,7 @@ func (d *FFmpegDecoder) Run() {
 							//fmt.Println("format: %d",frame.)
 							 //new_frame:= frame.CloneNewFrame()
 							//if(new_frame != nil) {
-							
+
 								d.frame_channel <- frame
 
 							//}else{
@@ -89,14 +119,14 @@ func (d *FFmpegDecoder) Run() {
 
 		}
 
-	}
+	}*/
 
 }
 // decoder close function.
 func (d *FFmpegDecoder) Close() {
 	d.log.Info("close decoder")
 	d.close_chan <- true
-	fmt.Println("close decoder")
+	fmt.Println("close decoder for: %s",d.stream_url)
 }
 
 func(d *FFmpegDecoder) recoverDecoder(){
