@@ -68,6 +68,9 @@ func (e *FFmpegEncoder) Run() {
 
 	for {
 		srcFrame, ok := <-e.frame_cannel
+		srcFrame.SetWidth(e.srcCodec.Width())
+		srcFrame.SetHeight(e.srcCodec.Height())
+		srcFrame.SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
 		if !ok {
 			e.log.Error("frame is invalid")
 			return
