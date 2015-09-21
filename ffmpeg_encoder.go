@@ -58,7 +58,7 @@ func (e *FFmpegEncoder) Run() {
 		SetWidth(e.srcCodec.Width()).
 		SetHeight(e.srcCodec.Height()).
 		//SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
-	SetFormat(gmf.AV_CODEC_ID_MJPEG)
+	SetFormat(gmf.AV_PIX_FMT_YUV420P)
 	defer gmf.Release(dstFrame)
 	defer e.recoverEncoder()
 	if err := dstFrame.ImgAlloc(); err != nil {
