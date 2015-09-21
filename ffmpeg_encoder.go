@@ -79,9 +79,11 @@ func (e *FFmpegEncoder) Run() {
 		}
 		if(ready == true){
 			e.broadcast <- p.Data()
+			p.Release()
+			//srcFrame.Free()
 		}
 		//gmf.Release(srcFrame)
-		srcFrame.Release()
+
 	}
 
 }
