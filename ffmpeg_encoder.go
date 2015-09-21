@@ -49,7 +49,8 @@ func (e *FFmpegEncoder) Run() {
 		return
 	}
 
-	swsCtx := gmf.NewSwsCtx(e.srcCodec, cc, gmf.SWS_BICUBIC)
+	//swsCtx := gmf.NewSwsCtx(e.srcCodec, cc, gmf.SWS_BICUBIC)
+	swsCtx := gmf.NewSwsCtx(e.srcCodec, cc, gmf.SWS_FAST_BILINEAR)
 	defer gmf.Release(swsCtx)
 
 	// convert to RGB, optionally resize could be here
@@ -79,7 +80,7 @@ func (e *FFmpegEncoder) Run() {
 		}
 		if(ready == true){
 			e.broadcast <- p.Data()
-			gmf.Release(p)
+			//gmf.Release(p)
 			//gmf.Release(srcFrame)
 			//srcFrame.Free()
 		}
