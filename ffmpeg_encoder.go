@@ -56,7 +56,7 @@ func (e *FFmpegEncoder) Run() {
 	dstFrame := gmf.NewFrame().
 		SetWidth(e.srcCodec.Width()).
 		SetHeight(e.srcCodec.Height()).
-		SetFormat(gmf.AV_PIX_FMT_RGB24)
+		SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
 
 	defer gmf.Release(dstFrame)
 	defer e.recoverEncoder()
