@@ -75,13 +75,13 @@ func (e *FFmpegEncoder) Run() {
 		swsCtx.Scale(srcFrame, dstFrame)
 		p, ready, err := dstFrame.EncodeNewPacket(cc)
 		if(err != nil){
-			panic("Can not encode packet")
+			return
 		}
 		if(ready == true){
 			e.broadcast <- p.Data()
 		}
 		//gmf.Release(srcFrame)
-
+		srcFrame.Release()
 	}
 
 }
