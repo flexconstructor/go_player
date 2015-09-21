@@ -64,16 +64,16 @@ func (d *FFmpegDecoder) Run() {
 					} else {
 						// get next frame
 						for frame := range packet.Frames(stream.CodecCtx()) {
-							d.frame_channel <- frame
+							//d.frame_channel <- frame
 							//Release(frame)
 							//fmt.Println("format: %d",frame.)
-						/*	new_frame:= frame.CloneNewFrame()
+							 new_frame:= frame.CloneNewFrame()
 							if(new_frame != nil) {
 								d.frame_channel <- new_frame
 
 							}else{
 								panic("frame is invalid")
-							}*/
+							}
 						}
 						Release(packet)
 					}
