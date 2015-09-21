@@ -67,8 +67,9 @@ func (d *FFmpegDecoder) Run() {
 					for frame := range packet.Frames(stream.CodecCtx()) {
 						new_frame:= frame.CloneNewFrame()
 						d.frame_channel <- new_frame
+						Release(frame)
 				}
-
+				fmt.Println("relese packet %d",packet.Size())
 				Release(packet)
 			}
 		//}

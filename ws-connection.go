@@ -135,6 +135,7 @@ func (c *WSConnection) Close() {
 
 	}
 	c.ws.Close()
+	fmt.Println("close connection")
 	pl, err := GetPlayerInstance()
 	if err != nil {
 		c.lgr.Error("NO Player found: ", err)

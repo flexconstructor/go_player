@@ -34,13 +34,14 @@ func (f *ffmpeg) run() {
 		frame_channel:  frame_cannel,
 		packet_channel: make(chan *gmf.Packet),
 	}
-	defer f.recoverFFMpeg()
+
 	defer decoder.Close()
 	go decoder.Run()
 
 	for {
 		select {
 		case <-f.close_channel:
+		fmt.Println("close_chan income")
 			return
 
 		case c, ok := <-codec_chan:
