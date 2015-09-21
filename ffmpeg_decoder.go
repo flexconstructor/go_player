@@ -58,7 +58,7 @@ func (d *FFmpegDecoder) Run() {
 		if(! ok){
 			return
 		}
-		fmt.Println("new package: %d",packet.Duration())
+
 			if packet.StreamIndex() == srcVideoStream.Index() {
 				stream, err := inputCtx.GetStream(packet.StreamIndex())
 				if(err != nil) {
@@ -67,9 +67,7 @@ func (d *FFmpegDecoder) Run() {
 				}else{
 					for frame := range packet.Frames(stream.CodecCtx()) {
 						new_frame:= frame.CloneNewFrame()
-
 						d.frame_channel <- new_frame
-
 				}
 
 
@@ -79,7 +77,7 @@ func (d *FFmpegDecoder) Run() {
 		}
 
 	}
-
+	fmt.Println("done decoder")
 	/*for {
 		select {
 		case <-d.close_chan:

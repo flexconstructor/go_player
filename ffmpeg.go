@@ -82,7 +82,8 @@ func (f *ffmpeg) runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame) {
 }
 //Close ffmpeg
 func (f *ffmpeg) Close() {
-	f.log.Info("Close ffmpeg!")
+	f.log.Info("Close ffmpeg for %s",f.stream_url)
+	fmt.Println("close ffmpeg")
 	f.close_channel <- true
 }
 

@@ -50,6 +50,7 @@ func NewHub(stream_url string,
 // run hub instance.
 func (h *hub) run() {
 	h.log.Info("Hub run: url = %s ", h.stream_url)
+	fmt.Println("Hub run: url = %s ", h.stream_url)
 	ff = &ffmpeg{
 		stream_url:     h.stream_url,
 		broadcast:      h.broadcast,
@@ -144,6 +145,7 @@ func (h *hub) run() {
 // close hub function
 func (h *hub) Close() {
 	h.log.Debug("Close hub %s", h.stream_url)
+	fmt.Println("Close hub %s", h.stream_url)
 	h.exit_channel <- true
 }
 

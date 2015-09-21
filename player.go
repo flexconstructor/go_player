@@ -128,6 +128,7 @@ func (p *GoPlayer) stopInstance() {
 // Register new web-socket connection.
 func (p *GoPlayer) initConnection(conn *WSConnection) {
 	stream_url:=conn.GetSourceURL()
+	fmt.Println("register connection: %s",stream_url)
 	h, ok := p.streams_map[stream_url]
 	// if hub of requested stream not running - run new hub.
 	if !ok {
