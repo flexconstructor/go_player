@@ -26,7 +26,6 @@ func (d *FFmpegDecoder) Run() {
 	defer close(d.frame_channel)
 	// create codec
 	inputCtx, err := NewInputCtx(d.stream_url)
-
 	if err != nil {
 		d.error <- NewError(2, 1)
 		return
@@ -65,13 +64,14 @@ func (d *FFmpegDecoder) Run() {
 					} else {
 						// get next frame
 						for frame := range packet.Frames(stream.CodecCtx()) {
-							new_frame:= frame.CloneNewFrame()
+							fmt.Println("format: %d",frame.Format())
+						/*	new_frame:= frame.CloneNewFrame()
 							if(new_frame != nil) {
 								d.frame_channel <- new_frame
 
 							}else{
 								panic("frame is invalid")
-							}
+							}*/
 						}
 						Release(packet)
 					}
