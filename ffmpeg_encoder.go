@@ -56,7 +56,7 @@ func (e *FFmpegEncoder) Run() {
 	dstFrame := gmf.NewFrame().
 		SetWidth(e.srcCodec.Width()).
 		SetHeight(e.srcCodec.Height()).
-		SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
+		SetFormat(gmf.AV_PIX_FMT_RGB24)
 
 	defer gmf.Release(dstFrame)
 	defer e.recoverEncoder()
@@ -67,17 +67,15 @@ func (e *FFmpegEncoder) Run() {
 	}
 
 	for {
-		srcFrame, ok := <-e.frame_cannel
-		srcFrame.SetWidth(e.srcCodec.Width())
-		srcFrame.SetHeight(e.srcCodec.Height())
-		srcFrame.SetFormat(gmf.AV_PIX_FMT_YUVJ420P)
+		_, ok := <-e.frame_cannel
+
 		if !ok {
 			e.log.Error("frame is invalid")
 			return
 		}
 		e.log.Debug("new frame");
 		//swsCtx.Scale(srcFrame, dstFrame)
-		p, ready, err := srcFrame.EncodeNewPacket(cc)
+		p, ready, err := dstFrame.EncodeNewPacket(cc)
 		if(err != nil){
 			return
 		}
