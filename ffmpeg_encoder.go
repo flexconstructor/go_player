@@ -73,8 +73,8 @@ func (e *FFmpegEncoder) Run() {
 			return
 		}
 		e.log.Debug("new frame");
-		swsCtx.Scale(srcFrame, dstFrame)
-		p, ready, err := dstFrame.EncodeNewPacket(cc)
+		//swsCtx.Scale(srcFrame, dstFrame)
+		p, ready, err := srcFrame.EncodeNewPacket(cc)
 		if(err != nil){
 			return
 		}
