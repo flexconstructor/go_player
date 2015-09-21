@@ -65,13 +65,13 @@ func (d *FFmpegDecoder) Run() {
 					} else {
 						// get next frame
 						for frame := range packet.Frames(stream.CodecCtx()) {
-							new_frame:= frame.CloneNewFrame()
-							if(new_frame != nil) {
-								d.frame_channel <- new_frame
-								d.log.Debug("write new frame: %d", frame.TimeStamp())
-							}else{
-								continue
-							}
+							//new_frame:= frame.CloneNewFrame()
+							//if(new_frame != nil) {
+								d.frame_channel <- frame
+								
+							//}else{
+								//continue
+							//}
 						}
 						Release(packet)
 					}
