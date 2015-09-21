@@ -73,13 +73,14 @@ func (e *FFmpegEncoder) Run() {
 		}
 		e.log.Debug("new frame");
 		//swsCtx.Scale(srcFrame, dstFrame)
-		p, ready, err := srcFrame.EncodeNewPacket(cc)
+		p, ready, err := dstFrame.EncodeNewPacket(cc)
 		if(err != nil){
 			return
 		}
 		if(ready == true){
 			e.broadcast <- p.Data()
-			p.Release()
+			gmf.Release(p)
+			gmf.Release(srcFrame)
 			//srcFrame.Free()
 		}
 		//gmf.Release(srcFrame)
