@@ -72,6 +72,7 @@ func (f *ffmpeg) runEncoder(c *gmf.CodecCtx, frame_channel chan *gmf.Frame) {
 		close_chan: make(chan bool),
 		frame_cannel: frame_channel,
 		wg: wg,
+		hub_id: f.hub_id,
 	}
 
 	for i := 0; i < f.workers_length; i++ {

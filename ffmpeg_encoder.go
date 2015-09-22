@@ -18,6 +18,7 @@ type FFmpegEncoder struct {
 	close_chan   chan bool            // channel for closing encoder
 	frame_cannel chan *gmf.Frame      // channel of source frames.
 	wg           *sync.WaitGroup      // wait group for closing all encode goroutines.
+	hub_id int
 }
 
 // Run encoder.
@@ -68,24 +69,26 @@ func (e *FFmpegEncoder) Run() {
 
 	for {
 		srcFrame, ok := <-e.frame_cannel
-		fmt.Println("hub id: %d",srcFrame.Pts())
+
 		if !ok {
 			e.log.Error("frame is invalid")
 			return
 		}
+		if(srcFrame.Pts() != e.hub_id) {
+			continue
+		}else{
 
-		swsCtx.Scale(srcFrame, dstFrame)
-		p, ready, err := dstFrame.EncodeNewPacket(cc)
-		if(err != nil){
-			return
-		}
-		if(ready == true){
-			e.broadcast <- p.Data()
+			swsCtx.Scale(srcFrame, dstFrame)
+			p, ready, err := dstFrame.EncodeNewPacket(cc)
+			if(err != nil){
+				return
+			}
+			if(ready == true){
+				e.broadcast <- p.Data()
+			}
 
-			//gmf.Release(srcFrame)
-			//srcFrame.Free()
 		}
-		//gmf.Release(srcFrame)
+
 
 	}
 
