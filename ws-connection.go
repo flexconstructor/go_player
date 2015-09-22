@@ -133,11 +133,16 @@ func (c *WSConnection) Run() {
 func (c *WSConnection) readPump() {
 	fmt.Println("readPump>>>")
 	defer func() {
-		c.Close()
+		//c.Close()
 	}()
 	c.ws.SetReadLimit(maxMessageSize)
 	c.ws.SetReadDeadline(time.Now().Add(pongWait))
-	c.ws.SetPongHandler(func(string) error { c.ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	c.ws.SetPongHandler(func(string) error {
+		c.ws.SetReadDeadline(time.Now().Add(pongWait))
+		fmt.Println("pong")
+		return nil
+
+	})
 	for {
 		_, message, err := c.ws.ReadMessage()
 		if err != nil {
