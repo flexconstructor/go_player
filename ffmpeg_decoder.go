@@ -35,12 +35,14 @@ func (d *FFmpegDecoder) Run() {
 	defer inputCtx.CloseInputAndRelease()
 	// get the video stream from flv container (without audio and methadata)
 	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
+
 	defer srcVideoStream.Release()
 	if err != nil {
 		d.error <- NewError(1, 1)
 		d.log.Error("stream not opend ")
 		return
 	}
+
 	// send codec reference for execute of metadata.
 	if srcVideoStream.CodecCtx() != nil {
 		d.codec_chan <- srcVideoStream.CodecCtx()
@@ -97,6 +99,7 @@ func (d *FFmpegDecoder) Run() {
 		default:
 		// get next packet
 			packet := inputCtx.GetNextPacket()
+			fmt.Println("stream_index: %d", srcVideoStream.Index())
 			if packet != nil {
 				if packet.StreamIndex() == srcVideoStream.Index() {
 					stream, err := inputCtx.GetStream(packet.StreamIndex())
