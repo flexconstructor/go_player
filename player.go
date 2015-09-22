@@ -134,7 +134,7 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 	if !ok {
 		h = NewHub(
 			stream_url,
-			p.log,
+			p.log, len(p.streams_map),
 		)
 
 		p.streams_map[stream_url] = h

@@ -16,6 +16,7 @@ type ffmpeg struct {
 	log            player_log.Logger
 	workers_length int
 	close_channel  chan bool
+	hub_id int
 }
 //Run ffmpeg functionality. Create decoder.
 //Resave methadata. Run encoding to jpg when metadata income.
@@ -33,6 +34,7 @@ func (f *ffmpeg) run() {
 		close_chan:     make(chan bool),
 		frame_channel:  frame_cannel,
 		packet_channel: make(chan *gmf.Packet),
+		hub_id: f.hub_id,
 	}
 
 	defer decoder.Close()

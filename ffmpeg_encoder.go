@@ -68,7 +68,7 @@ func (e *FFmpegEncoder) Run() {
 
 	for {
 		srcFrame, ok := <-e.frame_cannel
-
+		fmt.Println("hub id: %d",srcFrame.Pts())
 		if !ok {
 			e.log.Error("frame is invalid")
 			return

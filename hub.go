@@ -23,7 +23,7 @@ type hub struct {
 	metadata      chan *MetaData        // Stream metadata chennel.
 	error         chan *WSError         // Error channel.
 	log           player_log.Logger     // Logger reference.
-
+	hub_id int
 }
 
 
@@ -32,7 +32,7 @@ var meta *MetaData  // metadata of stream
 
 // Create new hub instance.
 func NewHub(stream_url string,
-	logger player_log.Logger,
+	logger player_log.Logger, hub_id int,
 ) *hub {
 	return &hub{
 		stream_url:    stream_url,
@@ -44,6 +44,7 @@ func NewHub(stream_url string,
 		error:         make(chan *WSError, 1),
 		log:           logger,
 		exit_channel:  make(chan bool, 1),
+		hub_id: hub_id,
 	}
 }
 
@@ -59,6 +60,7 @@ func (h *hub) run() {
 		error:          h.error,
 		log:            h.log,
 		workers_length: 1,
+		hub_id: h.hub_id,
 	}
 
 	// run ffmpeg module.
@@ -99,6 +101,7 @@ func (h *hub) run() {
 			}
 			//h.connections[0].send <-m
 			for c := range h.connections {
+
 				c.send <-m
 			}
 		// send methadata, when it income.

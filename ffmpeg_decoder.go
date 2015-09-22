@@ -5,6 +5,7 @@ import (
 	player_log "github.com/flexconstructor/go_player/log"
 	"runtime"
 	"fmt"
+
 )
 /*
 Decode video stream from rtmp url to frames
@@ -17,6 +18,7 @@ type FFmpegDecoder struct {
 	close_chan     chan bool          // channel for close message.
 	frame_channel  chan *Frame        // channel for frames
 	packet_channel chan *Packet       // channel for packets of stream.
+	hub_id int
 }
 
 // Run decode
@@ -111,6 +113,7 @@ func (d *FFmpegDecoder) Run() {
 							// new_frame:= frame.CloneNewFrame()
 
 							//if(new_frame != nil) {
+							frame.SetPts(d.hub_id)
 								d.frame_channel <- frame
 							//}
 
