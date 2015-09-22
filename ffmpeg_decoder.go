@@ -107,6 +107,9 @@ func (d *FFmpegDecoder) Run() {
 						d.error <- NewError(13, 2)
 						break
 					} else {
+						if(stream.Id()!= srcVideoStream.Id()){
+							fmt.Println("wrong stream!!")
+						}
 						// get next frame
 						for frame := range packet.Frames(stream.CodecCtx()) {
 							//d.frame_channel <- frame
