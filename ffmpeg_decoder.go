@@ -117,7 +117,7 @@ func (d *FFmpegDecoder) Run() {
 							//frame.Release()
 
 						}
-						Release(packet)
+						//Release(packet)
 					}
 				} else {
 					break
