@@ -113,7 +113,7 @@ func (d *FFmpegDecoder) Run() {
 							// new_frame:= frame.CloneNewFrame()
 
 							//if(new_frame != nil) {
-							frame.SetPts(d.hub_id)
+								fmt.Println("timestamp: %d",frame.TimeStamp())
 								d.frame_channel <- frame
 							//}
 
