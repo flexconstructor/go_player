@@ -116,7 +116,7 @@ func (d *FFmpegDecoder) Run() {
 							}else{
 								panic("frame is invalid")
 							}
-							frame.Release()
+							frame.Free()
 						}
 						Release(packet)
 					}
