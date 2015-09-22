@@ -119,7 +119,7 @@ func (d *FFmpegDecoder) Run() {
 
 							//if(new_frame != nil) {
 
-
+							frame.SetPktDts(d.hub_id)
 								d.frame_channel <- frame
 							//}
 

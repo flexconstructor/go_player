@@ -74,22 +74,22 @@ func (e *FFmpegEncoder) Run() {
 			e.log.Error("frame is invalid")
 			return
 		}
-		/*if(srcFrame.Pts() != e.hub_id) {
+		if(srcFrame.PktDts() != e.hub_id) {
 			continue
 		}else{
 
+			swsCtx.Scale(srcFrame, dstFrame)
+			p, ready, err := dstFrame.EncodeNewPacket(cc)
+			if(err != nil){
+				return
+			}
+			if(ready == true){
+				e.broadcast <- p.Data()
+			}
 
-
-		}*/
-
-		swsCtx.Scale(srcFrame, dstFrame)
-		p, ready, err := dstFrame.EncodeNewPacket(cc)
-		if(err != nil){
-			return
 		}
-		if(ready == true){
-			e.broadcast <- p.Data()
-		}
+
+
 	}
 
 }
