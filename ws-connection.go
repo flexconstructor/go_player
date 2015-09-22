@@ -21,7 +21,7 @@ const (
 	pingPeriod = (pongWait * 1) / 2
 
 	// Maximum message queue allowed from/to peer.
-	maxMessageSize = 512
+	maxMessageSize = 5
 )
 
 // web-socket upgrader
@@ -97,6 +97,7 @@ func (c *WSConnection) Run() {
 		case <-ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
 				c.lgr.Error("can not write ping")
+				fmt.Println("can not write ping")
 				return
 			}
 			err := c.callUpdate()
