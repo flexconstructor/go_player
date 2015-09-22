@@ -105,6 +105,7 @@ func (c *WSConnection) Run() {
 				c.lgr.Error("Update error")
 				return
 			}
+		fmt.Println("ping")
 		// send metadata.
 		case metadata, ok := <-c.metadata:
 			if ok {
