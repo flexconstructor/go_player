@@ -129,10 +129,10 @@ func (p *GoPlayer) stopInstance() {
 func (p *GoPlayer) initConnection(conn *WSConnection) {
 	stream_url:=conn.GetSourceURL()
 	fmt.Println("register connection: %s",stream_url)
-	h, ok := p.streams_map[stream_url]
+	//h, ok := p.streams_map[stream_url]
 	// if hub of requested stream not running - run new hub.
-	if !ok {
-		h = NewHub(
+	//if !ok {
+		h:= NewHub(
 			stream_url,
 			p.log, len(p.streams_map),
 		)
@@ -140,7 +140,7 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 		p.streams_map[stream_url] = h
 		p.log.Debug("NEW STREAM: %d",len(p.streams_map))
 		go h.run()
-	}
+	//}
 	// register connection in hub.
 	h.register <- conn
 	err := p.handler.OnConnect(conn)
