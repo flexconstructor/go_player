@@ -76,7 +76,7 @@ func (c *WSConnection) Run() {
 		return
 	}
 	player.connects <- c
-
+	readPump()
 	ticker := time.NewTicker(pingPeriod)
 	defer c.Close()
 	defer ticker.Stop()
@@ -127,6 +127,24 @@ func (c *WSConnection) Run() {
 		}
 	}
 
+}
+
+// readPump pumps messages from the websocket connection to the hub.
+func (c *WSConnection) readPump() {
+	fmt.Println("readPump>>>")
+	defer func() {
+		c.Close()
+	}()
+	c.ws.SetReadLimit(maxMessageSize)
+	c.ws.SetReadDeadline(time.Now().Add(pongWait))
+	c.ws.SetPongHandler(func(string) error { c.ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	for {
+		_, message, err := c.ws.ReadMessage()
+		if err != nil {
+			break
+		}
+		fmt.Println("message: %s",message)
+	}
 }
 
 // close connection.
