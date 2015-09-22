@@ -77,6 +77,7 @@ func (c *WSConnection) Run() {
 	}
 	player.connects <- c
 	c.readPump()
+	fmt.Println("after pump")
 	ticker := time.NewTicker(pingPeriod)
 	defer c.Close()
 	defer ticker.Stop()
