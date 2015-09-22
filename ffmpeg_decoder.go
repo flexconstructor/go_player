@@ -111,12 +111,11 @@ func (d *FFmpegDecoder) Run() {
 							 new_frame:= frame.CloneNewFrame()
 
 							if(new_frame != nil) {
-								d.frame_channel <- frame
-
-							}else{
-								panic("frame is invalid")
+								d.frame_channel <- new_frame
 							}
+
 							frame.Free()
+
 						}
 						Release(packet)
 					}
