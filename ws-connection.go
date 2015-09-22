@@ -134,7 +134,7 @@ func (c *WSConnection) Run() {
 func (c *WSConnection) readPump() {
 	fmt.Println("readPump>>>")
 	defer func() {
-		//c.Close()
+		c.Close()
 		fmt.Println("connection must been closed!")
 	}()
 	c.ws.SetReadLimit(maxMessageSize)
