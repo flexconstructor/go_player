@@ -59,20 +59,29 @@ func (d *FFmpegDecoder) Run() {
 			return
 		}
 
-			//if packet.StreamIndex() == srcVideoStream.Index() {
-				stream, err := inputCtx.GetStream(packet.StreamIndex())
-				if(err != nil) {
-					d.error <- NewError(13, 2)
-					return
-				}else{
-					for frame := range packet.Frames(stream.CodecCtx()) {
-						new_frame:= frame.CloneNewFrame()
-						d.frame_channel <- new_frame
-						Release(frame)
+		if(packet.Size()==0) {
+			Release(packet)
+			continue
+		}else{
+			stream, err := inputCtx.GetStream(packet.StreamIndex())
+			if(err != nil) {
+				d.error <- NewError(13, 2)
+				return
+			}else{
+				for frame := range packet.Frames(stream.CodecCtx()) {
+					new_frame:= frame.CloneNewFrame()
+					d.frame_channel <- new_frame
+					Release(frame)
 				}
 				fmt.Println("relese packet %d",packet.Size())
 				Release(packet)
 			}
+
+
+		}
+
+			//if packet.StreamIndex() == srcVideoStream.Index() {
+
 		//}
 
 		}
