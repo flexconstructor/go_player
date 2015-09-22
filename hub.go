@@ -97,13 +97,17 @@ func (h *hub) run() {
 			if !ok {
 				continue
 			}
+			//h.connections[0].send <-m
 			for c := range h.connections {
-				select {
+				/*select {
 				case c.send <- m:
 				default:
 					delete(h.connections, c)
 
-				}
+				}*/
+
+				c.send <-m
+				break
 			}
 		// send methadata, when it income.
 		case meta, ok := <-h.metadata:
