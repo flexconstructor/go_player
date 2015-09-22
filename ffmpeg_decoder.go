@@ -114,7 +114,7 @@ func (d *FFmpegDecoder) Run() {
 								d.frame_channel <- new_frame
 							}
 
-							frame.Free()
+							frame.Release()
 
 						}
 						Release(packet)
