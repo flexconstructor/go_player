@@ -76,7 +76,7 @@ func (c *WSConnection) Run() {
 		return
 	}
 	player.connects <- c
-	c.readPump()
+	go c.readPump()
 	fmt.Println("after pump")
 	ticker := time.NewTicker(pingPeriod)
 	defer c.Close()
@@ -135,6 +135,7 @@ func (c *WSConnection) readPump() {
 	fmt.Println("readPump>>>")
 	defer func() {
 		//c.Close()
+		fmt.Println("connection must been closed!")
 	}()
 	c.ws.SetReadLimit(maxMessageSize)
 	c.ws.SetReadDeadline(time.Now().Add(pongWait))
