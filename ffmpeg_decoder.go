@@ -47,9 +47,8 @@ func (d *FFmpegDecoder) Run() {
 		d.error <- NewErrorWithDescription(1, 1, "Invalid codec")
 		return
 	}
-
-	packets_chan:= inputCtx.GetNewPackets();
 	for{
+		packets_chan:= inputCtx.GetNewPackets();
 		select{
 		case <-d.close_chan:
 			return
