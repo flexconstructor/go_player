@@ -43,7 +43,7 @@ func NewHub(stream_url string,
 		metadata:      make(chan *MetaData),
 		error:         make(chan *WSError, 1),
 		log:           logger,
-		exit_channel:  make(chan bool, 1),
+		exit_channel:  make(chan bool, 100),
 		hub_id: hub_id,
 	}
 }

@@ -99,7 +99,6 @@ func (d *FFmpegDecoder) Run() {
 		default:
 		// get next packet
 			packet := inputCtx.GetNextPacket()
-			fmt.Println("stream_index: %d", srcVideoStream.Index())
 			if packet != nil {
 				if packet.StreamIndex() == srcVideoStream.Index() {
 					stream, err := inputCtx.GetStream(packet.StreamIndex())
@@ -116,7 +115,8 @@ func (d *FFmpegDecoder) Run() {
 							// new_frame:= frame.CloneNewFrame()
 
 							//if(new_frame != nil) {
-								fmt.Println("timestamp: %d",frame.TimeStamp())
+
+
 								d.frame_channel <- frame
 							//}
 
