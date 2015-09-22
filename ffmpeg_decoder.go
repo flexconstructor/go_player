@@ -108,13 +108,13 @@ func (d *FFmpegDecoder) Run() {
 							//d.frame_channel <- frame
 							//Release(frame)
 
-							 new_frame:= frame.CloneNewFrame()
+							// new_frame:= frame.CloneNewFrame()
 
-							if(new_frame != nil) {
-								d.frame_channel <- new_frame
-							}
+							//if(new_frame != nil) {
+								d.frame_channel <- frame
+							//}
 
-							frame.Release()
+							//frame.Release()
 
 						}
 						Release(packet)
