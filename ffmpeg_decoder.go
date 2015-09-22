@@ -48,7 +48,7 @@ func (d *FFmpegDecoder) Run() {
 		return
 	}
 
-	packets_chan:= inputCtx.GetNewPackets();
+	/*packets_chan:= inputCtx.GetNewPackets();
 	for{
 
 		select{
@@ -87,8 +87,8 @@ func (d *FFmpegDecoder) Run() {
 		}
 
 	}
-	fmt.Println("done decoder")
-	/*for {
+	fmt.Println("done decoder")*/
+	for {
 		select {
 		case <-d.close_chan:
 			return
@@ -129,7 +129,7 @@ func (d *FFmpegDecoder) Run() {
 
 		}
 
-	}*/
+	}
 
 }
 // decoder close function.
