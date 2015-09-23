@@ -1,173 +1,108 @@
-package GoPlayer
+package go_player
 
-import(
-	"log"
-	"runtime"
+import (
+	"fmt"
 	. "github.com/3d0c/gmf"
-	"runtime/debug"
-	"sync"
+	player_log "github.com/flexconstructor/go_player/log"
+	"runtime"
 )
 
-var broadcast chan []byte
-
-func fatal(err error) {
-	debug.PrintStack()
-	log.Fatal(err)
-
+/*
+Decode video stream from rtmp url to frames
+*/
+type FFmpegDecoder struct {
+	stream_url     string            // rtmp stream url.
+	codec_chan     chan *CodecCtx    // channel for codec.
+	error          chan *WSError     // channel for error messages.
+	log            player_log.Logger // logger.
+	close_chan     chan bool         // channel for close message.
+	frame_channel  chan *Frame       // channel for frames
+	packet_channel chan *Packet      // channel for packets of stream.
+	hub_id         int               // stream ID
 }
 
-
-type FFmpegDecoder  struct{
-	stream_url string
-	broadcast chan []byte
-	rtmp_status chan int
-	metadata chan *MetaData
-	error chan *Error
-}
-
-
-
-
-func assert(i interface{}, err error) interface{} {
+// Run decode
+func (d *FFmpegDecoder) Run() {
+	d.log.Info("Run Decoder for %s", d.stream_url)
+	fmt.Println("create decoder for: %s", d.stream_url)
+	defer d.recoverDecoder()
+	// create codec
+	inputCtx, err := NewInputCtx(d.stream_url)
 	if err != nil {
-		fatal(err)
-	}
-
-	return i
-}
-
-func encodeWorker(data chan *Frame, wg *sync.WaitGroup, srcCtx *CodecCtx, error chan *Error) {
-
-	defer wg.Done()
-	codec, err := FindEncoder("mjpeg")
-	if err != nil && error != nil{
-		fatal(err)
-		error <- NewError(2,1)
+		d.error <- NewError(2, 1)
 		return
 	}
-
-	cc := NewCodecCtx(codec)
-	defer Release(cc)
-
-	w, h := srcCtx.Width(), srcCtx.Height()
-	cc.SetPixFmt(AV_PIX_FMT_YUVJ420P).SetWidth(w).SetHeight(h)
-	cc.SetWidth(w)
-	cc.SetHeight(h)
-	cc.SetTimeBase(srcCtx.TimeBase().AVR())
-
-	if codec.IsExperimental() {
-		cc.SetStrictCompliance(FF_COMPLIANCE_EXPERIMENTAL)
-	}
-
-	if err := cc.Open(nil); err != nil && error != nil{
-		fatal(err)
-		error <- NewError(3,1)
-		return
-	}
-
-	swsCtx := NewSwsCtx(srcCtx, cc, SWS_BICUBIC)
-	defer Release(swsCtx)
-
-	// convert to RGB, optionally resize could be here
-	dstFrame := NewFrame().
-	SetWidth(w).
-	SetHeight(h).
-	SetFormat(AV_PIX_FMT_YUVJ420P)
-	defer Release(dstFrame)
-
-	if err := dstFrame.ImgAlloc(); err != nil && error != nil{
-		fatal(err)
-		error <- NewError(4,2)
-		return
-	}
-
-	for {
-		srcFrame, ok := <-data
-		if !ok {
-			if(error != nil){
-				error <- NewError(5,2)
-			}
-			Release(srcFrame)
-			return
-		}
-
-		swsCtx.Scale(srcFrame, dstFrame)
-
-		if p, ready, _ := dstFrame.EncodeNewPacket(cc); ready {
-			if broadcast != nil {
-				writeToBroadcast(p.Data());
-			}else{
-				return
-			}
-
-		}
-		Release(srcFrame)
-	}
-
-}
-
-
-func writeToBroadcast(b []byte){
-
-	broadcast <-b
-
-}
-
-
-func (f *FFmpegDecoder)Run(){
-	broadcast=f.broadcast
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	inputCtx := assert(NewInputCtx(f.stream_url)).(*FmtCtx)
-
 	defer inputCtx.CloseInputAndRelease()
-
+	// get the video stream from flv container (without audio and methadata)
 	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
-	if err != nil && f.error != nil{
-		f.error <- NewError(1,1)
+	if srcVideoStream != nil {
+		defer srcVideoStream.Release()
+	}
+	if err != nil {
+		d.error <- NewError(1, 1)
+		d.log.Error("stream not opend ")
 		return
 	}
-	if(f.metadata != nil){
-		f.metadata <- &MetaData{
-			Message: "metadata",
-			Width: srcVideoStream.CodecCtx().Width(),
-			Height: srcVideoStream.CodecCtx().Height(),
+	// send codec reference for execute of metadata.
+	if srcVideoStream.CodecCtx() != nil {
+		d.codec_chan <- srcVideoStream.CodecCtx()
+	} else {
+		d.log.Error("Invalid codec")
+		d.error <- NewErrorWithDescription(1, 1, "Invalid codec")
+		return
+	}
+	for {
+		select {
+		case <-d.close_chan:
+			fmt.Println("decoder close chan message")
+			return
+		default:
+			// get next packet
+			packet := inputCtx.GetNextPacket()
+			if packet != nil {
+				if packet.StreamIndex() == srcVideoStream.Index() {
+					stream, err := inputCtx.GetStream(packet.StreamIndex())
+					if err != nil {
+						d.log.Error("can not decode stream")
+						d.error <- NewError(13, 2)
+						break
+					} else {
+						if stream.Id() != srcVideoStream.Id() {
+							fmt.Println("wrong stream!!")
+						}
+						// get next frame
+						for frame := range packet.Frames(stream.CodecCtx()) {
+							frame.SetPktDts(d.hub_id)
+							d.frame_channel <- frame
+						}
+						Release(packet)
+					}
+				} else {
+					break
+				}
+
+			} else {
+				break
+			}
 		}
 	}
-
-	wg := new(sync.WaitGroup)
-
-	dataChan := make(chan *Frame)
-
-	for i := 0; i < 280; i++ {
-		wg.Add(i)
-		go encodeWorker(dataChan, wg, srcVideoStream.CodecCtx(), f.error)
-	}
-
-	for packet := range inputCtx.GetNewPackets() {
-		if packet.StreamIndex() != srcVideoStream.Index() {
-			// skip non video streams
-			continue
-		}
-
-		ist := assert(inputCtx.GetStream(packet.StreamIndex())).(*Stream)
-
-		for frame := range packet.Frames(ist.CodecCtx()) {
-			dataChan <- frame.CloneNewFrame()
-		}
-		Release(packet)
-	}
-
-	if(f.error != nil){
-		f.error <- NewError(6,1)
-	}
-	if(dataChan != nil){
-	close(dataChan)
-	dataChan=nil
-	}
-	wg.Wait()
-
 }
 
-func (d *FFmpegDecoder)Close(){
+// decoder close function.
+func (d *FFmpegDecoder) Close() {
+	d.log.Info("close decoder<<<")
+	d.close_chan <- true
+	fmt.Println("close decoder for: %s", d.stream_url)
+}
 
+// recover
+func (d *FFmpegDecoder) recoverDecoder() {
+	fmt.Println("recover decoder")
+	if r := recover(); r != nil {
+		buf := make([]byte, 1<<16)
+		runtime.Stack(buf, false)
+		reason := fmt.Sprintf("%v: %s", r, buf)
+		d.log.Error("Runtime failure, reason -> %s", reason)
+		fmt.Println("Runtime failure, reason -> %s", reason)
+	}
 }

@@ -1,186 +1,151 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+package go_player
 
-package  GoPlayer
+import (
+	player_log "github.com/flexconstructor/go_player/log"
 
-import(
-	"sync"
+	"fmt"
+	"runtime"
 )
 
-// hub maintains the set of active connections and broadcasts messages to the
-// connections.
+/* The pool of web-socket connections for one model-stream.
+   The struct conains decode/encode module for one rtmp-stream,
+   map of web-socket connections for this.stream,
+   metadata object of this stream.
+*/
 type hub struct {
-	sync.Mutex
-	//url of stream application
-	stream_url string
-	//stream name
-	stream_id string
-	// Registered connections.
-	connections map[*connection]bool
-
-	// Inbound messages from the connections.
-	broadcast chan []byte
-
-	// Register requests from the connections.
-	register chan *connection
-
-	// Unregister requests from connections.
-	unregister chan *connection
-
-	rtmp_status chan int
-
-	metadata chan *MetaData
-	error chan *Error
+	stream_url   string                 // RTMP stream url.
+	connections  map[*WSConnection]bool // Registered connections.
+	broadcast    chan []byte            // Channel for jpeg stream for client.
+	register     chan *WSConnection     // Channel for register new connection.
+	unregister   chan *WSConnection     // Channel for unregister connection.
+	exit_channel chan bool              // Channel for close hub.
+	metadata     chan *MetaData         // Stream metadata chennel.
+	error        chan *WSError          // Error channel.
+	log          player_log.Logger      // Logger reference.
+	hub_id       int
 }
 
-var decoder *FFmpegDecoder
-var conn *RtmpConnector
-var meta *MetaData
+var ff *ffmpeg     // FFMPEG module for decode/encode stream
+var meta *MetaData // metadata of stream
 
-
-func NewHub(stream_url string,stream_name string) *hub{
+// Create new hub instance.
+func NewHub(stream_url string,
+	logger player_log.Logger, hub_id int,
+) *hub {
 	return &hub{
-		stream_url: stream_url,
-		stream_id: stream_name,
-		broadcast:   make(chan []byte),
-		register:    make(chan *connection),
-		unregister:  make(chan *connection),
-		connections: make(map[*connection]bool),
-		rtmp_status: make(chan int, 0),
-		metadata:  make(chan *MetaData),
-		error: make(chan *Error),
+		stream_url:   stream_url,
+		broadcast:    make(chan []byte),
+		register:     make(chan *WSConnection),
+		unregister:   make(chan *WSConnection),
+		connections:  make(map[*WSConnection]bool),
+		metadata:     make(chan *MetaData),
+		error:        make(chan *WSError, 1),
+		log:          logger,
+		exit_channel: make(chan bool, 100),
+		hub_id:       hub_id,
 	}
 }
 
+// run hub instance.
 func (h *hub) run() {
-
-	decoder=&FFmpegDecoder{
-		stream_url: h.stream_url+"/"+h.stream_id,
-		broadcast:h.broadcast,
-		rtmp_status: h.rtmp_status,
-		metadata: h.metadata,
-		error: h.error,
+	h.log.Info("Hub run: url = %s ", h.stream_url)
+	fmt.Println("Hub run: url = %s ", h.stream_url)
+	ff = &ffmpeg{
+		stream_url:     h.stream_url,
+		broadcast:      h.broadcast,
+		close_channel:  make(chan bool),
+		metadata:       h.metadata,
+		error:          h.error,
+		log:            h.log,
+		workers_length: 1,
+		hub_id:         h.hub_id,
 	}
 
+	// run ffmpeg module.
+	go ff.run()
 
-	conn = &RtmpConnector{
- 		rtmp_url:	h.stream_url,
- 		stream_id: h.stream_id,
-		error_cannel: h.error,
- 		 handler: &RtmpHandler{
- 			 stream_status: h.rtmp_status,
-			  error_channel: h.error,
- 		 },
-	}
-
-	go conn.Run()
-
-	//go decoder.Run()
-
-	defer h.CloseHub(decoder)
+	defer ff.Close()
 
 	for {
 		select {
-		case c := <-h.register:
-			h.connections[c] = true
-
-		if(meta != nil){
-			b, err:=meta.JSON()
-			if(err==nil) {
-				c.metadata <- b
+		// register new web-socket connection
+		case c, ok := <-h.register:
+			if !ok {
+				continue
 			}
-		}
-
-
+			h.connections[c] = true
+			h.log.Debug("register connection: %d", len(h.connections))
+			// try send metadata of stream to client.
+			if meta != nil {
+				b, err := meta.JSON()
+				if err == nil {
+					c.metadata <- b
+				}
+			}
+		// unregister web-socket connection when connection been closed.
 		case c := <-h.unregister:
 			if _, ok := h.connections[c]; ok {
-				c.Close()
 				delete(h.connections, c)
-				if(len(h.connections)==0){
-					return
-				}
+				h.log.Debug("unregister connection. connection length: %d", len(h.connections))
+			} else {
+				continue
 			}
-		case m := <-h.broadcast:
+		// send new jpeg data for clients.
+		case m, ok := <-h.broadcast:
+			if !ok {
+				continue
+			}
+			//h.connections[0].send <-m
 			for c := range h.connections {
-				select {
-				case c.send <- m:
-				default:
-					c.Close()
-					delete(h.connections, c)
-					if(len(h.connections)==0){
-						return
-					}
-				}
+				c.send <- m
 			}
-
-		case s := <- h.rtmp_status:
-			if(s==0) {
-				return
-			}else{
-				go decoder.Run()
+		// send methadata, when it income.
+		case meta, ok := <-h.metadata:
+			if !ok {
+				continue
 			}
-		case meta= <- h.metadata:
-		b, err:=meta.JSON()
-		if(err != nil){
-			continue
-		}
+			b, err := meta.JSON()
+			if err != nil {
+				continue
+			}
 			for c := range h.connections {
 				select {
 				case c.metadata <- b:
 				default:
-					c.Close()
 					delete(h.connections, c)
-					if(len(h.connections)==0){
-						return
-					}
 				}
 			}
-		case e:= <-h.error:
+		// close all connection when error message income
+		case e, ok := <-h.error:
+			if !ok {
+				continue
+			}
 			for c := range h.connections {
 				select {
 				case c.error_channel <- e:
 				default:
-					c.Close()
 					delete(h.connections, c)
-					if(len(h.connections)==0){
-						return
-					}
 				}
 			}
-				if(e.Level==1){
-					return
-				}
-
+		// close hub if exit message income.
+		case <-h.exit_channel:
+			return
 		}
 	}
-
-
 }
 
+// close hub function
+func (h *hub) Close() {
+	h.log.Debug("Close hub %s", h.stream_url)
+	fmt.Println("Close hub %s", h.stream_url)
+	h.exit_channel <- true
+}
 
-func (h *hub)CloseHub(decoder *FFmpegDecoder){
-
-	if(h.register != nil){
-		close(h.register)
-		h.register=nil
+func (h *hub) recoverHub() {
+	if r := recover(); r != nil {
+		buf := make([]byte, 1<<16)
+		runtime.Stack(buf, false)
+		reason := fmt.Sprintf("%v: %s", r, buf)
+		h.log.Error("Runtime failure, reason -> %s", reason)
 	}
-	if(h.rtmp_status != nil){
-		close(h.rtmp_status)
-		h.rtmp_status=nil
-	}
-	if(h.unregister != nil){
-		close(h.unregister)
-		h.unregister=nil
-	}
-
-	if(h.metadata != nil){
-		close(h.metadata)
-		h.metadata=nil
-	}
-	meta=nil
-	decoder.Close()
-	conn.Close()
-	delete(NewGoPlayer().streams_map,h.stream_id)
-
 }
