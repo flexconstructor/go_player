@@ -40,7 +40,7 @@ func (e *FFmpegEncoder) Run() {
 	if(e.srcCodec.Width()>200) {
 		w=200;
 		r := e.srcCodec.Width()/e.srcCodec.Height()
-		h= w*r
+		h= w/r
 	}else{
 		w=e.srcCodec.Width()
 		h=e.srcCodec.Height()
