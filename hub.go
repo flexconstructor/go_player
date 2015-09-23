@@ -26,7 +26,6 @@ type hub struct {
 	hub_id int
 }
 
-
 var ff *ffmpeg      // FFMPEG module for decode/encode stream
 var meta *MetaData  // metadata of stream
 
@@ -82,7 +81,6 @@ func (h *hub) run() {
 				b, err := meta.JSON()
 				if err == nil {
 					c.metadata <- b
-
 				}
 			}
 		// unregister web-socket connection when connection been closed.
@@ -90,7 +88,6 @@ func (h *hub) run() {
 			if _, ok := h.connections[c]; ok {
 				delete(h.connections, c)
 				h.log.Debug("unregister connection. connection length: %d", len(h.connections))
-
 			} else {
 				continue
 			}
@@ -101,7 +98,6 @@ func (h *hub) run() {
 			}
 			//h.connections[0].send <-m
 			for c := range h.connections {
-
 				c.send <-m
 			}
 		// send methadata, when it income.
@@ -113,13 +109,11 @@ func (h *hub) run() {
 			if err != nil {
 				continue
 			}
-
 			for c := range h.connections {
 				select {
 				case c.metadata <- b:
 				default:
 					delete(h.connections, c)
-
 				}
 			}
 		// close all connection when error message income
@@ -137,10 +131,10 @@ func (h *hub) run() {
 		// close hub if exit message income.
 		case <-h.exit_channel:
 			return
-
 		}
 	}
 }
+
 // close hub function
 func (h *hub) Close() {
 	h.log.Debug("Close hub %s", h.stream_url)

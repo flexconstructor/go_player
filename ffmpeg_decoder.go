@@ -18,7 +18,7 @@ type FFmpegDecoder struct {
 	close_chan     chan bool          // channel for close message.
 	frame_channel  chan *Frame        // channel for frames
 	packet_channel chan *Packet       // channel for packets of stream.
-	hub_id int
+	hub_id         int                // stream ID
 }
 
 // Run decode
@@ -38,13 +38,11 @@ func (d *FFmpegDecoder) Run() {
 	if(srcVideoStream != nil){
 		defer srcVideoStream.Release()
 	}
-
 	if err != nil {
 		d.error <- NewError(1, 1)
 		d.log.Error("stream not opend ")
 		return
 	}
-
 	// send codec reference for execute of metadata.
 	if srcVideoStream.CodecCtx() != nil {
 		d.codec_chan <- srcVideoStream.CodecCtx()
@@ -53,8 +51,6 @@ func (d *FFmpegDecoder) Run() {
 		d.error <- NewErrorWithDescription(1, 1, "Invalid codec")
 		return
 	}
-
-
 	for {
 		select {
 		case <-d.close_chan:
@@ -78,7 +74,6 @@ func (d *FFmpegDecoder) Run() {
 						for frame := range packet.Frames(stream.CodecCtx()) {
 							frame.SetPktDts(d.hub_id)
 								d.frame_channel <- frame
-
 						}
 						Release(packet)
 					}
@@ -89,19 +84,17 @@ func (d *FFmpegDecoder) Run() {
 			} else {
 				break
 			}
-
 		}
-
 	}
-
 }
+
 // decoder close function.
 func (d *FFmpegDecoder) Close() {
 	d.log.Info("close decoder<<<")
 	d.close_chan <- true
 	fmt.Println("close decoder for: %s",d.stream_url)
 }
-
+// recover
 func(d *FFmpegDecoder) recoverDecoder(){
 	fmt.Println("recover decoder")
 	if r := recover(); r != nil {
@@ -111,5 +104,4 @@ func(d *FFmpegDecoder) recoverDecoder(){
 		d.log.Error("Runtime failure, reason -> %s", reason)
 		fmt.Println("Runtime failure, reason -> %s", reason)
 	}
-
 	}

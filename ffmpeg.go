@@ -43,7 +43,6 @@ func (f *ffmpeg) run() {
 		case <-f.close_channel:
 		fmt.Println("close_chan income")
 			return
-
 		case c, ok := <-codec_chan:
 		// set the metadata from codec.
 			if ok {
@@ -95,6 +94,5 @@ func(f *ffmpeg) recoverFFMpeg(){
 		reason := fmt.Sprintf("%v: %s", r, buf)
 		f.log.Error("Runtime failure, reason -> %s", reason)
 	}
-
 }
 

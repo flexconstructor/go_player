@@ -137,7 +137,6 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 			p.log,
 			len(p.streams_map),
 		)
-
 		p.streams_map[stream_url] = h
 		p.log.Debug("NEW STREAM: %d",len(p.streams_map))
 		go h.run()
@@ -148,13 +147,11 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 	if err != nil {
 		conn.error_channel <- err
 	}
-
 }
 
 // Register close connection.
 func (p *GoPlayer) closeConnection(conn *WSConnection) {
 	stream_url:= conn.GetSourceURL();
-
 	p.log.Debug("Close connection with params:source url=  %s", stream_url)
 	fmt.Println("Close connection: %s",stream_url)
 	h, ok := p.streams_map[stream_url]
@@ -169,9 +166,9 @@ func (p *GoPlayer) closeConnection(conn *WSConnection) {
 	} else {
 		return
 	}
-
 }
 
+// recover player
 func(p *GoPlayer) recoverPlayer() {
 	if r := recover(); r != nil {
 		buf := make([]byte, 1<<16)
