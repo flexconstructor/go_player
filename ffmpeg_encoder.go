@@ -35,16 +35,17 @@ func (e *FFmpegEncoder) Run() {
 	cc := gmf.NewCodecCtx(codec)
 	defer gmf.Release(cc)
 	// setts the properties of encode codec
-	var w int=320
-	var h int=240
-	/*if(e.srcCodec.Width()>200) {
-		w=200;
+	var w int
+	var h int
+	if(e.srcCodec.Width()>h) {
+
 		r := e.srcCodec.Width()/e.srcCodec.Height()
-		h= w/r
+		h=200;
+		w= h*r
 	}else{
 		w=e.srcCodec.Width()
 		h=e.srcCodec.Height()
-	}*/
+	}
 
 
 	cc.SetPixFmt(gmf.AV_PIX_FMT_YUVJ420P)
