@@ -31,8 +31,6 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
-
-
 type WSConnection struct {
 	ws            *websocket.Conn
 	send          chan []byte
@@ -58,7 +56,6 @@ func NewWSConnection(source_url string, w http.ResponseWriter, r *http.Request, 
 		lgr:           l,
 		request:       r,
 	}
-
 	return conn, nil
 }
 
@@ -89,7 +86,6 @@ func (c *WSConnection) Run() {
 				c.lgr.Error("can not write message")
 				return
 			}
-
 			if err := c.write(websocket.BinaryMessage, message); err != nil {
 				c.lgr.Error("can not wright binary")
 				return
@@ -127,7 +123,6 @@ func (c *WSConnection) Run() {
 			}
 		}
 	}
-
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -143,7 +138,6 @@ func (c *WSConnection) readPump() {
 		c.ws.SetReadDeadline(time.Now().Add(pongWait))
 		fmt.Println("pong")
 		return nil
-
 	})
 	for {
 		_, message, err := c.ws.ReadMessage()
@@ -159,7 +153,6 @@ func (c *WSConnection) Close() {
 	write_error := c.write(websocket.CloseMessage, []byte{})
 	if write_error != nil {
 		c.lgr.Error("can not write close message")
-
 	}
 	c.ws.Close()
 	fmt.Println("close connection")
@@ -191,7 +184,7 @@ func (c *WSConnection)GetSourceURL()(string){
 	return c.source_url
 }
 
-
+// recover connection
 func(c *WSConnection) recoverConnection() {
 	if r := recover(); r != nil {
 		buf := make([]byte, 1<<16)
