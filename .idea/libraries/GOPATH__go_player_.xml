@@ -1,0 +1,37 @@
+<component name="libraryTable">
+  <library name="GOPATH &lt;go_player&gt;">
+    <CLASSES>
+      <root url="file://$GOPATH$/websocket/src/golang.org" />
+      <root url="file://$PROJECT_DIR$/../Media-API/src/code.google.com" />
+      <root url="file://$PROJECT_DIR$/../../../gosocial/src/server" />
+      <root url="file://$PROJECT_DIR$/../Media-API/src/github.com" />
+      <root url="file://$PROJECT_DIR$/../Media-API/src/media-api" />
+      <root url="file://$GOPATH$/websocket/src/.DS_Store" />
+      <root url="file://$GOPATH$/websocket/src/github.com" />
+      <root url="file://$PROJECT_DIR$/../../../gosocial/src/main.go" />
+      <root url="file://$GOPATH$/websocket/src/code.google.com" />
+      <root url="file://$PROJECT_DIR$/../../../gosocial/src/http" />
+      <root url="file://$PROJECT_DIR$/../Media-API/src/golang.org" />
+      <root url="file://$PROJECT_DIR$/../Media-API/src/main.go" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <excluded>
+      <root url="file://$GOPATH$/websocket/src/github.com/3d0c/gmf/.git" />
+      <root url="file://$GOPATH$/websocket/src/github.com/flexconstructor/go_player/.git" />
+      <root url="file://$GOPATH$/websocket/src/github.com/zhangpeihao/gortmp/.git" />
+      <root url="file://$GOPATH$/websocket/src/github.com/gorilla/websocket/.git" />
+      <root url="file://$GOPATH$/websocket/src/github.com/gorilla/context/.git" />
+      <root url="file://$PROJECT_DIR$/../Media-API/src/golang.org/x/crypto/ssh/testdata" />
+      <root url="file://$GOPATH$/websocket/src/golang.org/x/crypto/ssh/testdata" />
+      <root url="file://$PROJECT_DIR$" />
+      <root url="file://$GOPATH$/websocket/src/golang.org/x/crypto/.git" />
+      <root url="file://$GOPATH$/websocket/src/github.com/gorilla/mux/.git" />
+      <root url="file://$GOPATH$/websocket/src/github.com/zhangpeihao/goamf/.git" />
+      <root url="file://$GOPATH$/websocket/src/code.google.com/p/go.crypto/.hg" />
+      <root url="file://$GOPATH$/websocket/src/code.google.com/p/go.crypto/ssh/testdata" />
+      <root url="file://$GOPATH$/websocket/src/golang.org/x/crypto/sha3/testdata" />
+      <root url="file://$GOPATH$/websocket/src/github.com/zhangpeihao/log/.git" />
+    </excluded>
+  </library>
+</component>
