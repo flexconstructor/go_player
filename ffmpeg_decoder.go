@@ -35,8 +35,10 @@ func (d *FFmpegDecoder) Run() {
 	defer inputCtx.CloseInputAndRelease()
 	// get the video stream from flv container (without audio and methadata)
 	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
+	if(srcVideoStream != nil){
+		defer srcVideoStream.Release()
+	}
 
-	defer srcVideoStream.Release()
 	if err != nil {
 		d.error <- NewError(1, 1)
 		d.log.Error("stream not opend ")
