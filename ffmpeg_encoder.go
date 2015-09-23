@@ -6,7 +6,7 @@ import (
 	"sync"
 	"runtime"
 	"fmt"
-	"math"
+	
 )
 /*
 	Encode frames to jpeg images.
