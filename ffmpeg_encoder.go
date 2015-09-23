@@ -35,7 +35,7 @@ func (e *FFmpegEncoder) Run() {
 	cc := gmf.NewCodecCtx(codec)
 	defer gmf.Release(cc)
 	// setts the properties of encode codec
-	var w int=300
+	var w int
 	var h int = 300
 	if e.srcCodec.Height() > h {
 		r := float64(e.srcCodec.Width()) / float64(e.srcCodec.Height())
