@@ -6,6 +6,7 @@ import (
 	"sync"
 	"runtime"
 	"fmt"
+	"math"
 )
 /*
 	Encode frames to jpeg images.
@@ -38,9 +39,10 @@ func (e *FFmpegEncoder) Run() {
 	var w int
 	var h int
 	if(e.srcCodec.Height()>h) {
-		r := e.srcCodec.Width()/e.srcCodec.Height()
+		//r := e.srcCodec.Width()/e.srcCodec.Height()
+		r:= math.Mod(float64(e.srcCodec.Width()),float64(e.srcCodec.Height()))
 		h=200;
-		w= h*r
+		w= int(float64(h)*r)
 		fmt.Println("resize: r= %d w= %d h=%d",r,w,h)
 	}else{
 		w=e.srcCodec.Width()
