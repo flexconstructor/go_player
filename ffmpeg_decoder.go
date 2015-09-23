@@ -56,6 +56,7 @@ func (d *FFmpegDecoder) Run() {
 	for {
 		select {
 		case <-d.close_chan:
+		fmt.Println("decoder close chan message")
 			return
 		default:
 		// get next packet
@@ -94,7 +95,7 @@ func (d *FFmpegDecoder) Run() {
 }
 // decoder close function.
 func (d *FFmpegDecoder) Close() {
-	d.log.Info("close decoder")
+	d.log.Info("close decoder<<<")
 	d.close_chan <- true
 	fmt.Println("close decoder for: %s",d.stream_url)
 }

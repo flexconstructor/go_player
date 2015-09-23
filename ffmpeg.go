@@ -36,10 +36,8 @@ func (f *ffmpeg) run() {
 		packet_channel: make(chan *gmf.Packet),
 		hub_id: f.hub_id,
 	}
-
-	defer decoder.Close()
 	go decoder.Run()
-
+	defer decoder.Close()
 	for {
 		select {
 		case <-f.close_channel:
