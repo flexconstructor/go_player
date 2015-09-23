@@ -6,7 +6,7 @@ import (
 	"sync"
 	"runtime"
 	"fmt"
-	
+
 )
 /*
 	Encode frames to jpeg images.
@@ -36,12 +36,11 @@ func (e *FFmpegEncoder) Run() {
 	cc := gmf.NewCodecCtx(codec)
 	defer gmf.Release(cc)
 	// setts the properties of encode codec
-	var w int
+	var w int=300
 	var h int
 	if(e.srcCodec.Height()>h) {
 		//r := e.srcCodec.Width()/e.srcCodec.Height()
 		r:= float64(e.srcCodec.Width())/float64(e.srcCodec.Height())
-		h=200;
 		w= int(float64(h)*r)
 		fmt.Println("resize: r= %d w= %d h=%d",r,w,h)
 	}else{
