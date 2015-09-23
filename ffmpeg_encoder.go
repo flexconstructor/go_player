@@ -37,11 +37,11 @@ func (e *FFmpegEncoder) Run() {
 	// setts the properties of encode codec
 	var w int
 	var h int
-	if(e.srcCodec.Width()>h) {
-
+	if(e.srcCodec.Height()>h) {
 		r := e.srcCodec.Width()/e.srcCodec.Height()
 		h=200;
 		w= h*r
+		fmt.Println("resize: r= %d w= %d h=%d",r,w,h)
 	}else{
 		w=e.srcCodec.Width()
 		h=e.srcCodec.Height()
