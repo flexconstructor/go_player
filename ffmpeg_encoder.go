@@ -40,7 +40,7 @@ func (e *FFmpegEncoder) Run() {
 	var h int
 	if(e.srcCodec.Height()>h) {
 		//r := e.srcCodec.Width()/e.srcCodec.Height()
-		r:= math.Mod(float64(e.srcCodec.Width()),float64(e.srcCodec.Height()))
+		r:= float64(e.srcCodec.Width())/float64(e.srcCodec.Height())
 		h=200;
 		w= int(float64(h)*r)
 		fmt.Println("resize: r= %d w= %d h=%d",r,w,h)
