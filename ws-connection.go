@@ -1,16 +1,17 @@
 package go_player
 
 import (
+	"fmt"
 	player_log "github.com/flexconstructor/go_player/log"
 	"github.com/gorilla/websocket"
 	"net/http"
-	"time"
 	"runtime"
-	"fmt"
+	"time"
 )
+
 /*
   Web-socket connection instance.
- */
+*/
 const (
 	// Time allowed to write a message to the peer.
 	writeWait = 2 * time.Second
@@ -48,7 +49,7 @@ func NewWSConnection(source_url string, w http.ResponseWriter, r *http.Request, 
 		return nil, err
 	}
 	conn := &WSConnection{
-		source_url: source_url,
+		source_url:    source_url,
 		ws:            ws,
 		send:          make(chan []byte, 256),
 		error_channel: make(chan *WSError, 1),
@@ -102,7 +103,7 @@ func (c *WSConnection) Run() {
 				c.lgr.Error("Update error")
 				return
 			}
-		fmt.Println("ping")
+			fmt.Println("ping")
 		// send metadata.
 		case metadata, ok := <-c.metadata:
 			if ok {
@@ -144,7 +145,7 @@ func (c *WSConnection) readPump() {
 		if err != nil {
 			break
 		}
-		fmt.Println("message: %s",message)
+		fmt.Println("message: %s", message)
 	}
 }
 
@@ -176,16 +177,17 @@ func (c *WSConnection) callUpdate() error {
 }
 
 // Get http.Request instance for public.
-func (c *WSConnection)GetRequest()(* http.Request){
+func (c *WSConnection) GetRequest() *http.Request {
 	return c.request
 }
+
 // Get connection url for public.
-func (c *WSConnection)GetSourceURL()(string){
+func (c *WSConnection) GetSourceURL() string {
 	return c.source_url
 }
 
 // recover connection
-func(c *WSConnection) recoverConnection() {
+func (c *WSConnection) recoverConnection() {
 	if r := recover(); r != nil {
 		buf := make([]byte, 1<<16)
 		runtime.Stack(buf, false)

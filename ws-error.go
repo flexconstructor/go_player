@@ -1,9 +1,10 @@
 package go_player
 
 import "encoding/json"
+
 /*
 	Errors of web-socket connections.
- */
+*/
 type WSError struct {
 	code        uint8
 	level       uint8

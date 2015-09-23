@@ -1,30 +1,30 @@
 package go_player
 
 import (
+	"fmt"
 	. "github.com/3d0c/gmf"
 	player_log "github.com/flexconstructor/go_player/log"
 	"runtime"
-	"fmt"
-
 )
+
 /*
 Decode video stream from rtmp url to frames
- */
+*/
 type FFmpegDecoder struct {
-	stream_url     string             // rtmp stream url.
-	codec_chan     chan *CodecCtx     // channel for codec.
-	error          chan *WSError      // channel for error messages.
-	log            player_log.Logger  // logger.
-	close_chan     chan bool          // channel for close message.
-	frame_channel  chan *Frame        // channel for frames
-	packet_channel chan *Packet       // channel for packets of stream.
-	hub_id         int                // stream ID
+	stream_url     string            // rtmp stream url.
+	codec_chan     chan *CodecCtx    // channel for codec.
+	error          chan *WSError     // channel for error messages.
+	log            player_log.Logger // logger.
+	close_chan     chan bool         // channel for close message.
+	frame_channel  chan *Frame       // channel for frames
+	packet_channel chan *Packet      // channel for packets of stream.
+	hub_id         int               // stream ID
 }
 
 // Run decode
 func (d *FFmpegDecoder) Run() {
 	d.log.Info("Run Decoder for %s", d.stream_url)
-	fmt.Println("create decoder for: %s",d.stream_url)
+	fmt.Println("create decoder for: %s", d.stream_url)
 	defer d.recoverDecoder()
 	// create codec
 	inputCtx, err := NewInputCtx(d.stream_url)
@@ -35,7 +35,7 @@ func (d *FFmpegDecoder) Run() {
 	defer inputCtx.CloseInputAndRelease()
 	// get the video stream from flv container (without audio and methadata)
 	srcVideoStream, err := inputCtx.GetBestStream(AVMEDIA_TYPE_VIDEO)
-	if(srcVideoStream != nil){
+	if srcVideoStream != nil {
 		defer srcVideoStream.Release()
 	}
 	if err != nil {
@@ -54,10 +54,10 @@ func (d *FFmpegDecoder) Run() {
 	for {
 		select {
 		case <-d.close_chan:
-		fmt.Println("decoder close chan message")
+			fmt.Println("decoder close chan message")
 			return
 		default:
-		// get next packet
+			// get next packet
 			packet := inputCtx.GetNextPacket()
 			if packet != nil {
 				if packet.StreamIndex() == srcVideoStream.Index() {
@@ -67,13 +67,13 @@ func (d *FFmpegDecoder) Run() {
 						d.error <- NewError(13, 2)
 						break
 					} else {
-						if(stream.Id()!= srcVideoStream.Id()){
+						if stream.Id() != srcVideoStream.Id() {
 							fmt.Println("wrong stream!!")
 						}
 						// get next frame
 						for frame := range packet.Frames(stream.CodecCtx()) {
 							frame.SetPktDts(d.hub_id)
-								d.frame_channel <- frame
+							d.frame_channel <- frame
 						}
 						Release(packet)
 					}
@@ -92,10 +92,11 @@ func (d *FFmpegDecoder) Run() {
 func (d *FFmpegDecoder) Close() {
 	d.log.Info("close decoder<<<")
 	d.close_chan <- true
-	fmt.Println("close decoder for: %s",d.stream_url)
+	fmt.Println("close decoder for: %s", d.stream_url)
 }
+
 // recover
-func(d *FFmpegDecoder) recoverDecoder(){
+func (d *FFmpegDecoder) recoverDecoder() {
 	fmt.Println("recover decoder")
 	if r := recover(); r != nil {
 		buf := make([]byte, 1<<16)
@@ -104,4 +105,4 @@ func(d *FFmpegDecoder) recoverDecoder(){
 		d.log.Error("Runtime failure, reason -> %s", reason)
 		fmt.Println("Runtime failure, reason -> %s", reason)
 	}
-	}
+}

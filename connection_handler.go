@@ -1,4 +1,5 @@
 package go_player
+
 //Interface for represent event handling of go player
 type IConnectionHandler interface {
 

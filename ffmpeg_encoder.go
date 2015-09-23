@@ -1,24 +1,25 @@
 package go_player
 
 import (
+	"fmt"
 	"github.com/3d0c/gmf"
 	player_log "github.com/flexconstructor/go_player/log"
-	"sync"
 	"runtime"
-	"fmt"
+	"sync"
 )
+
 /*
 	Encode frames to jpeg images.
- */
+*/
 type FFmpegEncoder struct {
-	srcCodec     *gmf.CodecCtx        // video codec
-	broadcast    chan []byte          // channel for result images
-	error        chan *WSError        // error channel
-	log          player_log.Logger    // logger
-	close_chan   chan bool            // channel for closing encoder
-	frame_cannel chan *gmf.Frame      // channel of source frames.
-	wg           *sync.WaitGroup      // wait group for closing all encode goroutines.
-	hub_id int
+	srcCodec     *gmf.CodecCtx     // video codec
+	broadcast    chan []byte       // channel for result images
+	error        chan *WSError     // error channel
+	log          player_log.Logger // logger
+	close_chan   chan bool         // channel for closing encoder
+	frame_cannel chan *gmf.Frame   // channel of source frames.
+	wg           *sync.WaitGroup   // wait group for closing all encode goroutines.
+	hub_id       int
 }
 
 // Run encoder.
@@ -35,14 +36,14 @@ func (e *FFmpegEncoder) Run() {
 	defer gmf.Release(cc)
 	// setts the properties of encode codec
 	var w int
-	var h int=300
-	if(e.srcCodec.Height()>h) {
-		r:= float64(e.srcCodec.Width())/float64(e.srcCodec.Height())
-		w= int(float64(h)*r)
-		fmt.Println("resize: r= %d w= %d h=%d",r,w,h)
-	}else{
-		w=e.srcCodec.Width()
-		h=e.srcCodec.Height()
+	var h int = 300
+	if e.srcCodec.Height() > h {
+		r := float64(e.srcCodec.Width()) / float64(e.srcCodec.Height())
+		w = int(float64(h) * r)
+		fmt.Println("resize: r= %d w= %d h=%d", r, w, h)
+	} else {
+		w = e.srcCodec.Width()
+		h = e.srcCodec.Height()
 	}
 	cc.SetPixFmt(gmf.AV_PIX_FMT_YUVJ420P)
 	cc.SetWidth(w)
@@ -77,26 +78,27 @@ func (e *FFmpegEncoder) Run() {
 			e.log.Error("frame is invalid")
 			return
 		}
-		if(srcFrame.PktDts() != e.hub_id) {
+		if srcFrame.PktDts() != e.hub_id {
 			continue
-		}else{
+		} else {
 			swsCtx.Scale(srcFrame, dstFrame)
 			p, ready, err := dstFrame.EncodeNewPacket(cc)
-			if(err != nil){
+			if err != nil {
 				return
 			}
-			if(ready == true){
+			if ready == true {
 				e.broadcast <- p.Data()
 			}
 		}
 	}
 }
+
 // close encoder
 func (e *FFmpegEncoder) Close() {
 	e.wg.Done()
 }
 
-func(e *FFmpegEncoder) recoverEncoder(){
+func (e *FFmpegEncoder) recoverEncoder() {
 	if r := recover(); r != nil {
 		buf := make([]byte, 1<<16)
 		runtime.Stack(buf, false)

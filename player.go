@@ -4,29 +4,29 @@ import (
 	"errors"
 	player_log "github.com/flexconstructor/go_player/log"
 
-	"runtime"
 	"fmt"
+	"runtime"
 )
+
 /*
 	RTMP-stream to JPEG-stream convertor.
- */
+*/
 var (
-	player_instance *GoPlayer = nil    //singleton instance
-	log             player_log.Logger  // logger
+	player_instance *GoPlayer         = nil //singleton instance
+	log             player_log.Logger       // logger
 )
 
 type GoPlayer struct {
-
-	streams_map   map[string]*hub     // map of stream connections hub.
-	connects      chan *WSConnection  // channel for register new web-socket connection.
-	updates       chan *WSConnection  // channel for updates connection.
-	closes        chan *WSConnection  // channel for unregister connections.
-	stops         chan *GoPlayer      // close convertor instance channel.
-	log           player_log.Logger   // logger.
-	handler       IConnectionHandler  // hundler of connection events.
+	streams_map map[string]*hub    // map of stream connections hub.
+	connects    chan *WSConnection // channel for register new web-socket connection.
+	updates     chan *WSConnection // channel for updates connection.
+	closes      chan *WSConnection // channel for unregister connections.
+	stops       chan *GoPlayer     // close convertor instance channel.
+	log         player_log.Logger  // logger.
+	handler     IConnectionHandler // hundler of connection events.
 }
 
- // Init new player instance.
+// Init new player instance.
 func InitGoPlayer(
 	log player_log.Logger,
 	connectionHandler IConnectionHandler) *GoPlayer {
@@ -36,25 +36,27 @@ func InitGoPlayer(
 	}
 	player_instance = &GoPlayer{
 
-		log:           log,
-		streams_map:   make(map[string]*hub),
-		connects:      make(chan *WSConnection, 1),
-		updates:       make(chan *WSConnection, 1),
-		closes:        make(chan *WSConnection, 1),
-		stops:         make(chan *GoPlayer, 1),
-		handler:       connectionHandler,
+		log:         log,
+		streams_map: make(map[string]*hub),
+		connects:    make(chan *WSConnection, 1),
+		updates:     make(chan *WSConnection, 1),
+		closes:      make(chan *WSConnection, 1),
+		stops:       make(chan *GoPlayer, 1),
+		handler:     connectionHandler,
 	}
 	player_instance.log.Info("init go player")
 	return player_instance
 }
- // return instance of player.
+
+// return instance of player.
 func GetPlayerInstance() (*GoPlayer, error) {
 	if player_instance == nil {
 		return nil, errors.New("goplayer not initialized!")
 	}
 	return player_instance, nil
 }
- // run the player instance.
+
+// run the player instance.
 func (p *GoPlayer) Run() {
 	p.log.Info("Run GO PLAYER INSTANCE")
 	defer p.stopInstance()
@@ -127,8 +129,8 @@ func (p *GoPlayer) stopInstance() {
 
 // Register new web-socket connection.
 func (p *GoPlayer) initConnection(conn *WSConnection) {
-	stream_url:=conn.GetSourceURL()
-	fmt.Println("register connection: %s",stream_url)
+	stream_url := conn.GetSourceURL()
+	fmt.Println("register connection: %s", stream_url)
 	h, ok := p.streams_map[stream_url]
 	// if hub of requested stream not running - run new hub.
 	if !ok {
@@ -138,7 +140,7 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 			len(p.streams_map),
 		)
 		p.streams_map[stream_url] = h
-		p.log.Debug("NEW STREAM: %d",len(p.streams_map))
+		p.log.Debug("NEW STREAM: %d", len(p.streams_map))
 		go h.run()
 	}
 	// register connection in hub.
@@ -151,9 +153,9 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 
 // Register close connection.
 func (p *GoPlayer) closeConnection(conn *WSConnection) {
-	stream_url:= conn.GetSourceURL();
+	stream_url := conn.GetSourceURL()
 	p.log.Debug("Close connection with params:source url=  %s", stream_url)
-	fmt.Println("Close connection: %s",stream_url)
+	fmt.Println("Close connection: %s", stream_url)
 	h, ok := p.streams_map[stream_url]
 	if !ok {
 		p.log.Error("hub for stream %s not found!", stream_url)
@@ -169,7 +171,7 @@ func (p *GoPlayer) closeConnection(conn *WSConnection) {
 }
 
 // recover player
-func(p *GoPlayer) recoverPlayer() {
+func (p *GoPlayer) recoverPlayer() {
 	if r := recover(); r != nil {
 		buf := make([]byte, 1<<16)
 		runtime.Stack(buf, false)

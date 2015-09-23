@@ -3,8 +3,8 @@ package go_player
 import (
 	player_log "github.com/flexconstructor/go_player/log"
 
-	"runtime"
 	"fmt"
+	"runtime"
 )
 
 /* The pool of web-socket connections for one model-stream.
@@ -13,37 +13,36 @@ import (
    metadata object of this stream.
 */
 type hub struct {
-
-	stream_url string                   // RTMP stream url.
-	connections map[*WSConnection]bool  // Registered connections.
-	broadcast chan []byte               // Channel for jpeg stream for client.
-	register chan *WSConnection         // Channel for register new connection.
-	unregister    chan *WSConnection    // Channel for unregister connection.
-	exit_channel  chan bool             // Channel for close hub.
-	metadata      chan *MetaData        // Stream metadata chennel.
-	error         chan *WSError         // Error channel.
-	log           player_log.Logger     // Logger reference.
-	hub_id int
+	stream_url   string                 // RTMP stream url.
+	connections  map[*WSConnection]bool // Registered connections.
+	broadcast    chan []byte            // Channel for jpeg stream for client.
+	register     chan *WSConnection     // Channel for register new connection.
+	unregister   chan *WSConnection     // Channel for unregister connection.
+	exit_channel chan bool              // Channel for close hub.
+	metadata     chan *MetaData         // Stream metadata chennel.
+	error        chan *WSError          // Error channel.
+	log          player_log.Logger      // Logger reference.
+	hub_id       int
 }
 
-var ff *ffmpeg      // FFMPEG module for decode/encode stream
-var meta *MetaData  // metadata of stream
+var ff *ffmpeg     // FFMPEG module for decode/encode stream
+var meta *MetaData // metadata of stream
 
 // Create new hub instance.
 func NewHub(stream_url string,
 	logger player_log.Logger, hub_id int,
 ) *hub {
 	return &hub{
-		stream_url:    stream_url,
-		broadcast:     make(chan []byte),
-		register:      make(chan *WSConnection),
-		unregister:    make(chan *WSConnection),
-		connections:   make(map[*WSConnection]bool),
-		metadata:      make(chan *MetaData),
-		error:         make(chan *WSError, 1),
-		log:           logger,
-		exit_channel:  make(chan bool, 100),
-		hub_id: hub_id,
+		stream_url:   stream_url,
+		broadcast:    make(chan []byte),
+		register:     make(chan *WSConnection),
+		unregister:   make(chan *WSConnection),
+		connections:  make(map[*WSConnection]bool),
+		metadata:     make(chan *MetaData),
+		error:        make(chan *WSError, 1),
+		log:          logger,
+		exit_channel: make(chan bool, 100),
+		hub_id:       hub_id,
 	}
 }
 
@@ -59,7 +58,7 @@ func (h *hub) run() {
 		error:          h.error,
 		log:            h.log,
 		workers_length: 1,
-		hub_id: h.hub_id,
+		hub_id:         h.hub_id,
 	}
 
 	// run ffmpeg module.
@@ -98,7 +97,7 @@ func (h *hub) run() {
 			}
 			//h.connections[0].send <-m
 			for c := range h.connections {
-				c.send <-m
+				c.send <- m
 			}
 		// send methadata, when it income.
 		case meta, ok := <-h.metadata:
@@ -142,7 +141,7 @@ func (h *hub) Close() {
 	h.exit_channel <- true
 }
 
-func(h *hub) recoverHub() {
+func (h *hub) recoverHub() {
 	if r := recover(); r != nil {
 		buf := make([]byte, 1<<16)
 		runtime.Stack(buf, false)
@@ -150,4 +149,3 @@ func(h *hub) recoverHub() {
 		h.log.Error("Runtime failure, reason -> %s", reason)
 	}
 }
-

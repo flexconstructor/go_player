@@ -3,6 +3,7 @@ package go_player
 import (
 	"encoding/json"
 )
+
 // Metadata object for setting width/height for stream client.
 type MetaData struct {
 	Message string
