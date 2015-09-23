@@ -25,7 +25,7 @@ type FFmpegDecoder struct {
 func (d *FFmpegDecoder) Run() {
 	d.log.Info("Run Decoder for %s", d.stream_url)
 	fmt.Println("create decoder for: %s",d.stream_url)
-
+	defer d.recoverDecoder()
 	// create codec
 	inputCtx, err := NewInputCtx(d.stream_url)
 	if err != nil {
@@ -52,46 +52,7 @@ func (d *FFmpegDecoder) Run() {
 		return
 	}
 
-	/*packets_chan:= inputCtx.GetNewPackets();
-	for{
 
-		select{
-		case <-d.close_chan:
-			return
-		case packet,ok:= <- packets_chan:
-		if(! ok){
-			return
-		}
-
-		if(packet.Size()==0) {
-			Release(packet)
-			continue
-		}else{
-			stream, err := inputCtx.GetStream(packet.StreamIndex())
-			if(err != nil) {
-				d.error <- NewError(13, 2)
-				return
-			}else{
-				for frame := range packet.Frames(stream.CodecCtx()) {
-					new_frame:= frame.CloneNewFrame()
-					d.frame_channel <- new_frame
-					Release(frame)
-				}
-				fmt.Println("relese packet %d",packet.Size())
-				Release(packet)
-			}
-
-
-		}
-
-			//if packet.StreamIndex() == srcVideoStream.Index() {
-
-		//}
-
-		}
-
-	}
-	fmt.Println("done decoder")*/
 	for {
 		select {
 		case <-d.close_chan:
@@ -112,21 +73,11 @@ func (d *FFmpegDecoder) Run() {
 						}
 						// get next frame
 						for frame := range packet.Frames(stream.CodecCtx()) {
-							//d.frame_channel <- frame
-							//Release(frame)
-
-							// new_frame:= frame.CloneNewFrame()
-
-							//if(new_frame != nil) {
-
 							frame.SetPktDts(d.hub_id)
 								d.frame_channel <- frame
-							//}
-
-							//frame.Release()
 
 						}
-						//Release(packet)
+						Release(packet)
 					}
 				} else {
 					break
@@ -149,11 +100,13 @@ func (d *FFmpegDecoder) Close() {
 }
 
 func(d *FFmpegDecoder) recoverDecoder(){
+	fmt.Println("recover decoder")
 	if r := recover(); r != nil {
 		buf := make([]byte, 1<<16)
 		runtime.Stack(buf, false)
 		reason := fmt.Sprintf("%v: %s", r, buf)
 		d.log.Error("Runtime failure, reason -> %s", reason)
+		fmt.Println("Runtime failure, reason -> %s", reason)
 	}
 
 	}
