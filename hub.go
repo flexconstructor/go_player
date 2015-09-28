@@ -96,8 +96,12 @@ func (h *hub) run() {
 				continue
 			}
 			//h.connections[0].send <-m
-			for c := range h.connections {
-				c.send <- m
+			if len(h.connections) > 0 {
+				for c := range h.connections {
+					c.send <- m
+				}
+			} else {
+				continue
 			}
 		// send methadata, when it income.
 		case meta, ok := <-h.metadata:

@@ -39,17 +39,17 @@ type WSConnection struct {
 	error_channel chan *WSError
 	lgr           player_log.Logger
 	request       *http.Request
-	source_url    string
+	streamID      uint64
 }
 
 // Create new web-socket instance.
-func NewWSConnection(source_url string, w http.ResponseWriter, r *http.Request, l player_log.Logger) (*WSConnection, error) {
+func NewWSConnection(stream_id uint64, w http.ResponseWriter, r *http.Request, l player_log.Logger) (*WSConnection, error) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return nil, err
 	}
 	conn := &WSConnection{
-		source_url:    source_url,
+		streamID:      stream_id,
 		ws:            ws,
 		send:          make(chan []byte, 256),
 		error_channel: make(chan *WSError, 1),
@@ -182,8 +182,8 @@ func (c *WSConnection) GetRequest() *http.Request {
 }
 
 // Get connection url for public.
-func (c *WSConnection) GetSourceURL() string {
-	return c.source_url
+func (c *WSConnection) GetStreamID() uint64 {
+	return c.streamID
 }
 
 // recover connection

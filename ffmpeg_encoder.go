@@ -2,7 +2,7 @@ package go_player
 
 import (
 	"fmt"
-	"github.com/3d0c/gmf"
+	"github.com/flexconstructor/gmf"
 	player_log "github.com/flexconstructor/go_player/log"
 	"runtime"
 	"sync"
@@ -45,6 +45,7 @@ func (e *FFmpegEncoder) Run() {
 		w = e.srcCodec.Width()
 		h = e.srcCodec.Height()
 	}
+	//gmf.AV_PIX_FMT_YUVJ420P
 	cc.SetPixFmt(gmf.AV_PIX_FMT_YUVJ420P)
 	cc.SetWidth(w)
 	cc.SetHeight(h)

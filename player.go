@@ -6,6 +6,7 @@ import (
 
 	"fmt"
 	"runtime"
+	"time"
 )
 
 /*
@@ -17,13 +18,15 @@ var (
 )
 
 type GoPlayer struct {
-	streams_map map[string]*hub    // map of stream connections hub.
-	connects    chan *WSConnection // channel for register new web-socket connection.
-	updates     chan *WSConnection // channel for updates connection.
-	closes      chan *WSConnection // channel for unregister connections.
-	stops       chan *GoPlayer     // close convertor instance channel.
-	log         player_log.Logger  // logger.
-	handler     IConnectionHandler // hundler of connection events.
+	streams_map   map[string]*hub    // map of stream connections hub.
+	connects      chan *WSConnection // channel for register new web-socket connection.
+	updates       chan *WSConnection // channel for updates connection.
+	closes        chan *WSConnection // channel for unregister connections.
+	stops         chan *GoPlayer     // close convertor instance channel.
+	log           player_log.Logger  // logger.
+	handler       IConnectionHandler // handler of connection events.
+	broadcast_map map[uint64]*hub
+	start_time    int64
 }
 
 // Init new player instance.
@@ -36,13 +39,15 @@ func InitGoPlayer(
 	}
 	player_instance = &GoPlayer{
 
-		log:         log,
-		streams_map: make(map[string]*hub),
-		connects:    make(chan *WSConnection, 1),
-		updates:     make(chan *WSConnection, 1),
-		closes:      make(chan *WSConnection, 1),
-		stops:       make(chan *GoPlayer, 1),
-		handler:     connectionHandler,
+		log:           log,
+		streams_map:   make(map[string]*hub),
+		connects:      make(chan *WSConnection, 1),
+		updates:       make(chan *WSConnection, 1),
+		closes:        make(chan *WSConnection, 1),
+		stops:         make(chan *GoPlayer, 1),
+		handler:       connectionHandler,
+		broadcast_map: make(map[uint64]*hub),
+		start_time:    time.Now().Unix(),
 	}
 	player_instance.log.Info("init go player")
 	return player_instance
@@ -121,6 +126,31 @@ func (p *GoPlayer) Stop() {
 	p.stops <- p
 }
 
+func (p *GoPlayer) InitStream(stream_id uint64, stream_url string) {
+	fmt.Println("init stream: %b url: %s", stream_id, stream_url)
+	_, ok := p.broadcast_map[stream_id]
+	if !ok {
+
+		h := NewHub(stream_url, p.log, int(time.Now().Unix()-p.start_time))
+		p.broadcast_map[stream_id] = h
+		go h.run()
+	}
+	return
+}
+
+func (p *GoPlayer) CloseStream(stream_id uint64) {
+	fmt.Println("Close stream stream: %b", stream_id)
+	h, ok := p.broadcast_map[stream_id]
+	if !ok {
+		p.log.Error("Can not finde stream %b for close!", stream_id)
+		fmt.Println("Can not finde stream %b for close!", stream_id)
+	} else {
+		h.Close()
+		delete(p.broadcast_map, stream_id)
+	}
+	return
+}
+
 // Stop player instance.
 func (p *GoPlayer) stopInstance() {
 	p.log.Info("Player stopped")
@@ -129,21 +159,13 @@ func (p *GoPlayer) stopInstance() {
 
 // Register new web-socket connection.
 func (p *GoPlayer) initConnection(conn *WSConnection) {
-	stream_url := conn.GetSourceURL()
-	fmt.Println("register connection: %s", stream_url)
-	h, ok := p.streams_map[stream_url]
-	// if hub of requested stream not running - run new hub.
+	fmt.Println("connect to: %b", conn.streamID)
+	h, ok := p.broadcast_map[conn.streamID]
 	if !ok {
-		h = NewHub(
-			stream_url,
-			p.log,
-			len(p.streams_map),
-		)
-		p.streams_map[stream_url] = h
-		p.log.Debug("NEW STREAM: %d", len(p.streams_map))
-		go h.run()
+		p.log.Error("hub for stream %b not found!", conn.streamID)
+		conn.Close()
+		return
 	}
-	// register connection in hub.
 	h.register <- conn
 	err := p.handler.OnConnect(conn)
 	if err != nil {
@@ -153,12 +175,10 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 
 // Register close connection.
 func (p *GoPlayer) closeConnection(conn *WSConnection) {
-	stream_url := conn.GetSourceURL()
-	p.log.Debug("Close connection with params:source url=  %s", stream_url)
-	fmt.Println("Close connection: %s", stream_url)
-	h, ok := p.streams_map[stream_url]
+	fmt.Println("close connection to: %b", conn.streamID)
+	h, ok := p.broadcast_map[conn.streamID]
 	if !ok {
-		p.log.Error("hub for stream %s not found!", stream_url)
+		p.log.Error("hub for stream %b not found!", conn.streamID)
 		return
 	}
 	h.unregister <- conn

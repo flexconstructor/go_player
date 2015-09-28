@@ -2,7 +2,7 @@ package go_player
 
 import (
 	"fmt"
-	"github.com/3d0c/gmf"
+	"github.com/flexconstructor/gmf"
 	player_log "github.com/flexconstructor/go_player/log"
 	"runtime"
 	"sync"
