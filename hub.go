@@ -159,7 +159,7 @@ func (h *hub) run() {
 
 func echoServer(c net.Conn) {
 	for {
-		buf := make([]byte)
+		buf := make([]byte,1024)
 		nr, err := c.Read(buf)
 		if err != nil {
 			return
