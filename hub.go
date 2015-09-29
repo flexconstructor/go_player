@@ -137,8 +137,10 @@ func (h *hub) run() {
 			return
 		}
 	}*/
-
-	l, err := net.Listen("unix", "/home/mediaapi/nginx/html/temp/dash/350423.sock")
+	sock:=fmt.Sprint("/home/mediaapi/nginx/html/temp/dash/%d.sock",h.hub_id)
+	fmt.Println("sock %s",sock)
+	return
+	l, err := net.Listen("unix", sock)
 	if err != nil {
 		//log.Fatal("listen error:", err)
 		fmt.Println("listen error: %s",err)
@@ -157,7 +159,7 @@ func (h *hub) run() {
 
 func echoServer(c net.Conn) {
 	for {
-		buf := make([]byte, 512)
+		buf := make([]byte)
 		nr, err := c.Read(buf)
 		if err != nil {
 			return
