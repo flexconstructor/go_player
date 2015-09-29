@@ -141,8 +141,6 @@ func (h *hub) run() {
 		}
 	}*/
 	sock:=fmt.Sprintf("/home/mediaapi/nginx/html/temp/dash/%s.sock",strconv.FormatUint(h.model_id,10))
-	fmt.Println("sock %s",sock)
-	return
 	l, err := net.Listen("unix", sock)
 	if err != nil {
 		//log.Fatal("listen error:", err)
@@ -167,9 +165,11 @@ func echoServer(c net.Conn) {
 		if err != nil {
 			return
 		}
-
 		data := buf[0:nr]
-		fmt.Printf("Received: %v", len(data))
+		if(len(data)>0){
+			fmt.Printf("Received: %v", len(data))
+		}
+
 
 	}
 }
