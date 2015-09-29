@@ -131,7 +131,7 @@ func (p *GoPlayer) InitStream(stream_id uint64, stream_url string) {
 	_, ok := p.broadcast_map[stream_id]
 	if !ok {
 
-		h := NewHub(stream_url, p.log, int(time.Now().Unix()-p.start_time))
+		h := NewHub(stream_url, p.log, int(time.Now().Unix()-p.start_time), stream_id)
 		p.broadcast_map[stream_id] = h
 		go h.run()
 	}

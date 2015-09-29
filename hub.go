@@ -24,6 +24,7 @@ type hub struct {
 	error        chan *WSError          // Error channel.
 	log          player_log.Logger      // Logger reference.
 	hub_id       int
+	model_id     uint64
 }
 
 var ff *ffmpeg     // FFMPEG module for decode/encode stream
@@ -31,7 +32,7 @@ var meta *MetaData // metadata of stream
 
 // Create new hub instance.
 func NewHub(stream_url string,
-	logger player_log.Logger, hub_id int,
+	logger player_log.Logger, hub_id int, model_id uint64,
 ) *hub {
 	return &hub{
 		stream_url:   stream_url,
@@ -44,6 +45,7 @@ func NewHub(stream_url string,
 		log:          logger,
 		exit_channel: make(chan bool, 100),
 		hub_id:       hub_id,
+		model_id:    model_id,
 	}
 }
 
@@ -137,7 +139,7 @@ func (h *hub) run() {
 			return
 		}
 	}*/
-	sock:=fmt.Sprint("/home/mediaapi/nginx/html/temp/dash/%d.sock",h.hub_id)
+	sock:=fmt.Sprint("/home/mediaapi/nginx/html/temp/dash/%d.sock",h.model_id)
 	fmt.Println("sock %s",sock)
 	return
 	l, err := net.Listen("unix", sock)
