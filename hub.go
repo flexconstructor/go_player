@@ -165,10 +165,8 @@ func echoServer(c net.Conn) {
 		if err != nil {
 			return
 		}
-		data := buf[0:nr]
-		if(len(data)>0){
-			fmt.Printf("Received: %v", len(data))
-		}
+		//data := buf[0:nr]
+		fmt.Printf("total: %v bytes: %v",nr, len(buf))
 
 
 	}
