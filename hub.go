@@ -5,6 +5,7 @@ import (
 
 	"fmt"
 	"runtime"
+	"net"
 )
 
 /* The pool of web-socket connections for one model-stream.
@@ -48,7 +49,7 @@ func NewHub(stream_url string,
 
 // run hub instance.
 func (h *hub) run() {
-	h.log.Info("Hub run: url = %s ", h.stream_url)
+	/*h.log.Info("Hub run: url = %s ", h.stream_url)
 	fmt.Println("Hub run: url = %s ", h.stream_url)
 	ff = &ffmpeg{
 		stream_url:     h.stream_url,
@@ -135,8 +136,39 @@ func (h *hub) run() {
 		case <-h.exit_channel:
 			return
 		}
+	}*/
+
+	l, err := net.Listen("unix", "/home/mediaapi/nginx/html/temp/dash/"+h.hub_id+".sock")
+	if err != nil {
+		//log.Fatal("listen error:", err)
+		fmt.Println("listen error: %s",err)
+	}
+
+	for {
+		fd, err := l.Accept()
+		if err != nil {
+			//log.Fatal("accept error:", err)
+			fmt.Println("accept error: %s",err)
+		}
+		go echoServer(fd)
+	}
+
+	}
+
+func echoServer(c net.Conn) {
+	for {
+		buf := make([]byte, 512)
+		nr, err := c.Read(buf)
+		if err != nil {
+			return
+		}
+
+		data := buf[0:nr]
+		fmt.Printf("Received: %v", len(data))
+
 	}
 }
+
 
 // close hub function
 func (h *hub) Close() {
