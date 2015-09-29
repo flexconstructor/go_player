@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"runtime"
 	"net"
+	"strconv"
 )
 
 /* The pool of web-socket connections for one model-stream.
@@ -139,7 +140,7 @@ func (h *hub) run() {
 			return
 		}
 	}*/
-	sock:=fmt.Sprint("/home/mediaapi/nginx/html/temp/dash/%d.sock",h.model_id)
+	sock:=fmt.Sprint("/home/mediaapi/nginx/html/temp/dash/%s.sock",strconv.ParseUint(h.model_id,10,64))
 	fmt.Println("sock %s",sock)
 	return
 	l, err := net.Listen("unix", sock)
