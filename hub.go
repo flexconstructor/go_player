@@ -140,6 +140,7 @@ func (h *hub) run() {
 			return
 		}
 	}*/
+	defer fmt.Println("close socket")
 	sock:=fmt.Sprintf("/home/mediaapi/nginx/html/temp/dash/%s.sock",strconv.FormatUint(h.model_id,10))
 	l, err := net.Listen("unix", sock)
 	if err != nil {
@@ -159,6 +160,8 @@ func (h *hub) run() {
 	}
 
 func echoServer(c net.Conn) {
+	defer fmt.Println("echo complete")
+
 	for {
 		buf := make([]byte,1024)
 		nr, err := c.Read(buf)
@@ -168,6 +171,7 @@ func echoServer(c net.Conn) {
 		data := buf[0:nr]
 		fmt.Printf("data: %v total: %v\n", len(data),nr)
 	}
+
 }
 
 
