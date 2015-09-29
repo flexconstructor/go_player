@@ -166,7 +166,7 @@ func echoServer(c net.Conn) {
 			return
 		}
 		data := buf[0:nr]
-		fmt.Printf("data: %v \n", len(data))
+		fmt.Printf("data: %v total: %v\n", len(data),nr)
 	}
 }
 
