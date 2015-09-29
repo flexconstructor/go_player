@@ -14,13 +14,13 @@
     <SOURCES />
     <excluded>
       <root url="file://$PROJECT_DIR$/../Media-API/src/github.com/gorilla/context/.git" />
-      <root url="file://$PROJECT_DIR$/../Media-API/src/github.com/flexconstructor/go_player/.idea" />
       <root url="file://$PROJECT_DIR$" />
+      <root url="file://$PROJECT_DIR$/../Media-API/src/github.com/flexconstructor/go_player/.git" />
       <root url="file://$PROJECT_DIR$/../Media-API/src/github.com/3d0c/gmf/.git" />
+      <root url="file://$PROJECT_DIR$/../Media-API/src/github.com/flexconstructor/go_player/.idea" />
       <root url="file://$PROJECT_DIR$/../Media-API/src/golang.org/x/crypto/ssh/testdata" />
       <root url="file://$PROJECT_DIR$/../Media-API/src/github.com/gorilla/websocket/.git" />
       <root url="file://$PROJECT_DIR$/../Media-API/src/github.com/flexconstructor/gmf/.git" />
-      <root url="file://$PROJECT_DIR$/../Media-API/src/github.com/flexconstructor/go_player/.git" />
       <root url="file://$PROJECT_DIR$/../Media-API/src/github.com/gorilla/mux/.git" />
     </excluded>
   </library>

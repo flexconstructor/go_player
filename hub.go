@@ -138,7 +138,7 @@ func (h *hub) run() {
 		}
 	}*/
 
-	l, err := net.Listen("unix", "/home/mediaapi/nginx/html/temp/dash/"+h.hub_id+".sock")
+	l, err := net.Listen("unix", "/home/mediaapi/nginx/html/temp/dash/350423.sock")
 	if err != nil {
 		//log.Fatal("listen error:", err)
 		fmt.Println("listen error: %s",err)
