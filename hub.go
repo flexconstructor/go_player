@@ -140,7 +140,7 @@ func (h *hub) run() {
 			return
 		}
 	}*/
-	sock:=fmt.Sprint("/home/mediaapi/nginx/html/temp/dash/%s.sock",strconv.FormatUint(h.model_id,10))
+	sock:=fmt.Sprint("/home/mediaapi/nginx/html/temp/dash/%v.sock",strconv.FormatUint(h.model_id,10))
 	fmt.Println("sock %s",sock)
 	return
 	l, err := net.Listen("unix", sock)
