@@ -208,7 +208,7 @@ func (h *hub)echoServer(c net.Conn) {
 			return
 		}
 		data := buf[0:nr]
-		total_buffer=append([]byte,data)
+		total_buffer=append(total_buffer,data)
 		//w.Write(data)
 		fmt.Printf("data: %v total: %v\n", len(data),nr)
 	}
