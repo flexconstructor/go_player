@@ -181,7 +181,6 @@ l, err:= net.Listen("unix", socket_path)
 
 	if err != nil {
 		fmt.Println("listen error: %s",err)
-		h.Close()
 		return
 		}
 	_listener=l
@@ -189,7 +188,6 @@ l, err:= net.Listen("unix", socket_path)
 		fd, err := _listener.Accept()
 		if err != nil {
 			fmt.Println("accept error: %s", err)
-			h.Close()
 			return
 		}
 		go h.echoServer(fd)
