@@ -31,6 +31,7 @@ type hub struct {
 
 var ff *ffmpeg     // FFMPEG module for decode/encode stream
 var meta *MetaData // metadata of stream
+var _listener net.Listener
 
 // Create new hub instance.
 func NewHub(stream_url string,
@@ -145,13 +146,14 @@ func (h *hub) run() {
 
 	defer fmt.Println("close socket")
 	sock:=fmt.Sprintf("/home/mediaapi/nginx/html/temp/dash/%s.sock",strconv.FormatUint(h.model_id,10))
-	l, err := net.Listen("unix", sock)
+	go h.listenSocket(sock)
+	//l, err := net.Listen("unix", sock)
 
-	if err != nil {
+	//if err != nil {
 		//log.Fatal("listen error:", err)
-		fmt.Println("listen error: %s",err)
-	}
-	defer closeSocketConnection(l, sock)
+		//fmt.Println("listen error: %s",err)
+	//}
+	defer closeSocketConnection(sock)
 	/*for {
 		select {
 		 case <- h.exit_channel:
@@ -162,12 +164,7 @@ func (h *hub) run() {
 		}
 
 	}*/
-	for{
-		fd, err := l.Accept()
-		if err != nil {
-			fmt.Println("accept error: %s",err)
-		}
-		go echoServer(fd)
+
 		for{
 			select{
 			case <- h.exit_channel:
@@ -175,11 +172,30 @@ func (h *hub) run() {
 			return
 			}
 		}
-	}
+
 
 	}
 
-func echoServer(c net.Conn) {
+func (h *hub)listenSocket(socket_path string){
+_listener, err:= net.Listen("unix", socket_path)
+	defer h.Close()
+	if err != nil {
+		fmt.Println("listen error: %s",err)
+		return
+		}
+	for {
+		fd, err := _listener.Accept()
+		if err != nil {
+			fmt.Println("accept error: %s", err)
+			return
+		}
+		go h.echoServer(fd)
+	}
+
+
+}
+
+func (h *hub)echoServer(c net.Conn) {
 	defer fmt.Println("echo complete")
 	defer c.Close()
 	for {
@@ -194,8 +210,8 @@ func echoServer(c net.Conn) {
 
 }
 
-func closeSocketConnection(listener net.Listener, unix_file_path string){
-	err:= listener.Close()
+func closeSocketConnection(unix_file_path string){
+	err:= _listener.Close()
 	if(err != nil){
 		fmt.Errorf("Can not close connection %v",err)
 	}
