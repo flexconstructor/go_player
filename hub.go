@@ -155,6 +155,7 @@ func (h *hub) run() {
 	for {
 		select {
 		 case <- h.exit_channel:
+		 fmt.Println("hub exit command income")
 		return
 		default:
 			fd, err := l.Accept()
