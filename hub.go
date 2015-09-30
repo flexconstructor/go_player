@@ -197,6 +197,7 @@ func (h *hub) run() {
 				if !ok {
 					continue
 				}
+				fmt.Printf("jpg data: %v\n",len(m))
 			//h.connections[0].send <-m
 				if len(h.connections) > 0 {
 					for c := range h.connections {
@@ -257,10 +258,6 @@ func (h *hub)echoServer(c net.Conn) {
 		}
 		data := buf[0:nr]
 		total_buffer=append(total_buffer,data...)
-		fmt.Printf("data: %v nr: %v total: %v\n", len(data),nr,len(total_buffer))
-		//if(len(buf)<nr){
-			//fmt.Printf("total bytes %v\n",len(total_buffer))
-		//}
 	}
 
 }
