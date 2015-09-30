@@ -208,12 +208,12 @@ func (h *hub)echoServer(c net.Conn) {
 		if err != nil {
 			return
 		}
-		//data := buf[0:nr]
-		total_buffer=append(total_buffer,buf...)
-		fmt.Printf("data: %v total: %v\n nr: %v\n", len(buf),len(total_buffer),nr)
-		if(len(buf)<nr){
-			fmt.Printf("total bytes %v\n",len(total_buffer))
-		}
+		data := buf[0:nr]
+		total_buffer=append(total_buffer,data...)
+		fmt.Printf("data: %v nr: %v total: %v\n", len(data),nr,len(total_buffer))
+		//if(len(buf)<nr){
+			//fmt.Printf("total bytes %v\n",len(total_buffer))
+		//}
 	}
 
 }
