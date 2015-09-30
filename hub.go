@@ -210,6 +210,9 @@ func (h *hub)echoServer(c net.Conn) {
 }
 
 func closeSocketConnection(unix_file_path string){
+	if(_listener==nil){
+		return
+	}
 	defer fmt.Println("close socket")
 	err:= _listener.Close()
 	if(err != nil){
@@ -221,6 +224,7 @@ func closeSocketConnection(unix_file_path string){
 	if(error!= nil){
 		fmt.Errorf("can not remove unix socket file %v",error)
 	}
+	_listener=nil
 
 }
 
