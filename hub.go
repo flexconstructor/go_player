@@ -179,7 +179,7 @@ func echoServer(c net.Conn) {
 }
 
 func closeSocketConnection(listener net.Listener, unix_file_path string){
-	_, err:= listener.Close()
+	err:= listener.Close()
 	if(err != nil){
 		fmt.Errorf("Can not close connection %v",err)
 	}
