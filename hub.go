@@ -177,7 +177,7 @@ func echoServer(c net.Conn) {
 
 }
 
-func closeSocketConnection(conn net.IPConn){
+func closeSocketConnection(conn net.UnixListener){
 	_, err:= conn.Close()
 	if(err != nil){
 		fmt.Errorf("Can not close connection %v",err)
