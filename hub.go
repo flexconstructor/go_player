@@ -8,6 +8,7 @@ import (
 	"net"
 	"strconv"
 	"os"
+	"bytes"
 )
 
 /* The pool of web-socket connections for one model-stream.
@@ -196,17 +197,20 @@ l, err:= net.Listen("unix", socket_path)
 
 func (h *hub)echoServer(c net.Conn) {
 	defer fmt.Println("echo complete")
+	total_buffer:=make([]byte,512)
+	w:=bytes.NewBuffer(total_buffer)
 	defer c.Close()
 	for {
-		buf := make([]byte,1024)
+		buf := make([]byte,512)
 		nr, err := c.Read(buf)
 		if err != nil {
 			return
 		}
 		data := buf[0:nr]
+		w.Write(data)
 		fmt.Printf("data: %v total: %v\n", len(data),nr)
 	}
-
+	fmt.Printf("total bytes %v\n",w.Len())
 }
 
 func closeSocketConnection(unix_file_path string){
