@@ -204,8 +204,9 @@ func closeSocketConnection(listener net.Listener, unix_file_path string){
 // close hub function
 func (h *hub) Close() {
 	h.log.Debug("Close hub %s", h.stream_url)
-	fmt.Println("Close hub %s", h.stream_url)
+	fmt.Println("Close!!! hub %s", h.stream_url)
 	h.exit_channel <- true
+	fmt.Println("write to close channel")
 }
 
 func (h *hub) recoverHub() {
