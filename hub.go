@@ -166,8 +166,13 @@ func (h *hub) run() {
 			go echoServer(fd)*/
 		}
 
-		}
-
+	fd, err := l.Accept()
+	if err != nil {
+		//log.Fatal("accept error:", err)
+		fmt.Println("accept error: %s",err)
+	}
+	go echoServer(fd)
+	}
 
 	}
 
