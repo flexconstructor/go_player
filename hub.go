@@ -197,8 +197,7 @@ l, err:= net.Listen("unix", socket_path)
 
 func (h *hub)echoServer(c net.Conn) {
 
-	total_buffer:=make([]byte,0)
-	w:=bytes.NewBuffer(total_buffer)
+	w:=bytes.NewBuffer([]byte)
 	defer fmt.Printf("total bytes %v\n",w.Len())
 	defer c.Close()
 	for {
