@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"net"
 	"strconv"
+	"os"
 )
 
 /* The pool of web-socket connections for one model-stream.
@@ -150,7 +151,7 @@ func (h *hub) run() {
 		//log.Fatal("listen error:", err)
 		fmt.Println("listen error: %s",err)
 	}
-	defer closeSocketConnection(l)
+	defer closeSocketConnection(l, sock)
 	for {
 		fd, err := l.Accept()
 		if err != nil {
@@ -177,17 +178,18 @@ func echoServer(c net.Conn) {
 
 }
 
-func closeSocketConnection(conn net.UnixListener){
-	_, err:= conn.Close()
+func closeSocketConnection(listener net.Listener, unix_file_path string){
+	_, err:= listener.Close()
 	if(err != nil){
 		fmt.Errorf("Can not close connection %v",err)
 	}
 
-	file,err:= conn.File()
-	if(err != nil){
-		fmt.Errorf("connection file not found %v",err)
+	 error:= os.Remove(unix_file_path)
+
+	if(error!= nil){
+		fmt.Errorf("can not remove unix socket file %v",error)
 	}
-	fmt.Println("connection file path: %s",file.Name())
+
 }
 
 
