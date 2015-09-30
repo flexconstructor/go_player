@@ -157,13 +157,13 @@ func (h *hub) run() {
 		 case <- h.exit_channel:
 		 fmt.Println("hub exit command income")
 		return
-		default:
+		/*default:
 			fd, err := l.Accept()
 			if err != nil {
 				//log.Fatal("accept error:", err)
 				fmt.Println("accept error: %s",err)
 			}
-			go echoServer(fd)
+			go echoServer(fd)*/
 		}
 
 		}
