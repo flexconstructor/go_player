@@ -144,7 +144,7 @@ func (h *hub) run() {
 	}*/
 	defer h.recoverHub()
 
-	defer fmt.Println("close socket")
+
 	sock:=fmt.Sprintf("/home/mediaapi/nginx/html/temp/dash/%s.sock",strconv.FormatUint(h.model_id,10))
 	go h.listenSocket(sock)
 	//l, err := net.Listen("unix", sock)
@@ -177,12 +177,13 @@ func (h *hub) run() {
 	}
 
 func (h *hub)listenSocket(socket_path string){
-_listener, err:= net.Listen("unix", socket_path)
+l, err:= net.Listen("unix", socket_path)
 	defer h.Close()
 	if err != nil {
 		fmt.Println("listen error: %s",err)
 		return
 		}
+	_listener=l
 	for {
 		fd, err := _listener.Accept()
 		if err != nil {
@@ -191,8 +192,6 @@ _listener, err:= net.Listen("unix", socket_path)
 		}
 		go h.echoServer(fd)
 	}
-
-
 }
 
 func (h *hub)echoServer(c net.Conn) {
@@ -211,6 +210,7 @@ func (h *hub)echoServer(c net.Conn) {
 }
 
 func closeSocketConnection(unix_file_path string){
+	defer fmt.Println("close socket")
 	err:= _listener.Close()
 	if(err != nil){
 		fmt.Errorf("Can not close connection %v",err)
