@@ -200,7 +200,7 @@ func (h *hub)echoServer(c net.Conn) {
 	total_buffer:=make([]byte,0)
 	//w:=bytes.NewBuffer(total_buffer)
 	defer c.Close()
-	defer fmt.Printf("total bytes %v\n",len(total_buffer))
+
 
 	for {
 		buf := make([]byte,512)
@@ -211,6 +211,9 @@ func (h *hub)echoServer(c net.Conn) {
 		//data := buf[0:nr]
 		total_buffer=append(total_buffer,buf...)
 		fmt.Printf("data: %v total: %v\n nr: %v\n", len(buf),len(total_buffer),nr)
+		if(len(buf)<nr){
+			fmt.Printf("total bytes %v\n",len(total_buffer))
+		}
 	}
 
 }
