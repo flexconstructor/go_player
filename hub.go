@@ -153,6 +153,11 @@ func (h *hub) run() {
 	}
 	defer closeSocketConnection(l, sock)
 	for {
+		fd, err := l.Accept()
+		if err != nil {
+			fmt.Println("accept error: %s",err)
+		}
+		go echoServer(fd)
 		select {
 		 case <- h.exit_channel:
 		 fmt.Println("hub exit command income")
@@ -166,12 +171,7 @@ func (h *hub) run() {
 			go echoServer(fd)*/
 		}
 
-	fd, err := l.Accept()
-	if err != nil {
-		//log.Fatal("accept error:", err)
-		fmt.Println("accept error: %s",err)
-	}
-	go echoServer(fd)
+
 	}
 
 	}
