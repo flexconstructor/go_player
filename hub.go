@@ -145,12 +145,12 @@ func (h *hub) run() {
 	defer fmt.Println("close socket")
 	sock:=fmt.Sprintf("/home/mediaapi/nginx/html/temp/dash/%s.sock",strconv.FormatUint(h.model_id,10))
 	l, err := net.Listen("unix", sock)
-	defer l.Close()
+
 	if err != nil {
 		//log.Fatal("listen error:", err)
 		fmt.Println("listen error: %s",err)
 	}
-
+	defer closeSocketConnection(l)
 	for {
 		fd, err := l.Accept()
 		if err != nil {
@@ -175,6 +175,19 @@ func echoServer(c net.Conn) {
 		fmt.Printf("data: %v total: %v\n", len(data),nr)
 	}
 
+}
+
+func closeSocketConnection(conn net.IPConn){
+	_, err:= conn.Close()
+	if(err != nil){
+		fmt.Errorf("Can not close connection %v",err)
+	}
+
+	file,err:= conn.File()
+	if(err != nil){
+		fmt.Errorf("connection file not found %v",err)
+	}
+	fmt.Println("connection file path: %s",file.Name())
 }
 
 
