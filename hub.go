@@ -196,9 +196,10 @@ l, err:= net.Listen("unix", socket_path)
 }
 
 func (h *hub)echoServer(c net.Conn) {
-	defer fmt.Println("echo complete")
+
 	total_buffer:=make([]byte,512)
 	w:=bytes.NewBuffer(total_buffer)
+	defer fmt.Printf("total bytes %v\n",w.Len())
 	defer c.Close()
 	for {
 		buf := make([]byte,512)
@@ -210,7 +211,7 @@ func (h *hub)echoServer(c net.Conn) {
 		w.Write(data)
 		fmt.Printf("data: %v total: %v\n", len(data),nr)
 	}
-	fmt.Printf("total bytes %v\n",w.Len())
+
 }
 
 func closeSocketConnection(unix_file_path string){
