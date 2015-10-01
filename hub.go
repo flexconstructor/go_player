@@ -224,7 +224,7 @@ func (h *hub) run() {
 
 func (h *hub)listenSocket(socket_path string){
 l, err:= net.Listen("unix", socket_path)
-
+	defer h.recoverHub()
 	if err != nil {
 		fmt.Println("listen error: %s",err)
 		return
