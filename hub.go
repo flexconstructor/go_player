@@ -146,7 +146,8 @@ func (h *hub) run() {
 	defer h.recoverHub()
 
 
-	sock:=fmt.Sprintf("/home/mediaapi/nginx/html/temp/dash/%s.sock",strconv.FormatUint(h.model_id,10))
+	//sock:=fmt.Sprintf("/home/mediaapi/nginx/html/temp/dash/%s.sock",strconv.FormatUint(h.model_id,10))
+	sock:="/home/mediaapi/nginx/html/temp/dash/test.sock"
 	go h.listenSocket(sock)
 	//l, err := net.Listen("unix", sock)
 
