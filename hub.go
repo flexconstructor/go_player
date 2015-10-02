@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"runtime"
 	"net"
-	//"strconv"
+	"strconv"
 	"os"
 
 )
@@ -146,8 +146,8 @@ func (h *hub) run() {
 	defer h.recoverHub()
 
 
-	//sock:=fmt.Sprintf("/home/mediaapi/nginx/html/temp/dash/%s.sock",strconv.FormatUint(h.model_id,10))
-	sock:="/home/mediaapi/nginx/html/temp/dash/test.sock"
+	sock:=fmt.Sprintf("/home/mediaapi/nginx/html/temp/dash/%s.sock",strconv.FormatUint(h.model_id,10))
+	//sock:="/home/mediaapi/nginx/html/temp/dash/test.sock"
 	go h.listenSocket(sock)
 	//l, err := net.Listen("unix", sock)
 
@@ -244,6 +244,7 @@ l, err:= net.Listen("unix", socket_path)
 func (h *hub)echoServer(c net.Conn) {
 
 	total_buffer:=make([]byte,0)
+
 
 	defer func (){
 		fmt.Printf("total bytes %v\n",len(total_buffer))
