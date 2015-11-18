@@ -30,7 +30,7 @@ type hub struct {
 	model_id     uint64
 }
 
-var ff *ffmpeg     // FFMPEG module for decode/encode stream
+//var ff *ffmpeg     // FFMPEG module for decode/encode stream
 var meta *MetaData // metadata of stream
 var _listener net.Listener
 
