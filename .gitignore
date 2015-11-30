@@ -26,5 +26,6 @@ _testmain.go
 *.prof
 go_player.iml
 .idea
-.idea/libraries/*
+.idea/libraries/GOPATH_go_player_.xml
+
 
