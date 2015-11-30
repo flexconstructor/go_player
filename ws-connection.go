@@ -5,7 +5,7 @@ import (
 	player_log "github.com/flexconstructor/go_player/log"
 	"github.com/gorilla/websocket"
 	"net/http"
-	"runtime"
+	"strings"
 	"time"
 )
 
@@ -13,15 +13,15 @@ import (
   Web-socket connection instance.
 */
 const (
-	// Time allowed to write a message to the peer.
+// Time allowed to write a message to the peer.
 	writeWait = 2 * time.Second
-	// Time allowed to read the next pong message from the peer.
+// Time allowed to read the next pong message from the peer.
 	pongWait = 200 * time.Second
 
-	// Send pings to peer with this period. Must be less than pongWait.
+// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 1) / 2
 
-	// Maximum message queue allowed from/to peer.
+// Maximum message queue allowed from/to peer.
 	maxMessageSize = 512
 )
 
@@ -39,23 +39,33 @@ type WSConnection struct {
 	error_channel chan *WSError
 	lgr           player_log.Logger
 	request       *http.Request
-	source_url    string
+	streamID      uint64
+	video         int
 }
 
 // Create new web-socket instance.
-func NewWSConnection(source_url string, w http.ResponseWriter, r *http.Request, l player_log.Logger) (*WSConnection, error) {
+func NewWSConnection(stream_id uint64,
+w http.ResponseWriter,
+r *http.Request,
+l player_log.Logger,
+) (*WSConnection, error) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return nil, err
 	}
+	connection_type := 0
+	if strings.Contains(r.URL.Path, "ps") {
+		connection_type = 1
+	}
 	conn := &WSConnection{
-		source_url:    source_url,
+		streamID:      stream_id,
 		ws:            ws,
 		send:          make(chan []byte, 256),
 		error_channel: make(chan *WSError, 1),
 		metadata:      make(chan []byte),
 		lgr:           l,
 		request:       r,
+		video:         connection_type,
 	}
 	return conn, nil
 }
@@ -73,9 +83,9 @@ func (c *WSConnection) Run() {
 		c.lgr.Error("no player instance found")
 		return
 	}
+	c.lgr.Debug("register connection: %d", c.streamID)
 	player.connects <- c
 	go c.readPump()
-	fmt.Println("after pump")
 	ticker := time.NewTicker(pingPeriod)
 	defer c.Close()
 	defer ticker.Stop()
@@ -95,7 +105,6 @@ func (c *WSConnection) Run() {
 		case <-ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
 				c.lgr.Error("can not write ping")
-				fmt.Println("can not write ping")
 				return
 			}
 			err := c.callUpdate()
@@ -103,7 +112,6 @@ func (c *WSConnection) Run() {
 				c.lgr.Error("Update error")
 				return
 			}
-			fmt.Println("ping")
 		// send metadata.
 		case metadata, ok := <-c.metadata:
 			if ok {
@@ -128,24 +136,21 @@ func (c *WSConnection) Run() {
 
 // readPump pumps messages from the websocket connection to the hub.
 func (c *WSConnection) readPump() {
-	fmt.Println("readPump>>>")
 	defer func() {
+		c.lgr.Debug("connection must been closed!")
 		c.Close()
-		fmt.Println("connection must been closed!")
 	}()
 	c.ws.SetReadLimit(maxMessageSize)
 	c.ws.SetReadDeadline(time.Now().Add(pongWait))
 	c.ws.SetPongHandler(func(string) error {
 		c.ws.SetReadDeadline(time.Now().Add(pongWait))
-		fmt.Println("pong")
 		return nil
 	})
 	for {
-		_, message, err := c.ws.ReadMessage()
+		_, _, err := c.ws.ReadMessage()
 		if err != nil {
 			break
 		}
-		fmt.Println("message: %s", message)
 	}
 }
 
@@ -182,16 +187,11 @@ func (c *WSConnection) GetRequest() *http.Request {
 }
 
 // Get connection url for public.
-func (c *WSConnection) GetSourceURL() string {
-	return c.source_url
+func (c *WSConnection) GetStreamID() uint64 {
+	return c.streamID
 }
 
-// recover connection
-func (c *WSConnection) recoverConnection() {
-	if r := recover(); r != nil {
-		buf := make([]byte, 1<<16)
-		runtime.Stack(buf, false)
-		reason := fmt.Sprintf("%v: %s", r, buf)
-		c.lgr.Error("Runtime failure, reason -> %s", reason)
-	}
+// Return flag for pseudo-stream connections only.
+func (c *WSConnection) HasVideo() int {
+	return c.video
 }

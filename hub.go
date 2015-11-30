@@ -2,9 +2,10 @@ package go_player
 
 import (
 	player_log "github.com/flexconstructor/go_player/log"
-
 	"fmt"
-	"runtime"
+	"net"
+	"os"
+	"strconv"
 )
 
 /* The pool of web-socket connections for one model-stream.
@@ -13,7 +14,6 @@ import (
    metadata object of this stream.
 */
 type hub struct {
-	stream_url   string                 // RTMP stream url.
 	connections  map[*WSConnection]bool // Registered connections.
 	broadcast    chan []byte            // Channel for jpeg stream for client.
 	register     chan *WSConnection     // Channel for register new connection.
@@ -21,19 +21,20 @@ type hub struct {
 	exit_channel chan bool              // Channel for close hub.
 	metadata     chan *MetaData         // Stream metadata chennel.
 	error        chan *WSError          // Error channel.
-	log          player_log.Logger      // Logger reference.
-	hub_id       int
+	log          player_log.Logger
+	model_id     uint64
+	listener     net.Listener
+	socket_dir   string
 }
 
-var ff *ffmpeg     // FFMPEG module for decode/encode stream
+//var ff *ffmpeg     // FFMPEG module for decode/encode stream
 var meta *MetaData // metadata of stream
 
 // Create new hub instance.
-func NewHub(stream_url string,
-	logger player_log.Logger, hub_id int,
+func NewHub(
+logger player_log.Logger, model_id uint64, socket_dir string,
 ) *hub {
 	return &hub{
-		stream_url:   stream_url,
 		broadcast:    make(chan []byte),
 		register:     make(chan *WSConnection),
 		unregister:   make(chan *WSConnection),
@@ -42,40 +43,34 @@ func NewHub(stream_url string,
 		error:        make(chan *WSError, 1),
 		log:          logger,
 		exit_channel: make(chan bool, 100),
-		hub_id:       hub_id,
+		model_id:     model_id,
+		socket_dir:   socket_dir,
 	}
 }
 
 // run hub instance.
 func (h *hub) run() {
-	h.log.Info("Hub run: url = %s ", h.stream_url)
-	fmt.Println("Hub run: url = %s ", h.stream_url)
-	ff = &ffmpeg{
-		stream_url:     h.stream_url,
-		broadcast:      h.broadcast,
-		close_channel:  make(chan bool),
-		metadata:       h.metadata,
-		error:          h.error,
-		log:            h.log,
-		workers_length: 1,
-		hub_id:         h.hub_id,
+	sock := fmt.Sprintf("%s/%s.sock", h.socket_dir, strconv.FormatUint(h.model_id, 10))
+	fileinfo, err := os.Stat(sock)
+	if err == nil && fileinfo != nil {
+		err = os.Remove(sock)
+		if err != nil {
+			h.log.Error("can not remove existed socket: %s", err)
+		}
+
 	}
-
-	// run ffmpeg module.
-	go ff.run()
-
-	defer ff.Close()
-
+	go h.listenSocket(sock)
+	defer h.closeSocketConnection(sock)
 	for {
 		select {
-		// register new web-socket connection
+		case <-h.exit_channel:
+			return
 		case c, ok := <-h.register:
 			if !ok {
 				continue
 			}
 			h.connections[c] = true
-			h.log.Debug("register connection: %d", len(h.connections))
-			// try send metadata of stream to client.
+		// try send metadata of stream to client.
 			if meta != nil {
 				b, err := meta.JSON()
 				if err == nil {
@@ -86,7 +81,6 @@ func (h *hub) run() {
 		case c := <-h.unregister:
 			if _, ok := h.connections[c]; ok {
 				delete(h.connections, c)
-				h.log.Debug("unregister connection. connection length: %d", len(h.connections))
 			} else {
 				continue
 			}
@@ -95,25 +89,15 @@ func (h *hub) run() {
 			if !ok {
 				continue
 			}
-			//h.connections[0].send <-m
-			for c := range h.connections {
-				c.send <- m
-			}
-		// send methadata, when it income.
-		case meta, ok := <-h.metadata:
-			if !ok {
-				continue
-			}
-			b, err := meta.JSON()
-			if err != nil {
-				continue
-			}
-			for c := range h.connections {
-				select {
-				case c.metadata <- b:
-				default:
-					delete(h.connections, c)
+			if len(h.connections) > 0 {
+				for c := range h.connections {
+					//h.log.Debug("send for %d image: %d",h.model_id,len(m))
+					if c.HasVideo() == 1 {
+						c.send <- m
+					}
 				}
+			} else {
+				continue
 			}
 		// close all connection when error message income
 		case e, ok := <-h.error:
@@ -127,25 +111,61 @@ func (h *hub) run() {
 					delete(h.connections, c)
 				}
 			}
-		// close hub if exit message income.
-		case <-h.exit_channel:
-			return
 		}
 	}
 }
 
-// close hub function
-func (h *hub) Close() {
-	h.log.Debug("Close hub %s", h.stream_url)
-	fmt.Println("Close hub %s", h.stream_url)
-	h.exit_channel <- true
+func (h *hub) listenSocket(socket_path string) {
+	l, err := net.Listen("unix", socket_path)
+	if err != nil {
+		h.log.Error("listen error: %s", err)
+		return
+	}
+	h.listener = l
+	for {
+		fd, err := h.listener.Accept()
+		if err != nil {
+			h.log.Error("accept error: %s", err)
+			return
+		}
+		go h.echoServer(fd)
+	}
 }
 
-func (h *hub) recoverHub() {
-	if r := recover(); r != nil {
-		buf := make([]byte, 1<<16)
-		runtime.Stack(buf, false)
-		reason := fmt.Sprintf("%v: %s", r, buf)
-		h.log.Error("Runtime failure, reason -> %s", reason)
+func (h *hub) echoServer(c net.Conn) {
+	total_buffer := make([]byte, 0)
+	defer func() {
+		h.broadcast <- total_buffer
+		c.Close()
+	}()
+	for {
+		buf := make([]byte, 512)
+		nr, err := c.Read(buf)
+		if err != nil {
+			return
+		}
+		data := buf[0:nr]
+		total_buffer = append(total_buffer, data...)
 	}
+
+}
+
+func (h *hub) closeSocketConnection(unix_file_path string) {
+	if h.listener == nil {
+		return
+	}
+	err := h.listener.Close()
+	if err != nil {
+		h.log.Error("Can not close connection %v", err)
+	}
+	error := os.Remove(unix_file_path)
+	if error != nil {
+		h.log.Error("can not remove unix socket file %v", error)
+	}
+	h.listener = nil
+}
+
+// close hub function
+func (h *hub) Close() {
+	h.exit_channel <- true
 }

@@ -3,9 +3,6 @@ package go_player
 import (
 	"errors"
 	player_log "github.com/flexconstructor/go_player/log"
-
-	"fmt"
-	"runtime"
 )
 
 /*
@@ -17,32 +14,35 @@ var (
 )
 
 type GoPlayer struct {
-	streams_map map[string]*hub    // map of stream connections hub.
-	connects    chan *WSConnection // channel for register new web-socket connection.
-	updates     chan *WSConnection // channel for updates connection.
-	closes      chan *WSConnection // channel for unregister connections.
-	stops       chan *GoPlayer     // close convertor instance channel.
-	log         player_log.Logger  // logger.
-	handler     IConnectionHandler // hundler of connection events.
+	streams_map   map[string]*hub    // map of stream connections hub.
+	connects      chan *WSConnection // channel for register new web-socket connection.
+	updates       chan *WSConnection // channel for updates connection.
+	closes        chan *WSConnection // channel for unregister connections.
+	stops         chan *GoPlayer     // close convertor instance channel.
+	log           player_log.Logger  // logger.
+	handler       IConnectionHandler // handler of connection events.
+	broadcast_map map[uint64]*hub
+	socket_dir    string
 }
 
 // Init new player instance.
 func InitGoPlayer(
-	log player_log.Logger,
-	connectionHandler IConnectionHandler) *GoPlayer {
-
+log player_log.Logger,
+connectionHandler IConnectionHandler,
+socket_dir string) *GoPlayer {
 	if player_instance != nil {
 		return player_instance
 	}
 	player_instance = &GoPlayer{
-
-		log:         log,
-		streams_map: make(map[string]*hub),
-		connects:    make(chan *WSConnection, 1),
-		updates:     make(chan *WSConnection, 1),
-		closes:      make(chan *WSConnection, 1),
-		stops:       make(chan *GoPlayer, 1),
-		handler:     connectionHandler,
+		log:           log,
+		streams_map:   make(map[string]*hub),
+		connects:      make(chan *WSConnection, 1),
+		updates:       make(chan *WSConnection, 1),
+		closes:        make(chan *WSConnection, 1),
+		stops:         make(chan *GoPlayer, 1),
+		handler:       connectionHandler,
+		broadcast_map: make(map[uint64]*hub),
+		socket_dir:    socket_dir,
 	}
 	player_instance.log.Info("init go player")
 	return player_instance
@@ -60,7 +60,6 @@ func GetPlayerInstance() (*GoPlayer, error) {
 func (p *GoPlayer) Run() {
 	p.log.Info("Run GO PLAYER INSTANCE")
 	defer p.stopInstance()
-	defer p.recoverPlayer()
 	for {
 		select {
 		// stop player instance
@@ -76,8 +75,8 @@ func (p *GoPlayer) Run() {
 		// close connection
 		case c, ok := <-p.closes:
 			if ok {
+				p.log.Debug("close connection: %d", c.streamID)
 				p.closeConnection(c)
-
 			} else {
 				p.log.Error("can not close connection")
 			}
@@ -91,34 +90,35 @@ func (p *GoPlayer) Run() {
 				p.log.Debug("Update failed")
 				u.error_channel <- err
 			}
-
-		default:
-			if len(p.streams_map) > 0 {
-				for i := range p.streams_map {
-					h := p.streams_map[i]
-					if h != nil {
-						if len(h.connections) == 0 {
-							p.log.Debug("call close hub")
-							h.Close()
-							p.log.Debug("hub closed")
-							delete(p.streams_map, h.stream_url)
-							p.log.Debug("hub deleted")
-						}
-					}
-
-				}
-
-			}
-
 		}
 	}
-
 }
 
 // Stop player.
 func (p *GoPlayer) Stop() {
 	p.log.Info("STOP GO PLAYER INSTANCE")
 	p.stops <- p
+}
+
+func (p *GoPlayer) InitStream(stream_id uint64) {
+	_, ok := p.broadcast_map[stream_id]
+	if !ok {
+		h := NewHub(p.log, stream_id, p.socket_dir)
+		p.broadcast_map[stream_id] = h
+		go h.run()
+	}
+	return
+}
+
+func (p *GoPlayer) CloseStream(stream_id uint64) {
+	h, ok := p.broadcast_map[stream_id]
+	if !ok {
+		p.log.Error("Can not finde stream %d for close!", stream_id)
+	} else {
+		h.Close()
+		delete(p.broadcast_map, stream_id)
+	}
+	return
 }
 
 // Stop player instance.
@@ -129,21 +129,12 @@ func (p *GoPlayer) stopInstance() {
 
 // Register new web-socket connection.
 func (p *GoPlayer) initConnection(conn *WSConnection) {
-	stream_url := conn.GetSourceURL()
-	fmt.Println("register connection: %s", stream_url)
-	h, ok := p.streams_map[stream_url]
-	// if hub of requested stream not running - run new hub.
+	p.log.Debug("connect to: %d", conn.streamID)
+	h, ok := p.broadcast_map[conn.streamID]
 	if !ok {
-		h = NewHub(
-			stream_url,
-			p.log,
-			len(p.streams_map),
-		)
-		p.streams_map[stream_url] = h
-		p.log.Debug("NEW STREAM: %d", len(p.streams_map))
-		go h.run()
+		conn.Close()
+		return
 	}
-	// register connection in hub.
 	h.register <- conn
 	err := p.handler.OnConnect(conn)
 	if err != nil {
@@ -153,12 +144,9 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 
 // Register close connection.
 func (p *GoPlayer) closeConnection(conn *WSConnection) {
-	stream_url := conn.GetSourceURL()
-	p.log.Debug("Close connection with params:source url=  %s", stream_url)
-	fmt.Println("Close connection: %s", stream_url)
-	h, ok := p.streams_map[stream_url]
+	h, ok := p.broadcast_map[conn.streamID]
 	if !ok {
-		p.log.Error("hub for stream %s not found!", stream_url)
+		p.log.Error("hub for stream %d not found!", conn.streamID)
 		return
 	}
 	h.unregister <- conn
@@ -167,15 +155,5 @@ func (p *GoPlayer) closeConnection(conn *WSConnection) {
 		p.log.Error("disconnection error %s", err.description)
 	} else {
 		return
-	}
-}
-
-// recover player
-func (p *GoPlayer) recoverPlayer() {
-	if r := recover(); r != nil {
-		buf := make([]byte, 1<<16)
-		runtime.Stack(buf, false)
-		reason := fmt.Sprintf("%v: %s", r, buf)
-		p.log.Error("Runtime failure, reason -> %s", reason)
 	}
 }
