@@ -25,13 +25,14 @@ const (
 	maxMessageSize = 512
 )
 
-// web-socket upgrader
+// Web-socket upgrader.
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
+// Web-socket connection.
 type WSConnection struct {
 	ws            *websocket.Conn
 	send          chan []byte
@@ -134,7 +135,7 @@ func (c *WSConnection) Run() {
 	}
 }
 
-// readPump pumps messages from the websocket connection to the hub.
+// ReadPump pumps messages from the websocket connection to the hub.
 func (c *WSConnection) readPump() {
 	defer func() {
 		c.lgr.Debug("connection must been closed!")
@@ -154,7 +155,7 @@ func (c *WSConnection) readPump() {
 	}
 }
 
-// close connection.
+// Close connection.
 func (c *WSConnection) Close() {
 	write_error := c.write(websocket.CloseMessage, []byte{})
 	if write_error != nil {
@@ -170,7 +171,7 @@ func (c *WSConnection) Close() {
 	pl.closes <- c
 }
 
-// dispatch update event for handler.
+// Dispatch update event for handler.
 func (c *WSConnection) callUpdate() error {
 	pl, err := GetPlayerInstance()
 	if err != nil {

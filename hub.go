@@ -9,8 +9,7 @@ import (
 )
 
 /* The pool of web-socket connections for one model-stream.
-   The struct conains decode/encode module for one rtmp-stream,
-   map of web-socket connections for this.stream,
+   The struct contains, map of web-socket connections for this.stream,
    metadata object of this stream.
 */
 type hub struct {
@@ -21,13 +20,12 @@ type hub struct {
 	exit_channel chan bool              // Channel for close hub.
 	metadata     chan *MetaData         // Stream metadata chennel.
 	error        chan *WSError          // Error channel.
-	log          player_log.Logger
-	model_id     uint64
-	listener     net.Listener
-	socket_dir   string
+	log          player_log.Logger      // logger instance
+	model_id     uint64                 // Stream id
+	listener     net.Listener           // unix socket listener.
+	socket_dir   string                 // directory for unix.socket file
 }
 
-//var ff *ffmpeg     // FFMPEG module for decode/encode stream
 var meta *MetaData // metadata of stream
 
 // Create new hub instance.
@@ -48,7 +46,7 @@ logger player_log.Logger, model_id uint64, socket_dir string,
 	}
 }
 
-// run hub instance.
+// Run hub instance.
 func (h *hub) run() {
 	sock := fmt.Sprintf("%s/%s.sock", h.socket_dir, strconv.FormatUint(h.model_id, 10))
 	fileinfo, err := os.Stat(sock)
@@ -57,7 +55,6 @@ func (h *hub) run() {
 		if err != nil {
 			h.log.Error("can not remove existed socket: %s", err)
 		}
-
 	}
 	go h.listenSocket(sock)
 	defer h.closeSocketConnection(sock)
@@ -91,7 +88,6 @@ func (h *hub) run() {
 			}
 			if len(h.connections) > 0 {
 				for c := range h.connections {
-					//h.log.Debug("send for %d image: %d",h.model_id,len(m))
 					if c.HasVideo() == 1 {
 						c.send <- m
 					}
@@ -115,6 +111,7 @@ func (h *hub) run() {
 	}
 }
 
+// Listen unix socket.
 func (h *hub) listenSocket(socket_path string) {
 	l, err := net.Listen("unix", socket_path)
 	if err != nil {
@@ -132,6 +129,8 @@ func (h *hub) listenSocket(socket_path string) {
 	}
 }
 
+// Make complete jpeg picture and send to
+// web-socket connection.
 func (h *hub) echoServer(c net.Conn) {
 	total_buffer := make([]byte, 0)
 	defer func() {
@@ -147,9 +146,9 @@ func (h *hub) echoServer(c net.Conn) {
 		data := buf[0:nr]
 		total_buffer = append(total_buffer, data...)
 	}
-
 }
 
+// Close unix socket.
 func (h *hub) closeSocketConnection(unix_file_path string) {
 	if h.listener == nil {
 		return

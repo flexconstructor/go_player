@@ -26,5 +26,5 @@ _testmain.go
 *.prof
 go_player.iml
 .idea
-.idea/*
+.idea/**/*
 
