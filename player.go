@@ -145,7 +145,7 @@ func (p *GoPlayer) initConnection(conn *WSConnection) {
 // Register close connection.
 func (p *GoPlayer) closeConnection(conn *WSConnection) {
 	h, ok := p.broadcast_map[conn.streamID]
-	h.log("close connection %d",conn.streamID)
+	h.log.Debug("close connection %d",conn.streamID)
 	if !ok {
 		p.log.Error("hub for stream %d not found!", conn.streamID)
 		return
