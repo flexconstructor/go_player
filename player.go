@@ -150,11 +150,15 @@ func (p *GoPlayer) closeConnection(conn *WSConnection) {
 		p.log.Error("hub for stream %d not found!", conn.streamID)
 		return
 	}
-	h.unregister <- conn
-	err := p.handler.OnDisconnect(conn)
-	if err != nil {
-		p.log.Error("disconnection error %s", err.description)
-	} else {
-		return
+	if(h.connections[conn]==true) {
+		h.unregister <- conn
+		err := p.handler.OnDisconnect(conn)
+		if err != nil {
+			p.log.Error("disconnection error %s", err.description)
+		} else {
+			return
+		}
+	}else{
+		h.log.Debug("skip duplicate disconnect!!!")
 	}
 }

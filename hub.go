@@ -79,6 +79,7 @@ func (h *hub) run() {
 			if _, ok := h.connections[c]; ok {
 				delete(h.connections, c)
 			} else {
+				h.log.Debug("attempt duplicate disconnect")
 				continue
 			}
 		// send new jpeg data for clients.
